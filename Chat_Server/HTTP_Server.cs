@@ -58,27 +58,26 @@ namespace Chat_server
 
         public void LoadFile()
         {
-            indexPage = File.ReadAllBytes("index.html");
-            jQuery = File.ReadAllBytes("jquery-3.3.1.js");
+            indexPage = Encoding.Unicode.GetBytes(File.ReadAllText("index.html"));
+            //jQuery = File.ReadAllBytes("jquery-3.3.1.js");
         }
 
         void FastResponse(HttpListenerContext context)
         {
             HttpListenerResponse response = context.Response;
-
-            byte[] buf = new byte[10000];
+            
             if (context.Request.Url.LocalPath == "/")
             {
                 response.ContentType = "text/html; charset=Unicode";
-                response.ContentLength64 = indexPage.Length;
+                //response.ContentLength64 = indexPage.Length;
                 response.OutputStream.Write(indexPage, 0, indexPage.Length);
             }
-            else if (context.Request.Url.LocalPath == "/jquery-3.3.1.js")
+            /*else if (context.Request.Url.LocalPath == "/jquery-3.3.1.js")
             {
                 //response.ContentType = "text/javascript; charset=Unicode";
                 response.ContentLength64 = jQuery.Length;
                 response.OutputStream.Write(jQuery, 0, jQuery.Length);
-            }
+            }*/
 
             response.Close();
         }

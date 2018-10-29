@@ -22,7 +22,7 @@ namespace Chat_server
             clients = new List<ClientClass>();
             this.port = port;
             State = false;
-            listener = new TcpListener(IPAddress.Broadcast, port);
+            listener = new TcpListener(IPAddress.Any, port);
         }
 
         public void Start()
