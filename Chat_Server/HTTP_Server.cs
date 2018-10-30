@@ -65,6 +65,8 @@ namespace Chat_server
         void FastResponse(HttpListenerContext context)
         {
             HttpListenerResponse response = context.Response;
+
+            ShowInfo(context);
             
             if (context.Request.Url.LocalPath == "/")
             {
@@ -80,6 +82,11 @@ namespace Chat_server
             }*/
 
             response.Close();
+        }
+
+        private void ShowInfo(HttpListenerContext context)
+        {
+            Console.WriteLine(DateTime.Now + " [DEBUG][HTTP] Запрос: " + context.Request.RemoteEndPoint + " " + context.Request.Url.AbsoluteUri);
         }
     }
 }

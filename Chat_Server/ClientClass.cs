@@ -36,7 +36,6 @@ namespace Chat_server
         public void Close()
         {
             tcpClient.Close();
-            Count--;
         }
 
         private void Process()
@@ -55,22 +54,34 @@ namespace Chat_server
                     isReady = true;
                     while (true)
                     {
-                        string inputData = DecodeMessage(Read());
-                        //чтение из сокета и действия
+                        try
+                        {
+                            string inputData = DecodeMessage(Read());
+                            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] Mes: " + tcpClient.Client.RemoteEndPoint + " " + inputData);
+                            //чтение из сокета и действия
+
+                            tcpServer.Message(this, inputData);
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            Count--;
+                            tcpServer.ClientClosed(Id);
+                            return;
+                        }
                     }
                 }
             }
             
         }
 
-        public void SendMessage(ClientClass sender)
+        public void SendMessage(ClientClass sender, string message)
         {
             //отправка клиенту
         }
 
-        public void SendMessagePublic(ClientClass sender)
+        public void SendMessagePublic(ClientClass sender, string message)
         {
-            //отправка клиенту
+            Send(EncodeMessageToSend(message));
         }
 
         private bool Authorization()//добавить авторизацию по логину-паролю
@@ -96,8 +107,11 @@ namespace Chat_server
 
         private byte[] Read()
         {
-            byte[] inputData = new byte[tcpClient.Available];
-            tcpClient.GetStream().Read(inputData, 0, tcpClient.Available);
+            byte[] buf = new byte[10000000];
+            int readed = tcpClient.GetStream().Read(buf, 0, buf.Length);
+            byte[] inputData = new byte[readed];
+            for (long i = 0; i < readed; i++)
+                inputData[i] = buf[i];
             return inputData;
         }
 

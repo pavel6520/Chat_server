@@ -42,6 +42,9 @@ namespace Chat_server
                     while (State)
                     {
                         TcpClient tcpClient = listener.AcceptTcpClient();
+
+                        ShowInfo(tcpClient);
+
                         ClientClass client = new ClientClass(tcpClient, this);
                         clients.Add(client);
                         client.Start();
@@ -53,7 +56,12 @@ namespace Chat_server
             Console.WriteLine(DateTime.Now + " [INFO] TCP-сервер запущен, порт " + port);
         }
 
-        internal void Message(ClientClass sender, string loginRecipient = null)
+        private void ShowInfo(TcpClient client)
+        {
+            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] Подключение: " + client.Client.RemoteEndPoint);
+        }
+
+        internal void Message(ClientClass sender, string message, string loginRecipient = null)
         {
             foreach (ClientClass cc in clients)
             {
@@ -61,16 +69,30 @@ namespace Chat_server
                 {
                     if (loginRecipient == null)
                     {
-
+                        cc.SendMessagePublic(sender, message);
                     }
-                    else
+                    else if (cc.Login == loginRecipient)
                     {
-
+                        cc.SendMessage(sender, message);
+                        break;
                     }
                 }
                 //cc.Close();
             }
             //TODO: добавление сообщения в бд
+        }
+
+        internal void ClientClosed(byte[] Id)
+        {
+            foreach (ClientClass cc in clients)
+            {
+                if (cc.Id == Id)
+                {
+                    cc.Close();
+                    clients.Remove(cc);
+                    return;
+                }
+            }
         }
 
         public void Stop()

@@ -16,7 +16,11 @@ namespace Chat_server
             tcp = new TCP_server(8080);
             http.Start();
             tcp.Start();
-            Console.ReadKey();
+            while (true)
+            {
+                Console.ReadKey();
+                http.LoadFile();
+            }
         }
     }
 }
