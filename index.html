@@ -8,15 +8,14 @@
 	</head>
 	
 	<body>
-		<p><input id="input1" type="text" name="text1"/>
-			<button id="btn1">Отправить</button>
-		</p>
+		<input type="text" value="" />
+		<button id="btn1">Отправить</button>
 		<h6 id="msg1"></h6>
 		
 		
 		<script type="text/javascript">
 		$(function(){
-			ws = new WebSocket("ws://" + document.location.host + ":8080/websocket");
+			ws = new WebSocket("ws://192.168.43.37:8080/websocket");
 		 
 			ws.onopen = function() { ws.send("1234test") };
 
@@ -25,7 +24,8 @@
 			ws.onmessage = function(evt) { $("#msg1").append("<p>"+evt.data+"</p>"); };
 			
 			$("#btn1").click(function(){
-				ws.send("test1234");
+				ws.send($('input[type="text"]').val());
+				$('input[type="text"]').val('');
 			});
 		});
 		</script>

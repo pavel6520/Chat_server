@@ -19,6 +19,10 @@ namespace Chat_server
         public bool isAuth { get; private set; }
         public bool isReady { get; private set; }
 
+        //DEBUG
+        public string Address { get; private set; }
+
+
         public ClientClass(TcpClient tcpClient, TCP_server tcpServer)
         {
             this.tcpClient = tcpClient;
@@ -26,11 +30,14 @@ namespace Chat_server
             Id = Guid.NewGuid().ToByteArray();
             isAuth = false;
             Login = null;
+
+            //DEBUG
+            Address = tcpClient.Client.RemoteEndPoint.ToString();
         }
 
         public void Start()
         {
-            Task.Factory.StartNew(Process);
+            Task.Factory.StartNew(Process, TaskCreationOptions.LongRunning);
         }
 
         public void Close()
@@ -60,7 +67,13 @@ namespace Chat_server
                             Console.WriteLine(DateTime.Now + " [DEBUG][TCP] Mes: " + tcpClient.Client.RemoteEndPoint + " " + inputData);
                             //чтение из сокета и действия
 
-                            tcpServer.Message(this, inputData);
+                            Task.Factory.StartNew(() => tcpServer.Message(this, inputData));
+                        }
+                        catch (System.IO.IOException)
+                        {
+                            Count--;
+                            tcpServer.ClientClosed(Id);
+                            return;
                         }
                         catch (IndexOutOfRangeException)
                         {

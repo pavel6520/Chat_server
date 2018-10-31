@@ -44,7 +44,7 @@ namespace Chat_server
                     }
                 }
                 catch (HttpListenerException) { }
-            });
+            }, TaskCreationOptions.LongRunning);
 
             Console.WriteLine(DateTime.Now + " [INFO] HTTP-сервер запущен, порт " + port);
             return true;

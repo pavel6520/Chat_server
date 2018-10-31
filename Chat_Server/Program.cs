@@ -12,7 +12,7 @@ namespace Chat_server
 
         static void Main(string[] args)
         {
-            http = new HTTP_Server(80);
+            http = new HTTP_Server(30000);
             tcp = new TCP_server(8080);
             http.Start();
             tcp.Start();

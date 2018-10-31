@@ -32,9 +32,6 @@ namespace Chat_server
 
             State = true;
 
-            //thread = new Thread(new ParameterizedThreadStart(Listener));
-            //thread.Start(listener);
-
             Task.Factory.StartNew(() =>
             {
                 try
@@ -51,7 +48,7 @@ namespace Chat_server
                     }
                 }
                 catch (SocketException) { }
-            });
+            }, TaskCreationOptions.LongRunning);
             
             Console.WriteLine(DateTime.Now + " [INFO] TCP-сервер запущен, порт " + port);
         }
@@ -67,14 +64,21 @@ namespace Chat_server
             {
                 if (cc.isReady)
                 {
-                    if (loginRecipient == null)
+                    try
                     {
-                        cc.SendMessagePublic(sender, message);
+                        if (loginRecipient == null)
+                        {
+                            cc.SendMessagePublic(sender, message);
+                        }
+                        else if (cc.Login == loginRecipient)
+                        {
+                            cc.SendMessage(sender, message);
+                            break;
+                        }
                     }
-                    else if (cc.Login == loginRecipient)
+                    catch (InvalidOperationException)
                     {
-                        cc.SendMessage(sender, message);
-                        break;
+                        Task.Factory.StartNew(() => ClientClosed(cc.Id));
                     }
                 }
                 //cc.Close();
@@ -84,15 +88,11 @@ namespace Chat_server
 
         internal void ClientClosed(byte[] Id)
         {
-            foreach (ClientClass cc in clients)
-            {
-                if (cc.Id == Id)
-                {
-                    cc.Close();
-                    clients.Remove(cc);
-                    return;
-                }
-            }
+            ClientClass cc = clients.Find(delegate (ClientClass x) { return x.Id == Id; });
+            cc.Close();
+            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] Отключен: " + cc.Address);
+            clients.Remove(cc);
+            return;
         }
 
         public void Stop()
