@@ -49,14 +49,18 @@ namespace Chat_server
         {
             if (tcpClient.Connected)
             {
+                Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " подключился");
                 if (isAuth = Authorization())
                 {
                     Count++;
+                    Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " авторизовался");
 
                     //отправка истории
                     //
                     //
                     //отправка закончена
+
+                    Task.Factory.StartNew(() => tcpServer.Message(this, tcpClient.Client.RemoteEndPoint + " вошел в чат"));
 
                     isReady = true;
                     while (true)
@@ -64,10 +68,22 @@ namespace Chat_server
                         try
                         {
                             string inputData = DecodeMessage(Read());
-                            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] Mes: " + tcpClient.Client.RemoteEndPoint + " " + inputData);
+
+                            if (inputData.Length == 2)
+                                if (inputData[0] == 3 && inputData[1] == 65533)
+                                {
+                                    //DEBUG
+                                    isReady = false;
+                                    tcpServer.Message(this, tcpClient.Client.RemoteEndPoint + " покинул чат");
+
+                                    tcpServer.ClientClosed(Id);
+                                    return;
+                                }
                             //чтение из сокета и действия
 
-                            Task.Factory.StartNew(() => tcpServer.Message(this, inputData));
+                            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " Mes: " + inputData);
+
+                            Task.Factory.StartNew(() => tcpServer.Message(this, tcpClient.Client.RemoteEndPoint + " " + inputData));
                         }
                         catch (System.IO.IOException)
                         {
@@ -83,8 +99,16 @@ namespace Chat_server
                         }
                     }
                 }
+                else
+                {
+                    tcpServer.ClientClosed(Id);
+                }
             }
-            
+            else
+            {
+                tcpServer.ClientClosed(Id);
+            }
+
         }
 
         public void SendMessage(ClientClass sender, string message)

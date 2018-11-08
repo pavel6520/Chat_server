@@ -40,8 +40,6 @@ namespace Chat_server
                     {
                         TcpClient tcpClient = listener.AcceptTcpClient();
 
-                        ShowInfo(tcpClient);
-
                         ClientClass client = new ClientClass(tcpClient, this);
                         clients.Add(client);
                         client.Start();
@@ -51,11 +49,6 @@ namespace Chat_server
             }, TaskCreationOptions.LongRunning);
             
             Console.WriteLine(DateTime.Now + " [INFO] TCP-сервер запущен, порт " + port);
-        }
-
-        private void ShowInfo(TcpClient client)
-        {
-            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] Подключение: " + client.Client.RemoteEndPoint);
         }
 
         internal void Message(ClientClass sender, string message, string loginRecipient = null)
@@ -90,7 +83,7 @@ namespace Chat_server
         {
             ClientClass cc = clients.Find(delegate (ClientClass x) { return x.Id == Id; });
             cc.Close();
-            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] Отключен: " + cc.Address);
+            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + cc.Address + " отключен");
             clients.Remove(cc);
             return;
         }
