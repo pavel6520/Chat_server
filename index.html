@@ -15,11 +15,12 @@
 		
 		<script type="text/javascript">
 		$(function(){
-			ws = new WebSocket("ws://192.168.43.37:8080/websocket");
+			ws = new WebSocket("ws://pavel6520.hopto.org:8080/websocket");
+			//ws = new WebSocket("ws://pavel6520.hopto.org:8080/websocket");
 		 
-			ws.onopen = function() { ws.send("1234test") };
+			ws.onopen = function() {  };
 
-			ws.onclose = function() { alert("Connection closed...") };
+			ws.onclose = function() {  };
 
 			ws.onmessage = function(evt) { $("#msg1").append("<p>"+evt.data+"</p>"); };
 			
