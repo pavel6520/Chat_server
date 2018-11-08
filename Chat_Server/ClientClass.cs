@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Chat_server
 {
@@ -49,64 +50,73 @@ namespace Chat_server
         {
             if (tcpClient.Connected)
             {
-                Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " подключился");
-                if (isAuth = Authorization())
+                Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " " + Login + " подключился");
+                try
+                {
+                    isAuth = Authorization();
+                }
+                catch (JsonReaderException)
+                {
+                    tcpServer.ClientClosed(this);
+                    return;
+                }
+                if (isAuth)
                 {
                     Count++;
-                    Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " авторизовался");
+                    Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " " + Login + " авторизовался");
 
                     //отправка истории
                     //
                     //
                     //отправка закончена
 
-                    Task.Factory.StartNew(() => tcpServer.Message(this, tcpClient.Client.RemoteEndPoint + " вошел в чат"));
+                    Task.Factory.StartNew(() => tcpServer.Message(this, Login + " вошел в чат"));
 
                     isReady = true;
                     while (true)
                     {
                         try
                         {
-                            string inputData = DecodeMessage(Read());
+                            string inputData = Read();
 
                             if (inputData.Length == 2)
                                 if (inputData[0] == 3 && inputData[1] == 65533)
                                 {
                                     //DEBUG
                                     isReady = false;
-                                    tcpServer.Message(this, tcpClient.Client.RemoteEndPoint + " покинул чат");
+                                    tcpServer.Message(this, Login + " покинул чат");
 
-                                    tcpServer.ClientClosed(Id);
+                                    tcpServer.ClientClosed(this);
                                     return;
                                 }
                             //чтение из сокета и действия
 
-                            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " Mes: " + inputData);
+                            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + Login + ": " + inputData);
 
-                            Task.Factory.StartNew(() => tcpServer.Message(this, tcpClient.Client.RemoteEndPoint + " " + inputData));
+                            Task.Factory.StartNew(() => tcpServer.Message(this, Login + ": " + inputData));
                         }
                         catch (System.IO.IOException)
                         {
                             Count--;
-                            tcpServer.ClientClosed(Id);
+                            tcpServer.ClientClosed(this);
                             return;
                         }
                         catch (IndexOutOfRangeException)
                         {
                             Count--;
-                            tcpServer.ClientClosed(Id);
+                            tcpServer.ClientClosed(this);
                             return;
                         }
                     }
                 }
                 else
                 {
-                    tcpServer.ClientClosed(Id);
+                    tcpServer.ClientClosed(this);
                 }
             }
             else
             {
-                tcpServer.ClientClosed(Id);
+                tcpServer.ClientClosed(this);
             }
 
         }
@@ -118,49 +128,65 @@ namespace Chat_server
 
         public void SendMessagePublic(ClientClass sender, string message)
         {
-            Send(EncodeMessageToSend(message));
+            Send(message);
         }
 
         private bool Authorization()//добавить авторизацию по логину-паролю
         {
-            string inputData = Encoding.UTF8.GetString(Read());
+            string inputData = ReadHttp();
             if (inputData.Substring(0, 14) == "GET /websocket"
                 && Regex.IsMatch(inputData, "Connection: Upgrade")
                 && Regex.IsMatch(inputData, "Upgrade: websocket"))
             {
-                Send(
-                    Encoding.UTF8.GetBytes("HTTP/1.1 101 Switching Protocols" + Environment.NewLine
+                SendHttp(
+                    "HTTP/1.1 101 Switching Protocols" + Environment.NewLine
                         + "Connection: Upgrade" + Environment.NewLine
                         + "Upgrade: websocket" + Environment.NewLine
                         + "Sec-WebSocket-Accept: " + Convert.ToBase64String(
                             System.Security.Cryptography.SHA1.Create().ComputeHash(
                                         Encoding.UTF8.GetBytes(
                                             new Regex("Sec-WebSocket-Key: (.*)").Match(inputData).Groups[1].Value.Trim() + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")))
-                                        + Environment.NewLine + Environment.NewLine));
-                return true;
+                                        + Environment.NewLine + Environment.NewLine);
+                while (true)
+                {
+                    inputData = Read();
+                    ClientWrap wrap = JsonConvert.DeserializeObject<ClientWrap>(inputData);
+                    if (wrap.mestype == "login")
+                    {
+                        ClientWrap.Login loginJSON = JsonConvert.DeserializeObject<ClientWrap.Login>(wrap.body);
+                        if (loginJSON.login.Length > 0)
+                        {
+                            Login = loginJSON.login;
+                            Send("LOGINED-SUCCSESS-ENTER-CHAT");
+                            return true;
+                        }
+                        else
+                        {
+                            Send("ERROR-LOGIN-PASSWORD");
+                        }
+                    }
+                    else if (wrap.mestype == "registr")
+                    {
+                        Send("NOT-WORK-USE-LOGIN");
+                    }
+                    else {
+                        Send("ERROR-DATA-CONNECTION-CLOSING");
+                        return false;
+                    }
+                }
             }
             return false;
         }
 
-        private byte[] Read()
+        private string Read()
         {
             byte[] buf = new byte[10000000];
             int readed = tcpClient.GetStream().Read(buf, 0, buf.Length);
             byte[] inputData = new byte[readed];
             for (long i = 0; i < readed; i++)
                 inputData[i] = buf[i];
-            return inputData;
-        }
 
-        private void Send(byte[] outputData)
-        {
-            tcpClient.GetStream().Write(outputData, 0, outputData.Length);
-        }
-
-        private static string DecodeMessage(byte[] bytes)
-        {
-            string incomingData = null;
-            byte secondByte = bytes[1];
+            byte secondByte = inputData[1];
             int dataLength = secondByte & 127;
             int indexFirstMask = 2;
             if (dataLength == 126)
@@ -168,21 +194,20 @@ namespace Chat_server
             else if (dataLength == 127)
                 indexFirstMask = 10;
 
-            IEnumerable<byte> keys = bytes.Skip(indexFirstMask).Take(4);
+            IEnumerable<byte> keys = inputData.Skip(indexFirstMask).Take(4);
             int indexFirstDataByte = indexFirstMask + 4;
 
-            byte[] decoded = new byte[bytes.Length - indexFirstDataByte];
-            for (int i = indexFirstDataByte, j = 0; i < bytes.Length; i++, j++)
+            byte[] decoded = new byte[inputData.Length - indexFirstDataByte];
+            for (int i = indexFirstDataByte, j = 0; i < inputData.Length; i++, j++)
             {
-                decoded[j] = (byte)(bytes[i] ^ keys.ElementAt(j % 4));
+                decoded[j] = (byte)(inputData[i] ^ keys.ElementAt(j % 4));
             }
 
-            return incomingData = Encoding.UTF8.GetString(decoded, 0, decoded.Length);
+            return Encoding.UTF8.GetString(decoded, 0, decoded.Length);
         }
-
-        private static byte[] EncodeMessageToSend(string message)
+        private void Send(string message)
         {
-            byte[] response;
+            byte[] outputData;
             byte[] bytesRaw = Encoding.UTF8.GetBytes(message);
             byte[] frame = new byte[10];
 
@@ -217,25 +242,67 @@ namespace Chat_server
                 indexStartRawData = 10;
             }
 
-            response = new byte[indexStartRawData + length];
+            outputData = new byte[indexStartRawData + length];
 
             int i, reponseIdx = 0;
 
             //Add the frame bytes to the reponse
             for (i = 0; i < indexStartRawData; i++)
             {
-                response[reponseIdx] = frame[i];
+                outputData[reponseIdx] = frame[i];
                 reponseIdx++;
             }
 
             //Add the data bytes to the response
             for (i = 0; i < length; i++)
             {
-                response[reponseIdx] = bytesRaw[i];
+                outputData[reponseIdx] = bytesRaw[i];
                 reponseIdx++;
             }
+            
+            tcpClient.GetStream().Write(outputData, 0, outputData.Length);
+        }
 
-            return response;
+        private string ReadHttp()
+        {
+            byte[] buf = new byte[10000000];
+            int readed = tcpClient.GetStream().Read(buf, 0, buf.Length);
+            byte[] inputData = new byte[readed];
+            for (long i = 0; i < readed; i++)
+                inputData[i] = buf[i];
+            return Encoding.UTF8.GetString(inputData);
+        }
+        private void SendHttp(string outputData)
+        {
+            byte[] outputB = Encoding.UTF8.GetBytes(outputData);
+            tcpClient.GetStream().Write(outputB, 0, outputB.Length);
+        }
+
+        private class ClientWrap
+        {
+            public string mestype { get; set; }
+            public string body { get; set; }
+
+            public ClientWrap(string mestype, string body)
+            {
+                this.mestype = mestype;
+                this.body = body;
+            }
+
+            public class Login
+            {
+                public string login { get; set; }
+                public bool withpass { get; set; }
+                public string pass { get; set; }
+                public string key { get; set; }
+            }
+
+            public class Registration
+            {
+                public string login { get; set; }
+                public string email { get; set; }
+                public string pass { get; set; }
+            }
         }
     }
 }

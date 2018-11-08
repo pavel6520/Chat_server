@@ -13,7 +13,7 @@ namespace Chat_server
     {
         private HttpListener listener;
         byte[] indexPage;
-        byte[] jQuery;
+        //byte[] jQuery;
         int port;
 
         public HTTP_Server(int port)

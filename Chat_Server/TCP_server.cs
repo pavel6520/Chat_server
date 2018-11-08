@@ -71,7 +71,7 @@ namespace Chat_server
                     }
                     catch (InvalidOperationException)
                     {
-                        Task.Factory.StartNew(() => ClientClosed(cc.Id));
+                        Task.Factory.StartNew(() => ClientClosed(cc));
                     }
                 }
                 //cc.Close();
@@ -79,12 +79,12 @@ namespace Chat_server
             //TODO: добавление сообщения в бд
         }
 
-        internal void ClientClosed(byte[] Id)
+        internal void ClientClosed(ClientClass forDel)
         {
-            ClientClass cc = clients.Find(delegate (ClientClass x) { return x.Id == Id; });
-            cc.Close();
-            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + cc.Address + " отключен");
-            clients.Remove(cc);
+            //ClientClass cc = clients.Find(delegate (ClientClass x) { return x.Id == Id; });
+            forDel.Close();
+            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + forDel.Address + " " + forDel.Login + " отключен");
+            clients.Remove(forDel);
             return;
         }
 
