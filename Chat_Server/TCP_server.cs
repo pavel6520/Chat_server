@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Chat_server
 {
-    class TCP_server
+    class TCP_Server
     {
         TcpListener listener;
         int port;
@@ -17,7 +17,7 @@ namespace Chat_server
 
         List<ClientClass> clients;
 
-        public TCP_server(int port)
+        public TCP_Server(int port)
         {
             clients = new List<ClientClass>();
             this.port = port;
@@ -25,10 +25,18 @@ namespace Chat_server
             listener = new TcpListener(IPAddress.Any, port);
         }
 
-        public void Start()
+        public bool Start()
         {
             //listener = new TcpListener(IPAddress.Parse(address), 8080);
-            listener.Start();
+            try
+            {
+                listener.Start();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(DateTime.Now + " [ERROR][TCP] Не удалось запустить. " + ex.Message);
+                return false;
+            }
 
             State = true;
 
@@ -48,11 +56,13 @@ namespace Chat_server
                 catch (SocketException) { }
             }, TaskCreationOptions.LongRunning);
             
-            Console.WriteLine(DateTime.Now + " [INFO] TCP-сервер запущен, порт " + port);
+            Console.WriteLine(DateTime.Now + " [INFO][TCP] Сервер запущен, порт " + port);
+            return true;
         }
 
         internal void Message(ClientClass sender, string message, string loginRecipient = null)
         {
+            //TODO: добавление сообщения в бд
             foreach (ClientClass cc in clients)
             {
                 if (cc.isReady)
@@ -76,14 +86,14 @@ namespace Chat_server
                 }
                 //cc.Close();
             }
-            //TODO: добавление сообщения в бд
         }
 
         internal void ClientClosed(ClientClass forDel)
         {
             //ClientClass cc = clients.Find(delegate (ClientClass x) { return x.Id == Id; });
             forDel.Close();
-            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + forDel.Address + " " + forDel.Login + " отключен");
+            if (Program.DEBUG)
+                Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + forDel.Address + " " + forDel.Login + " отключен");
             clients.Remove(forDel);
             return;
         }
@@ -97,7 +107,7 @@ namespace Chat_server
                 cc.Close();
             }
             clients.Clear();
-            Console.WriteLine(DateTime.Now + " [INFO] TCP-сервер остановлен");
+            Console.WriteLine(DateTime.Now + " [INFO][TCP] Сервер остановлен");
         }
     }
 }

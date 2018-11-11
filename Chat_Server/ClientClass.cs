@@ -14,7 +14,7 @@ namespace Chat_server
         public static int Count { get; private set; }
 
         private TcpClient tcpClient;
-        private TCP_server tcpServer;
+        private TCP_Server tcpServer;
         public byte[] Id { get; private set; }
         public string Login { get; private set; }
         public bool isAuth { get; private set; }
@@ -24,7 +24,7 @@ namespace Chat_server
         public string Address { get; private set; }
 
 
-        public ClientClass(TcpClient tcpClient, TCP_server tcpServer)
+        public ClientClass(TcpClient tcpClient, TCP_Server tcpServer)
         {
             this.tcpClient = tcpClient;
             this.tcpServer = tcpServer;
@@ -50,7 +50,8 @@ namespace Chat_server
         {
             if (tcpClient.Connected)
             {
-                Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " " + Login + " подключился");
+                if (Program.DEBUG)
+                    Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " подключился");
                 try
                 {
                     isAuth = Authorization();
@@ -63,16 +64,15 @@ namespace Chat_server
                 if (isAuth)
                 {
                     Count++;
-                    Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " " + Login + " авторизовался");
+                    if (Program.DEBUG)
+                        Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " авторизовался как " + Login);
 
-                    //отправка истории
-                    //
-                    //
-                    //отправка закончена
-
+                    //TODO: отправка истории
+                    
+                    isReady = true;
+                    //DEBUG
                     Task.Factory.StartNew(() => tcpServer.Message(this, Login + " вошел в чат"));
 
-                    isReady = true;
                     while (true)
                     {
                         try
@@ -82,16 +82,18 @@ namespace Chat_server
                             if (inputData.Length == 2)
                                 if (inputData[0] == 3 && inputData[1] == 65533)
                                 {
-                                    //DEBUG
                                     isReady = false;
-                                    tcpServer.Message(this, Login + " покинул чат");
+
+                                    if (Program.DEBUG)
+                                        tcpServer.Message(this, Login + " покинул чат");
 
                                     tcpServer.ClientClosed(this);
                                     return;
                                 }
                             //чтение из сокета и действия
 
-                            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + Login + ": " + inputData);
+                            if (Program.DEBUG)
+                                Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + Login + ": " + inputData);
 
                             Task.Factory.StartNew(() => tcpServer.Message(this, Login + ": " + inputData));
                         }
@@ -154,22 +156,40 @@ namespace Chat_server
                     if (wrap.mestype == "login")
                     {
                         ClientWrap.Login loginJSON = JsonConvert.DeserializeObject<ClientWrap.Login>(wrap.body);
-                        if (loginJSON.login.Length > 0)
+                        if (loginJSON.withpass)
                         {
-                            Login = loginJSON.login;
-                            Send("LOGINED-SUCCSESS-ENTER-CHAT");
-                            return true;
+                            if (loginJSON.login.Length > 0 && loginJSON.pass.Length > 0 && Program.mySql.CheckUser(loginJSON.login, loginJSON.pass))
+                            {
+                                Login = loginJSON.login;
+                                Send("LOGINED-SUCCSESS-ENTER-CHAT");
+                                return true;
+                            }
+                            else
+                            {
+                                Send("ERROR-LOGIN-PASSWORD");
+                            }
                         }
                         else
                         {
-                            Send("ERROR-LOGIN-PASSWORD");
+                            Send("NOT-WORK-USE-WITHPASS");
                         }
                     }
                     else if (wrap.mestype == "registr")
                     {
-                        Send("NOT-WORK-USE-LOGIN");
+                        ClientWrap.Registration regJSON = JsonConvert.DeserializeObject<ClientWrap.Registration>(wrap.body);
+                        if (regJSON.login.Length > 0 && regJSON.pass.Length > 0 && regJSON.email.Length > 0 && Program.mySql.RegNewUser(regJSON.login, regJSON.pass, regJSON.email))
+                        {
+                            Login = regJSON.login;
+                            Send("REGISTR-SUCCSESS-ENTER-CHAT");
+                            return true;
+                        }
+                        else
+                        {
+                            Send("ERROR-REGISTR");
+                        }
                     }
                     else {
+                        Console.WriteLine(inputData);
                         Send("ERROR-DATA-CONNECTION-CLOSING");
                         return false;
                     }
@@ -300,8 +320,8 @@ namespace Chat_server
             public class Registration
             {
                 public string login { get; set; }
-                public string email { get; set; }
                 public string pass { get; set; }
+                public string email { get; set; }
             }
         }
     }

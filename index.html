@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-	<title>TEST WebSocket</title>
+	<title>TEST CHAT</title>
 	<meta charset="utf-8">
-	<link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.12.1/jquery-ui.js">
+	<link rel="stylesheet" type="text/javascript" href="http://code.jquery.com/ui/1.12.1/jquery-ui.js">
+	<script src="js/func.js"></script>
 	<script src="https://code.jquery.com/jquery-3.3.1.js"</script>
 	<script src="http://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	
 	<style>
 	</style>
 </head>
-
 <body>
 	<div id="formError" style="display:none">ERROR CONNECT
 	</div>
@@ -24,82 +23,28 @@
 			<button id="authBtn">Авторизация</button>
 		</p>
 		<p>
-			<input id="regLogin" type="text" value="" />
-			<input id="regPass" type="password" value="" />
-			<input id="regEmail" type="password" value="" />
+			<input id="regLogin" type="text" value="" placeholder="Login" />
+			<input id="regPass" type="password" value="" placeholder="Password" />
+			<input id="regEmail" type="password" value="" placeholder="Email" />
 			<button id="regBtn">Регистрация</button>
 		</p>
 	</div>
 	<div id="formChat" style="display:none">
-		<input id="tb1" type="text" value="" />
-		<button id="btn1">Отправить</button>
-		<h6 id="msg1"></h6>
+		<h5 id="chatText"></h5>
+		<br>
+		<input id="chatInput" type="text" value="" />
+		<button id="chatBtn">Отправить</button>
 	</div>
 	
 	<script type="text/javascript">
 	//ws = new WebSocket("ws://127.0.0.1:8080/websocket");
 	ws = new WebSocket("ws://pavel6520.hopto.org:8080/websocket");
 	
-	ws.onopen = function() { 
-		//$("#formAuth").removeAttribute("hidden");
-		document.getElementById("formAuth").setAttribute("style", "");
-	};
-	ws.onerror = function() {
-		document.getElementById("formError").setAttribute("style", "");
-	};
-	
-	var authFunc = function(){
-		var loginT = document.getElementById("authLogin").value;
-		var passT = document.getElementById("authPass").value;
-		var bodyT = {
-			login: loginT,
-			withpass: false,
-			pass: passT,
-			key: ""
-
-		};
-		var json = {
-			mestype: "login",
-			body: JSON.stringify(bodyT)
-		};
-		ws.onmessage = function(evt){
-			if (evt.data == "LOGINED-SUCCSESS-ENTER-CHAT"){
-				document.getElementById("formErrorLogin").setAttribute("style", "display:none");
-				document.getElementById("formAuth").setAttribute("style", "display:none");
-				
-				ws.onmessage = function(evt) { $("#msg1").append("<p>"+evt.data+"</p>"); };
-			
-				$("#btn1").click(function(){
-					ws.send($('input[id="tb1"]').val());
-					$('input[id="tb1"]').val('');
-				});
-				
-				document.getElementById("formChat").setAttribute("style", "");
-				
-			}
-			else {
-				document.getElementById("formErrorLogin").setAttribute("style", "");
-			}
-		};
-		ws.send(JSON.stringify(json));
-	}
+	ws.onopen = function() { document.getElementById("formAuth").setAttribute("style", ""); };
+	ws.onerror = function() { document.getElementById("formError").setAttribute("style", ""); };
 	
 	document.getElementById("authBtn").onclick = authFunc;
-	
-	/*$(function(){
-		//ws = new WebSocket("ws://pavel6520.hopto.org:8080/websocket");
-	 
-		//ws.onopen = function() {  };
-
-		//ws.onclose = function() {  };
-
-		//ws.onmessage = function(evt) { };
-		
-		$("#btn1").click(function(){
-			$("#mainHtml").text(mainHtml);
-		});
-	});*/
+	document.getElementById("regBtn").onclick = regFunc;
 	</script>
 </body>
-
 </html>
