@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TEST CHAT</title>
+		<meta charset="utf-8">
+		<link rel="stylesheet" type="text/javascript" href="http://code.jquery.com/ui/1.12.1/jquery-ui.js">
+		<script src="func.js"></script>
+		<script src="https://code.jquery.com/jquery-3.3.1.js"</script>
+		<script src="http://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+		<style>
+		html, body {
+			margin: 0;
+			width: 100%;
+			height: 100%;
+		}
+		#blockChat{
+			margin: 0;
+			min-width: 600px;
+			min-height: 300px;
+			max-width: 100%;
+			height: 100%;
+			position: relative;
+			z-index: 1;
+		}
+		#ChatList{
+			float: left;
+			width: 200px;
+			height: 100%;
+			border-right: 1px solid red;
+		}
+		#ChatListUL{
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			overflow-y: scroll;
+			-ms-overflow-style: none;
+			overflow: -moz-scrollbars-none;
+		}
+		#ChatListUL::-webkit-scrollbar { width: 0; }
+		.ChatListBTN{
+			width: 100%;
+			height: 49px;
+			border-bottom: 1px solid red;
+			cursor: pointer;
+			background-color: #edeef0;
+		}
+		.ChatListBTN:hover{
+			background-color: #5555ff;
+		}
+		#ChatBody{
+			margin-left: 201px;
+			height: 100%;
+		}
+		#ChatBodyMessageUL{
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			height: 100%;
+			overflow-y: scroll;
+			overflow-x: hidden;
+		}
+		.ChatBodyMessage{
+			width: 100%;
+			border-bottom: 1px solid red;
+			word-break: break-all;
+		}
+		.ChatBodyMessageLogin{
+			width: 100%;
+			height: 25px;
+			word-break: break-all;
+		}
+		.ChatBodyMessageText{
+			width: 100%;
+			word-break: break-all;
+		}
+		#ChatBodyInputBlock{
+			width: 100%;
+		}
+		</style>
+    </head>
+    <body onresize="onBodyResize()">
+        <div id="blockChat">
+			<div id="ChatList">
+				<div id="ChatBTN_public" class="ChatListBTN" data="Public">public</div>
+				<ul id="ChatListUL">
+				</ul>
+			</div>
+			<div id="ChatBody">
+				<ul id="ChatBodyMessageUL">
+					<li class="ChatBodyMessage"><div class="ChatBodyMessageLogin">Re: Pavel6520</div><div class="ChatBodyMessageText">1234</div></li>
+					<li class="ChatBodyMessage">123</li>
+					<li class="ChatBodyMessage">123</li>
+					<li class="ChatBodyMessage">123</li>
+					<li class="ChatBodyMessage">123</li>
+					<li class="ChatBodyMessage">123</li>
+					<li class="ChatBodyMessage">123</li>
+					<li class="ChatBodyMessage">123</li>
+					<li class="ChatBodyMessage">123</li>
+					<li class="ChatBodyMessage">123</li>
+					<li class="ChatBodyMessage">123</li>
+					<li class="ChatBodyMessage">123</li>
+				</ul>
+				<div id="ChatBodyInputBlock"></div>
+			</div>
+		</div>
+		<script type="text/javascript">
+		var t = null;
+		document.getElementById('ChatListUL').style.height = (document.body.clientHeight - 50) + 'px';
+		function onBodyResize(){
+		   if (t!= null) clearTimeout(t);
+		   t = setTimeout(function() {
+			   document.getElementById('ChatListUL').style.height = (document.body.clientHeight - 50) + 'px';
+		   }, 500);
+		};
+		
+		
+		var masChat = new Array(30);
+		
+		$('#ChatList').on('click', '.ChatListBTN', function() {
+			var txt = $(this).attr('data'); // вытащим текст из нажатого элемента
+			alert('Вы нажали на элемент с аттрибутом data - «' + txt + '»'); // выведем сообщение с текстом
+		});
+		
+		for(i = 0; i < 10; i++){
+			document.getElementById('ChatListUL').innerHTML += '<li class="ChatListBTN" + data="' + i + '">BTN ' + i + '</li>';
+		}
+		
+		/*for(i = 0; i < 30; i++){
+			masChat[i] = new Object();
+			masChat[i].idInList = "ChatListBTN_" + i;
+			console.log(masChat[i].idInList);
+			document.getElementById(masChat[i].idInList).onclick = function(e){ alert(masChat[i].idInList);};
+		}*/
+		</script>
+    </body>
+</html>

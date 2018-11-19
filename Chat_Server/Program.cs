@@ -21,8 +21,8 @@ namespace Chat_server
             {
                 Console.WriteLine(DateTime.Now + " [INFO][MYSQL] Успешно подключено");
 
-                http = new HTTP_Server(30000);
-                tcp = new TCP_Server(8080);
+                http = new HTTP_Server(8080);
+                tcp = new TCP_Server(30000);
 
                 http.Start();
                 tcp.Start();

@@ -16,6 +16,7 @@ namespace Chat_server
         public bool State { get; private set; }
 
         List<ClientClass> clients;
+        List<string> online;
 
         public TCP_Server(int port)
         {
@@ -62,16 +63,17 @@ namespace Chat_server
 
         internal void Message(ClientClass sender, string message, string loginRecipient = null)
         {
+            DateTime date = DateTime.Now;
             //TODO: добавление сообщения в бд
             foreach (ClientClass cc in clients)
             {
-                if (cc.isReady)
+                if (cc.Status == ClientClass.ClientStatus.Ready)
                 {
                     try
                     {
                         if (loginRecipient == null)
                         {
-                            cc.SendMessagePublic(sender, message);
+                            cc.SendMessagePublic(sender, message, date);
                         }
                         else if (cc.Login == loginRecipient)
                         {
@@ -94,6 +96,8 @@ namespace Chat_server
             forDel.Close();
             if (Program.DEBUG)
                 Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + forDel.Address + " " + forDel.Login + " отключен");
+
+            clients.FindAll(delegate (ClientClass x) { return x.Login == forDel.Login; });
             clients.Remove(forDel);
             return;
         }

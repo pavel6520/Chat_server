@@ -80,9 +80,9 @@ function enterChat(){
 	$('#blockAuth').css('display', 'none');
 	
 	//$("#chatBtn").click(sendmessage);
-	$('#ChatTextArea').keydown( function(ev){ inputControl.keyD(ev.which); if(ev.which == '13'){ inputControl.send(ev);} } );
-	$('#ChatTextArea').keyup( function(ev){ inputControl.keyU(ev.which); if(ev.which == '13'){  inputControl.clear();} } );
-	var block = document.getElementById("ChatBodyList2");
+	$('#ChatTextArea').keydown( function(ev){ inputControl.keyD(ev.which); if(ev.which == '13'){ inputControl.send(ev);} } )
+		.keyup( function(ev){ inputControl.keyU(ev.which); if(ev.which == '13'){  inputControl.clear();} } );
+	var block = $("#ChatBodyList2");
 	ws.onmessage = function(evt) { 
 		var json = JSON.parse(evt.data);
 		if (json.mestype == 'mesToClient') {
@@ -90,7 +90,7 @@ function enterChat(){
 			date = new Date(json.date);
 			//console.log((date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ':' + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()));
 			$('#ChatBodyList2').append('<li class="ChatBodyMessage"><div class="ChatBodyMessageLogin">' + json.from + '</div><div class="ChatBodyMessageText">' + json.message + '</div></li>');
-			block.scrollTop = block.scrollHeight;
+			block[0].scrollTop = block[0].scrollHeight;
 		}
 	};
 	

@@ -15,10 +15,11 @@ namespace Chat_server
 
         private TcpClient tcpClient;
         private TCP_Server tcpServer;
-        public byte[] Id { get; private set; }
+        public byte[] UniqueId { get; private set; }
         public string Login { get; private set; }
-        public bool isAuth { get; private set; }
-        public bool isReady { get; private set; }
+        //TODO: public int Id { get; private set; }
+        public ClientStatus Status { get; private set; }
+        private object locker;
 
         //DEBUG
         public string Address { get; private set; }
@@ -28,9 +29,10 @@ namespace Chat_server
         {
             this.tcpClient = tcpClient;
             this.tcpServer = tcpServer;
-            Id = Guid.NewGuid().ToByteArray();
-            isAuth = false;
+            UniqueId = Guid.NewGuid().ToByteArray();
+            Status = ClientStatus.Start;
             Login = null;
+            locker = new object();
 
             //DEBUG
             Address = tcpClient.Client.RemoteEndPoint.ToString();
@@ -52,24 +54,25 @@ namespace Chat_server
             {
                 if (Program.DEBUG)
                     Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " подключился");
+                Status = ClientStatus.Authorization;
                 try
                 {
-                    isAuth = Authorization();
+                    if (Authorization()) Status = ClientStatus.LoggedIn;
                 }
                 catch (JsonReaderException)
                 {
                     tcpServer.ClientClosed(this);
                     return;
                 }
-                if (isAuth)
+                if (Status == ClientStatus.LoggedIn)
                 {
                     Count++;
                     if (Program.DEBUG)
                         Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " авторизовался как " + Login);
-
+                    Status = ClientStatus.LoadData;
                     //TODO: отправка истории
-                    
-                    isReady = true;
+                    Status = ClientStatus.Ready;
+
                     //DEBUG
                     Task.Factory.StartNew(() => tcpServer.Message(this, Login + " вошел в чат"));
 
@@ -78,24 +81,28 @@ namespace Chat_server
                         try
                         {
                             string inputData = Read();
-
                             if (inputData.Length == 2)
                                 if (inputData[0] == 3 && inputData[1] == 65533)
                                 {
-                                    isReady = false;
-
+                                    Status = ClientStatus.Stopped;
                                     if (Program.DEBUG)
                                         tcpServer.Message(this, Login + " покинул чат");
-
                                     tcpServer.ClientClosed(this);
                                     return;
                                 }
+
                             //чтение из сокета и действия
+                            ClientWrap wrap = JsonConvert.DeserializeObject<ClientWrap>(inputData);
+                            if (wrap.mestype == "message")
+                            {
+                                ClientWrap.MessageFromClient json = JsonConvert.DeserializeObject<ClientWrap.MessageFromClient>(wrap.body);
+                                string buf = json.message.Trim();
+                                if (buf.Length == 0) continue;
+                                Task.Factory.StartNew(() => tcpServer.Message(this, json.message));
+                            }
 
                             if (Program.DEBUG)
-                                Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + Login + ": " + inputData);
-
-                            Task.Factory.StartNew(() => tcpServer.Message(this, Login + ": " + inputData));
+                            Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + Login + ": " + inputData);
                         }
                         catch (System.IO.IOException)
                         {
@@ -125,12 +132,27 @@ namespace Chat_server
 
         public void SendMessage(ClientClass sender, string message)
         {
-            //отправка клиенту
+            lock (locker)
+            {
+                //отправка клиенту
+            }
         }
 
-        public void SendMessagePublic(ClientClass sender, string message)
+        public void SendMessagePublic(ClientClass sender, string message, DateTime date)
         {
-            Send(message);
+            lock (locker)
+            {
+                string json = JsonConvert.SerializeObject(
+                    new ClientWrap("mesToClient", JsonConvert.SerializeObject(
+                        new ClientWrap.MessageToClient()
+                        {
+                            date = date.ToString("O"),
+                            from = sender.Login,
+                            isPublic = true,
+                            message = message
+                        })));
+                Send(json);
+            }
         }
 
         private bool Authorization()//добавить авторизацию по логину-паролю
@@ -141,14 +163,12 @@ namespace Chat_server
                 && Regex.IsMatch(inputData, "Upgrade: websocket"))
             {
                 SendHttp(
-                    "HTTP/1.1 101 Switching Protocols" + Environment.NewLine
-                        + "Connection: Upgrade" + Environment.NewLine
-                        + "Upgrade: websocket" + Environment.NewLine
-                        + "Sec-WebSocket-Accept: " + Convert.ToBase64String(
-                            System.Security.Cryptography.SHA1.Create().ComputeHash(
-                                        Encoding.UTF8.GetBytes(
-                                            new Regex("Sec-WebSocket-Key: (.*)").Match(inputData).Groups[1].Value.Trim() + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")))
-                                        + Environment.NewLine + Environment.NewLine);
+                    "HTTP/1.1 101 Switching Protocols" + Environment.NewLine + "Connection: Upgrade" + Environment.NewLine
+                    + "Upgrade: websocket" + Environment.NewLine + "Sec-WebSocket-Accept: " + Convert.ToBase64String(
+                        System.Security.Cryptography.SHA1.Create().ComputeHash(
+                            Encoding.UTF8.GetBytes(
+                                new Regex("Sec-WebSocket-Key: (.*)").Match(inputData).Groups[1].Value.Trim() + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")))
+                                + Environment.NewLine + Environment.NewLine);
                 while (true)
                 {
                     inputData = Read();
@@ -177,7 +197,8 @@ namespace Chat_server
                     else if (wrap.mestype == "registr")
                     {
                         ClientWrap.Registration regJSON = JsonConvert.DeserializeObject<ClientWrap.Registration>(wrap.body);
-                        if (regJSON.login.Length > 0 && regJSON.pass.Length > 0 && regJSON.email.Length > 0 && Program.mySql.RegNewUser(regJSON.login, regJSON.pass, regJSON.email))
+                        if (regJSON.login.Length > 0 && regJSON.pass.Length > 0 && regJSON.email.Length > 0 
+                            && Program.mySql.RegNewUser(regJSON.login, regJSON.pass, regJSON.email))
                         {
                             Login = regJSON.login;
                             Send("REGISTR-SUCCSESS-ENTER-CHAT");
@@ -185,6 +206,7 @@ namespace Chat_server
                         }
                         else
                         {
+                            Console.WriteLine(regJSON.login + " " + regJSON.pass + " " + regJSON.email);
                             Send("ERROR-REGISTR");
                         }
                     }
@@ -194,6 +216,11 @@ namespace Chat_server
                         return false;
                     }
                 }
+            }
+            else
+            {
+                //Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " прислал ЭТО " + inputData);
+                SendHttp("ERROR-REQUEST expected /websocket");
             }
             return false;
         }
@@ -205,7 +232,6 @@ namespace Chat_server
             byte[] inputData = new byte[readed];
             for (long i = 0; i < readed; i++)
                 inputData[i] = buf[i];
-
             byte secondByte = inputData[1];
             int dataLength = secondByte & 127;
             int indexFirstMask = 2;
@@ -298,6 +324,16 @@ namespace Chat_server
             tcpClient.GetStream().Write(outputB, 0, outputB.Length);
         }
 
+        public enum ClientStatus
+        {
+            Start,
+            Authorization,
+            LoggedIn,
+            LoadData,
+            Ready,
+            Stopped
+        }
+
         private class ClientWrap
         {
             public string mestype { get; set; }
@@ -323,6 +359,25 @@ namespace Chat_server
                 public string pass { get; set; }
                 public string email { get; set; }
             }
+
+            public class MessageFromClient
+            {
+                public string to { get; set; }
+                public string message { get; set; }
+            }
+
+            public class MessageToClient
+            {
+                public string date { get; set; }
+                public string from { get; set; }
+                public bool isPublic { get; set; }
+                public string message { get; set; }
+            }
+
+            /*public class History
+            {
+                public int id;
+            }*/
         }
     }
 }
