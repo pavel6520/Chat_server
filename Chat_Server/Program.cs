@@ -15,12 +15,13 @@ namespace Chat_server
         static void Main(string[] args)
         {
             DEBUG = true;
-            mySql = new MySql_Client("127.0.0.1", 3306, "root", "65207634");
+            mySql = new MySql_Client("127.0.0.1", 3306, "root", "6520");
 
             if (mySql.CheckConnect())
             {
                 Console.WriteLine(DateTime.Now + " [INFO][MYSQL] Успешно подключено");
 
+                mySql.Start();
                 http = new HTTP_Server(8080);
                 tcp = new TCP_Server(30000);
 
@@ -29,8 +30,12 @@ namespace Chat_server
 
                 while (true)
                 {
-                    Console.ReadKey();
-                    http.LoadFile();
+                    string command = Console.ReadLine();
+                    if (command == "up")
+                        http.LoadFile();
+                    else if (command == "online")
+                        Console.WriteLine(ClientClass.Count);
+                    else Console.WriteLine("Error comand");
                 }
             }
             else

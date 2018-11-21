@@ -12,10 +12,12 @@ namespace Chat_server
     class HTTP_Server
     {
         private HttpListener listener;
-        byte[] indexPage;
-        byte[] JSfuncFile;
-        byte[] indexPageTest;
-        byte[] JSfuncFileTest;
+        byte[] HTMLindex;
+        byte[] JSfunc;
+        byte[] JSstruct;
+        byte[] HTMLindexTest;
+        byte[] JSfuncTest;
+        byte[] CSSstyle;
         byte[] favicon;
         //byte[] jQuery;
         int port;
@@ -69,10 +71,12 @@ namespace Chat_server
 
         public void LoadFile()
         {
-            indexPage = Encoding.Unicode.GetBytes(File.ReadAllText("index.html"));
-            JSfuncFile = Encoding.Unicode.GetBytes(File.ReadAllText("func.js"));
-            indexPageTest = Encoding.Unicode.GetBytes(File.ReadAllText("index1.html"));
-            JSfuncFileTest = Encoding.Unicode.GetBytes(File.ReadAllText("func1.js"));
+            HTMLindex = Encoding.Unicode.GetBytes(File.ReadAllText("index.html")/*.Replace("\r\n", "").Replace("\t", "")*/);
+            JSfunc = Encoding.Unicode.GetBytes(File.ReadAllText("js/func.js")/*.Replace("\r\n", "").Replace("\t", "")*/);
+            JSstruct = Encoding.Unicode.GetBytes(File.ReadAllText("js/struct.js")/*.Replace("\r\n", "").Replace("\t", "")*/);
+            HTMLindexTest = Encoding.Unicode.GetBytes(File.ReadAllText("index1.html")/*.Replace("\r\n", "").Replace("\t", "")*/);
+            JSfuncTest = Encoding.Unicode.GetBytes(File.ReadAllText("js/func1.js")/*.Replace("\r\n", "").Replace("\t", "")*/);
+            CSSstyle = Encoding.Unicode.GetBytes(File.ReadAllText("css/style.css")/*.Replace("\r\n", "").Replace("\t", "")*/);
             favicon = File.ReadAllBytes("favicon.ico");
             //jQuery = File.ReadAllBytes("jquery-3.3.1.js");
         }
@@ -97,32 +101,42 @@ namespace Chat_server
             {
                 response.ContentType = "text/html; charset=Unicode";
                 //response.ContentLength64 = indexPage.Length;
-                response.OutputStream.Write(indexPage, 0, indexPage.Length);
+                response.OutputStream.Write(HTMLindex, 0, HTMLindex.Length);
             }
-            else if (RequestPath == "/func.js")
+            else if (RequestPath == "/js/func.js")
             {
                 response.ContentType = "text/javascript; charset=Unicode";
-                response.OutputStream.Write(JSfuncFile, 0, JSfuncFile.Length);
+                response.OutputStream.Write(JSfunc, 0, JSfunc.Length);
             }
-            else if (RequestPath.Length > 6 && RequestPath.Substring(1, 5) == "image")
+            else if (RequestPath == "/js/struct.js")
             {
-                byte[] img = File.ReadAllBytes("image/" + RequestPath.Substring(7, RequestPath.Length - 7) + ".png");
-                response.OutputStream.Write(img, 0, img.Length);
+                response.ContentType = "text/javascript; charset=Unicode";
+                response.OutputStream.Write(JSstruct, 0, JSstruct.Length);
             }
             else if (RequestPath == "/test")
             {
                 response.ContentType = "text/html; charset=Unicode";
-                response.OutputStream.Write(indexPageTest, 0, indexPageTest.Length);
+                response.OutputStream.Write(HTMLindexTest, 0, HTMLindexTest.Length);
             }
-            else if (RequestPath == "/func1.js")
+            else if (RequestPath == "/js/func1.js")
             {
                 response.ContentType = "text/javascript; charset=Unicode";
-                response.OutputStream.Write(JSfuncFileTest, 0, JSfuncFileTest.Length);
+                response.OutputStream.Write(JSfuncTest, 0, JSfuncTest.Length);
+            }
+            else if (RequestPath == "/css/style.css")
+            {
+                response.ContentType = "text/css; charset=Unicode";
+                response.OutputStream.Write(CSSstyle, 0, CSSstyle.Length);
             }
             else if (RequestPath == "/favicon.ico")
             {
                 response.ContentType = "text/javascript; charset=Unicode";
                 response.OutputStream.Write(favicon, 0, favicon.Length);
+            }
+            else if (RequestPath.Length > 6 && RequestPath.Substring(1, 5) == "image")
+            {
+                byte[] img = File.ReadAllBytes("image/" + RequestPath.Substring(7, RequestPath.Length - 7) + ".png");
+                response.OutputStream.Write(img, 0, img.Length);
             }
             /*else if (context.Request.Url.LocalPath == "/jquery-3.3.1.js")
             {

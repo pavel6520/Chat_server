@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Net.Sockets;
@@ -24,6 +25,7 @@ namespace Chat_server
             this.port = port;
             State = false;
             listener = new TcpListener(IPAddress.Any, port);
+            online = new List<string>();
         }
 
         public bool Start()
@@ -69,8 +71,8 @@ namespace Chat_server
             {
                 if (cc.Status == ClientClass.ClientStatus.Ready)
                 {
-                    try
-                    {
+                    //try
+                    //{
                         if (loginRecipient == null)
                         {
                             cc.SendMessagePublic(sender, message, date);
@@ -80,13 +82,23 @@ namespace Chat_server
                             cc.SendMessage(sender, message);
                             break;
                         }
-                    }
+                    /*}
                     catch (InvalidOperationException)
                     {
                         Task.Factory.StartNew(() => ClientClosed(cc));
-                    }
+                    }*/
                 }
                 //cc.Close();
+            }
+        }
+
+        internal void ClientLogged(ClientClass client)
+        {
+            if (!online.Contains(client.Login))
+            {
+                online.Add(client.Login);
+                //TODO LOGIN
+                Message(client, "Вошел в чат");
             }
         }
 
@@ -96,11 +108,33 @@ namespace Chat_server
             forDel.Close();
             if (Program.DEBUG)
                 Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + forDel.Address + " " + forDel.Login + " отключен");
-
-            clients.FindAll(delegate (ClientClass x) { return x.Login == forDel.Login; });
             clients.Remove(forDel);
+            if (!clients.Exists(delegate (ClientClass x) { return x.Login == forDel.Login; }))
+            {
+                online.Remove(forDel.Login);
+                //TODO LOGOUT
+                if (forDel.Status == ClientClass.ClientStatus.Ready || forDel.Status == ClientClass.ClientStatus.Stopped)
+                Message(forDel, "Покинул чат");
+                foreach (ClientClass cc in clients)
+                {
+                    if (cc.Status == ClientClass.ClientStatus.Ready)
+                    {
+                        //try
+                        //{
+                            //cc.ClientOffline(sender, message, date);
+                        /*}
+                        catch (InvalidOperationException)
+                        {
+                            Task.Factory.StartNew(() => ClientClosed(cc));
+                        }*/
+                    }
+                }
+            }
+            //Console.WriteLine("Online: " + clients.Count + " " + ClientClass.Count);
             return;
         }
+
+        internal ReadOnlyCollection<string> Online { get { return online.AsReadOnly(); } }
 
         public void Stop()
         {
