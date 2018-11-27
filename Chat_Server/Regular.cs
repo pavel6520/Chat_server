@@ -8,6 +8,7 @@ namespace Chat_server
 {
     static class Regular
     {
+        //TODO: разрешить "_" "-"
         static Regex Rlogin = new Regex("[^A-Za-z0-9]");
         static Regex Rpass = new Regex("[^A-Za-z0-9]");
         static Regex Remail = new Regex("^([a-z0-9_-]+\\.)*[a-z0-9_-]+@[a-z0-9_-]+(\\.[a-z0-9_-]+)*\\.[a-z]{2,6}$");

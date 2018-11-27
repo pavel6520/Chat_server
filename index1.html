@@ -1,135 +1,16 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>TEST CHAT</title>
+	<head>
+		<title>TEST CHAT</title>
 		<meta charset="utf-8">
 		<link rel="stylesheet" type="text/javascript" href="http://code.jquery.com/ui/1.12.1/jquery-ui.js">
-		<script src="func1.js"></script>
+		<script src="js/func1.js"></script>
+		<script src="js/struct.js"></script>
 		<script src="https://code.jquery.com/jquery-3.3.1.js"</script>
 		<script src="http://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-		<style>
-			html, body {
-				margin: 0;
-				width: 100%;
-				height: 100%;
-			}
-			#blockReg{
-				margin: 0;
-				min-width: 600px;
-				min-height: 300px;
-				max-width: 100%;
-				height: 100%;
-				position: relative;
-				z-index: 0;
-			}
-			#blockChat{
-				margin: 0;
-				min-width: 600px;
-				min-height: 300px;
-				max-width: 100%;
-				height: 100%;
-				position: relative;
-				z-index: 1;
-			}
-			#ChatList1{
-				float: left;
-				width: 200px;
-				height: 100%;
-				border-right: 1px solid red;
-			}
-			#ChatList2{
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-				width: 100%;
-				overflow-y: scroll;
-				-ms-overflow-style: none;
-				overflow: -moz-scrollbars-none;
-			}
-			#ChatList2::-webkit-scrollbar { width: 0; }
-			.ChatListBTN{
-				width: 100%;
-				height: 49px;
-				border-bottom: 1px solid red;
-				cursor: pointer;
-				background-color: #edeef0;
-			}
-			.ChatListBTN:hover{
-				background-color: #5555ff;
-			}
-			#ChatBody1{
-				margin-left: 201px;
-				height: 100%;
-			}
-			#ChatBody1 > div{
-				box-sizing: border-box;
-				width: 100%;
-				height: 100%;
-				display: table;
-			}
-			#ChatBodyList1{
-				display: table-row;
-			}
-			#ChatBodyList2{
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-				width: 100%;
-				height: 100%;
-				overflow-y: scroll;
-				overflow-x: hidden;
-			}
-			.ChatBodyMessage{
-				width: 100%;
-				border-bottom: 1px solid red;
-				word-break: break-all;
-			}
-			.ChatBodyMessageLogin{
-				width: 100%;
-				height: 25px;
-				word-break: break-all;
-			}
-			.ChatBodyMessageText{
-				width: 100%;
-				word-break: break-all;
-			}
-			#ChatBodyInput{
-				display: table-row;
-				width: 100%;
-				max-height: 300px;
-				height: fit-content;
-			}
-			#ChatBodyInput > div{
-				border-top: 2px solid red;
-			}
-			#ChatBodyInput > div > div > div{
-				min-height: 36px;
-				width: 100%;
-				resize: none;
-				max-height: 200px;
-				overflow-y: auto;
-				overflow-x: hidden;
-				line-height: 17px;
-				padding: 9px 106px 10px 13px;
-				word-break: break-all;
-				box-sizing: border-box;
-				border: none;
-				transition: border-bottom-color 0.3s linear;
-				-webkit-font-smoothing: subpixel-antialiased;
-				color: #000;
-				background: #fff;
-				-webkit-appearance: none;
-				font-size: 13px;
-				font-family: -apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;
-				outline: none;
-				-webkit-user-modify: read-write;
-				-webkit-line-break: after-white-space;
-				direction: ltr;
-				text-align: left;
-			}
-		</style>
+		<link rel="stylesheet" href="css/style.css" type="text/css">
     </head>
-    <body onresize="onBodyResize()">
+    <body>
 		<div id="blockAuth" style="display: none;">
 			<p>
 				<input id="authLogin" type="text" value="" placeholder="Login" />
@@ -143,55 +24,43 @@
 				<button id="regBtn">Регистрация</button>
 			</p>
 		</div>
-        <div id="blockChat" style="display: none;">
+		<div id="blockChat" style="display: none;">
 			<div id="ChatList1">
-				<div id="ChatBTN_public" class="ChatListBTN" data="public">Public</div>
-				<ul id="ChatList2">
-				</ul>
+				<div>
+					<div id="ChatBTN_public" class="ChatBTN" data="public">Public</div>
+					<div id="ChatList2">
+						<ul id="ChatList3"></ul>
+					</div>
+				</div>
 			</div>
 			<div id="ChatBody1">
 				<div>
 					<div id="ChatBodyList1">
-						<ul id="ChatBodyList2">
-						</ul>
+						<ul id="ChatBodyList2"></ul>
 					</div>
 					<div id="ChatBodyInput">
 						<div>
-							<div>
-								<div id="ChatTextArea" type="text" maxlength="500" area-multiline="true"></div>
-							</div>
+							<div id="ChatTextArea" type="text" maxlength="500" area-multiline="true"></div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 		<script type="text/javascript">
-		var t = null;
-		document.getElementById('ChatList2').style.height = (document.body.clientHeight - 50) + 'px';
-		function onBodyResize(){
-		   if (t!= null) clearTimeout(t);
-		   t = setTimeout(function() {
-			   document.getElementById('ChatList2').style.height = (document.body.clientHeight - 50) + 'px';
-		   }, 500);
-		};
-		
-		
-		var masChat = new Array(30);
-		
-		$('#ChatList1').on('click', '.ChatListBTN', function() {
+		/*$('#ChatList1').on('click', '.ChatBTN', function() {
 			var txt = $(this).attr('data'); // вытащим текст из нажатого элемента
 			alert('Вы нажали на элемент с аттрибутом data - «' + txt + '»'); // выведем сообщение с текстом
-		});
+		});*/
 		
-		for(i = 0; i < 10; i++){
-			$('#ChatList2').append('<li class="ChatListBTN" + data="' + i + '">BTN ' + i + '</li>');
-		}
+		/*for(i = 0; i < 25; i++){
+			$('#ChatList3').append('<li class="ChatBTN" + data="' + i + '">BTN ' + i + '</li>');
+		}*/
 		
 		ws = new WebSocket("ws://127.0.0.1:30000/websocket");
-		//ws = new WebSocket("ws://pavel6520.hopto.org:30000/websocket");
+		/*ws = new WebSocket("ws://pavel6520.hopto.org:30000/websocket");*/
 		
 		ws.onopen = function() { document.getElementById("blockAuth").setAttribute("style", ""); };
-		//ws.onerror = function() { document.getElementById("formError").setAttribute("style", ""); };
+		/*ws.onerror = function() { document.getElementById("formError").setAttribute("style", ""); };*/
 		
 		$('#authBtn').on('click', authFunc);
 		$('#regBtn').on('click', regFunc);
@@ -206,7 +75,7 @@
 			send: function(ev){
 				if (!this.lock) {
 					ev.preventDefault();
-					ws.send(ClientWrapMessageGet("public", $('#ChatTextArea').html()));
+					ws.send(struct.CWMessage("public", $('#ChatTextArea').html()));
 				}
 			},
 			clear: function(){
@@ -214,5 +83,5 @@
 			}
 		};
 		</script>
-    </body>
+	</body>
 </html>

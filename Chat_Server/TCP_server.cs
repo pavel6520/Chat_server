@@ -50,7 +50,6 @@ namespace Chat_server
                     while (State)
                     {
                         TcpClient tcpClient = listener.AcceptTcpClient();
-
                         ClientClass client = new ClientClass(tcpClient, this);
                         clients.Add(client);
                         client.Start();
@@ -63,32 +62,22 @@ namespace Chat_server
             return true;
         }
 
-        internal void Message(ClientClass sender, string message, string loginRecipient = null)
+        internal void Message(ClientClass sender, string recipient, string message)
         {
             DateTime date = DateTime.Now;
-            //TODO: добавление сообщения в бд
-            foreach (ClientClass cc in clients)
+            if (recipient == "public")
             {
-                if (cc.Status == ClientClass.ClientStatus.Ready)
-                {
-                    //try
-                    //{
-                        if (loginRecipient == null)
-                        {
-                            cc.SendMessagePublic(sender, message, date);
-                        }
-                        else if (cc.Login == loginRecipient)
-                        {
-                            cc.SendMessage(sender, message);
-                            break;
-                        }
-                    /*}
-                    catch (InvalidOperationException)
-                    {
-                        Task.Factory.StartNew(() => ClientClosed(cc));
-                    }*/
-                }
-                //cc.Close();
+                if (Program.mySql.AddMessage(date, sender.Login, message) > 0)
+                    foreach (ClientClass cc in clients)
+                        if (cc.Status == ClientClass.ClientStatus.Ready)
+                            cc.SendMessage(sender, date, message, null);
+            }
+            else
+            {
+                if (Program.mySql.AddMessage(date, sender.Login, message, recipient) > 0)
+                    foreach (ClientClass cc in clients)
+                        if (cc.Status == ClientClass.ClientStatus.Ready && cc.Login == recipient)
+                            cc.SendMessage(sender, date, message, recipient);
             }
         }
 
@@ -98,7 +87,7 @@ namespace Chat_server
             {
                 online.Add(client.Login);
                 //TODO LOGIN
-                Message(client, "Вошел в чат");
+                //Message(client, "Вошел в чат");
             }
         }
 
@@ -114,19 +103,15 @@ namespace Chat_server
                 online.Remove(forDel.Login);
                 //TODO LOGOUT
                 if (forDel.Status == ClientClass.ClientStatus.Ready || forDel.Status == ClientClass.ClientStatus.Stopped)
-                Message(forDel, "Покинул чат");
+                //Message(forDel, "Покинул чат");
                 foreach (ClientClass cc in clients)
                 {
                     if (cc.Status == ClientClass.ClientStatus.Ready)
                     {
-                        //try
-                        //{
+                        //try{
                             //cc.ClientOffline(sender, message, date);
-                        /*}
-                        catch (InvalidOperationException)
-                        {
-                            Task.Factory.StartNew(() => ClientClosed(cc));
-                        }*/
+                        /*}catch (InvalidOperationException)
+                        {Task.Factory.StartNew(() => ClientClosed(cc));}*/
                     }
                 }
             }
