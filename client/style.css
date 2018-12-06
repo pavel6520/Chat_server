@@ -22,13 +22,13 @@ html, body {
 	position: relative;
 	z-index: 1;
 }
-#ChatList1{
+#ChatBlockContacts{
 	float: left;
 	width: 200px;
 	height: 100%;
 	border-right: 1px solid red;
 }
-#ChatList1 > div{
+#ChatBlockContacts > div{
 	box-sizing: border-box;
 	height: 100%;
 	width: 100%;
@@ -36,7 +36,7 @@ html, body {
 }
 #ChatList2{
 	display: table-row;
-	width: 200px;
+	width: 100%;
 	height: 100%;
 }
 #ChatList3{
@@ -72,7 +72,7 @@ html, body {
 #ChatBodyList1{
 	display: table-row;
 }
-#ChatBodyList2{
+.ChatBodyList2{
 	list-style-type: none;
 	margin: 0;
 	padding: 0;

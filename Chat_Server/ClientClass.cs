@@ -16,6 +16,7 @@ namespace Chat_server
 
         private TcpClient tcpClient;
         private TCP_Server tcpServer;
+        private bool useWebsocket;
         public byte[] UniqueId { get; private set; }
         public string Login { get; private set; }
         public long Id { get; private set; }
@@ -24,8 +25,7 @@ namespace Chat_server
 
         //DEBUG
         public string Address { get; private set; }
-
-
+        
         public ClientClass(TcpClient tcpClient, TCP_Server tcpServer)
         {
             this.tcpClient = tcpClient;
@@ -61,39 +61,38 @@ namespace Chat_server
                 {
                     if (Authorization()) Status = ClientStatus.LoggedIn;
                 }
-                catch (JsonReaderException)
+                catch (Exception)
                 {
                     tcpServer.ClientClosed(this);
                     return;
                 }
                 if (Status == ClientStatus.LoggedIn)
                 {
-                    //if (Program.DEBUG)
-                        //Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " авторизовался как " + Login);
+                    //if (Program.DEBUG) Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " авторизовался как " + Login);
 
                     Status = ClientStatus.LoadData;
                     //TODO: отправка данных
                     {
-                        SendW(JsonConvert.SerializeObject(new CW("dat", JsonConvert.SerializeObject(new CW.Data
-                        {
-                            //id = Id,
+                        Send(JsonConvert.SerializeObject(new CW("dat", JsonConvert.SerializeObject(new CW.Data{
                             login = Login,
-                            online = tcpServer.Online.ToArray(),
-                            history = Program.mySql.LoadMessage(DateTime.Now, null, null, 20)
+                            online = tcpServer.Online
                         }))));
+                        CW.MessageToClient[] history = Program.mySql.LoadMessagePublic(Id);
+                        if (history != null)
+                            for (int i = 0; i < history.Length; i++)
+                                Send(JsonConvert.SerializeObject(new CW("mes", JsonConvert.SerializeObject(history[i]))));
                     }
-
-
+                    
                     Status = ClientStatus.Ready;
 
                     Count++;
                     Task.Factory.StartNew(() => tcpServer.ClientLogged(this));
 
-                    while (true)
+                    try
                     {
-                        try
+                        while (true)
                         {
-                            string inputData = ReadW();
+                            string inputData = Read();
                             if (inputData.Length == 2 && inputData[0] == 3 && inputData[1] == 65533)
                             {
                                 Count--;
@@ -106,227 +105,260 @@ namespace Chat_server
                                 continue;
                                 /*string json = JsonConvert.SerializeObject(new CW("err", "LEN"));*/
                             }
-                            else
+                            else if (inputData.Length > 20)
                             {
                                 CW wrap = JsonConvert.DeserializeObject<CW>(inputData);
-                                if (wrap.mestype == "mes")
+                                if (wrap.type == "mes")
                                 {
                                     CW.MessageFromClient json = JsonConvert.DeserializeObject<CW.MessageFromClient>(wrap.body);
                                     if (json.message.Length > 0)
                                         Task.Factory.StartNew(() => tcpServer.Message(this, json.to, json.message));
                                     //if (Program.DEBUG)
-                                        //Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + Login + ": " + json.message.Replace());
+                                    //Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + Login + ": " + json.message.Replace());
+                                }
+                                else if (wrap.type == "getm")
+                                {
+                                    Task.Factory.StartNew(() =>
+                                    {
+                                        CW.MessageToClient[] history = Program.mySql.LoadMessagePrivate(Id, wrap.body);
+                                        if (history != null)
+                                            for (int i = 0; i < history.Length; i++)
+                                                Send(JsonConvert.SerializeObject(new CW("mes", JsonConvert.SerializeObject(history[i]))));
+                                    });
                                 }
                             }
                         }
-                        catch (System.IO.IOException)
-                        {
-                            Count--;
-                            tcpServer.ClientClosed(this);
-                            return;
-                        }
-                        catch (IndexOutOfRangeException)
-                        {
-                            Count--;
-                            tcpServer.ClientClosed(this);
-                            return;
-                        }
+                    }
+                    catch (System.IO.IOException)
+                    {
+                        Count--;
+                        Status = ClientStatus.Stopped;
+                        tcpServer.ClientClosed(this);
+                        return;
                     }
                 }
-                else
-                {
-                    tcpServer.ClientClosed(this);
-                }
+                else tcpServer.ClientClosed(this);
             }
-            else
-            {
-                tcpServer.ClientClosed(this);
-            }
-
+            else tcpServer.ClientClosed(this);
         }
 
-        public void SendMessage(ClientClass sender, DateTime date, string message, string recipient = null)
+        public void SendMessage(long id, string sender, DateTime date, string message, string recipient = "public")
         {
-            string json = JsonConvert.SerializeObject(
-                new CW("mes", JsonConvert.SerializeObject(
-                    new CW.MessageToClient()
-                    {
-                        date = date,
-                        from = sender.Login,
-                        to = recipient,
-                        message = message
-                    })));
-            SendW(json);
+            Send(JsonConvert.SerializeObject(new CW("mes",
+                JsonConvert.SerializeObject(new CW.MessageToClient(){
+                    id = id,
+                    date = date,
+                    from = sender,
+                    to = recipient,
+                    message = message
+                }))));
+        }
+
+        public void Send_Online(string login)
+        {
+            Send(JsonConvert.SerializeObject(
+                new CW("onl", login)));
+        }
+
+        public void Send_Offline(string login)
+        {
+            Send(JsonConvert.SerializeObject(
+                new CW("off", login)));
         }
 
         private bool Authorization()
         {
             string inputData = ReadHttp();
             if (inputData.Length > 15 && inputData.Substring(0, 14) == "GET /websocket"
-                && Regex.IsMatch(inputData, "Connection: Upgrade")
-                && Regex.IsMatch(inputData, "Upgrade: websocket"))
+                && Regex.IsMatch(inputData, "Connection: Upgrade") && Regex.IsMatch(inputData, "Upgrade: websocket"))
             {
                 SendHttp("HTTP/1.1 101 Switching Protocols" + Environment.NewLine + "Connection: Upgrade" + Environment.NewLine
                     + "Upgrade: websocket" + Environment.NewLine + "Sec-WebSocket-Accept: " + Convert.ToBase64String(
                         System.Security.Cryptography.SHA1.Create().ComputeHash(Encoding.UTF8.GetBytes(
                                 new Regex("Sec-WebSocket-Key: (.*)").Match(inputData).Groups[1].Value.Trim() + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")))
                                 + Environment.NewLine + Environment.NewLine);
-                while (true)
+                useWebsocket = true;
+            }
+            else if (inputData == "CONNECT STANDART TCP")
+            {
+                useWebsocket = false;
+                Send("CONNECTION OPEN");
+            }
+            else
+            {
+                Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " прислал ЭТО " + inputData);
+                SendHttp("ERROR-FORMAT");
+                return false;
+            }
+            while (true)
+            {
+                inputData = Read();
+                CW wrap = JsonConvert.DeserializeObject<CW>(inputData);
+                if (wrap.type != null && wrap.body != null)
                 {
-                    inputData = ReadW();
-                    CW wrap = JsonConvert.DeserializeObject<CW>(inputData);
-                    if (wrap.mestype != null && wrap.body != null)
+                    if (wrap.type == "log")
                     {
-                        if (wrap.mestype == "log")
+                        CW.Login loginJSON = JsonConvert.DeserializeObject<CW.Login>(wrap.body);
+                        if (loginJSON.login != null && loginJSON.pass != null && loginJSON.login.Length >= 4 && loginJSON.pass.Length >= 4)
                         {
-                            CW.Login loginJSON = JsonConvert.DeserializeObject<CW.Login>(wrap.body);
-                            if (loginJSON.login != null && loginJSON.pass != null && loginJSON.login.Length >= 4 && loginJSON.pass.Length >= 4)
+                            if (loginJSON.withpass)
                             {
-                                if (loginJSON.withpass)
+                                string[] res = Program.mySql.CheckUser(loginJSON.login, loginJSON.pass);
+                                if (res != null)
                                 {
-                                    string[] res = Program.mySql.CheckUser(loginJSON.login, loginJSON.pass);
-                                    if (res != null)
-                                    {
-                                        Id = Convert.ToInt64(res[0]);
-                                        Login = res[1];
-                                        SendW("LOGINED-SUCCSESS-ENTER-CHAT");
-                                        return true;
-                                    }
-                                    else SendW("ERROR-LOGIN-PASSWORD");
+                                    Id = Convert.ToInt64(res[0]);
+                                    Login = res[1];
+                                    Send("LOGINED-SUCCSESS-ENTER-CHAT");
+                                    return true;
                                 }
-                                else
-                                {
-                                    SendW("NOT-WORK-USE-WITHPASS");
-                                }
+                                else Send("ERROR-LOGIN-PASSWORD");
                             }
                             else
                             {
-                                SendW("ERROR-DATA-CONNECTION-CLOSING");
-                                return false;
-                            }
-                        }
-                        else if (wrap.mestype == "reg")
-                        {
-                            CW.Registration regJSON = JsonConvert.DeserializeObject<CW.Registration>(wrap.body);
-                            if (regJSON.login != null && regJSON.pass != null && regJSON.email != null)
-                                if (Regular.CheckLogin(regJSON.login))
-                                    if (Regular.CheckPass(regJSON.pass))
-                                        if (Regular.CheckEmail(regJSON.email))
-                                        {
-                                            Id = Program.mySql.RegNewUser(regJSON.login, regJSON.pass, regJSON.email);
-                                            if (Id > 0)
-                                            {
-                                                Login = regJSON.login;
-                                                SendW("REGISTR-SUCCSESS-ENTER-CHAT");
-                                                return true;
-                                            }
-                                            else SendW("ERR-REGEXIST");
-                                        }
-                                        else SendW("ERR-REGEMAIL");
-                                    else SendW("ERR-REGPASS");
-                                else SendW("ERR-REGLOGIN");
-                            else
-                            {
-                                SendW("ERROR-DATA-CONNECTION-CLOSING");
-                                return false;
+                                Send("NOT-WORK-USE-WITHPASS");
                             }
                         }
                         else
                         {
-                            SendW("ERROR-DATA-CONNECTION-CLOSING");
+                            Send("ERROR-DATA-CONNECTION-CLOSING");
+                            return false;
+                        }
+                    }
+                    else if (wrap.type == "reg")
+                    {
+                        CW.Registration regJSON = JsonConvert.DeserializeObject<CW.Registration>(wrap.body);
+                        if (regJSON.login != null && regJSON.pass != null && regJSON.email != null)
+                            if (Regular.CheckLogin(regJSON.login))
+                                if (Regular.CheckPass(regJSON.pass))
+                                    if (Regular.CheckEmail(regJSON.email))
+                                    {
+                                        Id = Program.mySql.RegNewUser(regJSON.login, regJSON.pass, regJSON.email);
+                                        if (Id > 0)
+                                        {
+                                            Login = regJSON.login;
+                                            Send("REGISTR-SUCCSESS-ENTER-CHAT");
+                                            return true;
+                                        }
+                                        else Send("ERR-REGEXIST");
+                                    }
+                                    else Send("ERR-REGEMAIL");
+                                else Send("ERR-REGPASS");
+                            else Send("ERR-REGLOGIN");
+                        else
+                        {
+                            Send("ERROR-DATA-CONNECTION-CLOSING");
                             return false;
                         }
                     }
                     else
                     {
-                        SendW("ERROR-DATA-CONNECTION-CLOSING");
+                        Console.WriteLine(inputData);
+                        Send("ERROR-DATA-CONNECTION-CLOSING");
                         return false;
                     }
                 }
+                else
+                {
+                    Send("ERROR-DATA-CONNECTION-CLOSING");
+                    return false;
+                }
+            }
+        }
+
+        private string Read()
+        {
+            if (useWebsocket)
+            {
+                byte[] buf = new byte[10000];
+                int readed = tcpClient.GetStream().Read(buf, 0, buf.Length);
+                byte[] inputData = new byte[readed];
+                for (long i = 0; i < readed; i++)
+                    inputData[i] = buf[i];
+                byte secondByte = inputData[1];
+                int dataLength = secondByte & 127;
+                int indexFirstMask = 2;
+                if (dataLength == 126)
+                    indexFirstMask = 4;
+                else if (dataLength == 127)
+                    indexFirstMask = 10;
+
+                IEnumerable<byte> keys = inputData.Skip(indexFirstMask).Take(4);
+                int indexFirstDataByte = indexFirstMask + 4;
+
+                byte[] decoded = new byte[inputData.Length - indexFirstDataByte];
+                for (int i = indexFirstDataByte, j = 0; i < inputData.Length; i++, j++)
+                    decoded[j] = (byte)(inputData[i] ^ keys.ElementAt(j % 4));
+
+                return Encoding.UTF8.GetString(decoded, 0, decoded.Length);
             }
             else
             {
-                //Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " прислал ЭТО " + inputData);
-                SendHttp("ERROR-REQUEST expected /websocket");
+                byte[] buf = new byte[10000];
+                while (true)
+                {
+                    int readed = tcpClient.GetStream().Read(buf, 0, buf.Length);
+                    if (readed > 0)
+                    {
+                        byte[] inputData = new byte[readed];
+                        for (long i = 0; i < readed; i++)
+                            inputData[i] = buf[i];
+                        return Encoding.UTF8.GetString(inputData, 0, inputData.Length);
+                    }
+                    else Thread.Sleep(100);
+                }
             }
-            return false;
         }
-
-        private string ReadW()
+        private void Send(string message)
         {
-            byte[] buf = new byte[10000000];
-            int readed = tcpClient.GetStream().Read(buf, 0, buf.Length);
-            byte[] inputData = new byte[readed];
-            for (long i = 0; i < readed; i++)
-                inputData[i] = buf[i];
-            byte secondByte = inputData[1];
-            int dataLength = secondByte & 127;
-            int indexFirstMask = 2;
-            if (dataLength == 126)
-                indexFirstMask = 4;
-            else if (dataLength == 127)
-                indexFirstMask = 10;
-
-            IEnumerable<byte> keys = inputData.Skip(indexFirstMask).Take(4);
-            int indexFirstDataByte = indexFirstMask + 4;
-
-            byte[] decoded = new byte[inputData.Length - indexFirstDataByte];
-            for (int i = indexFirstDataByte, j = 0; i < inputData.Length; i++, j++)
+            if (useWebsocket)
             {
-                decoded[j] = (byte)(inputData[i] ^ keys.ElementAt(j % 4));
-            }
-
-            return Encoding.UTF8.GetString(decoded, 0, decoded.Length);
-        }
-        private void SendW(string message)
-        {
-            byte[] outputData;
-            byte[] bytesRaw = Encoding.UTF8.GetBytes(message);
-            byte[] frame = new byte[10];
-            int indexStartRawData = -1;
-            int length = bytesRaw.Length;
-            frame[0] = (byte)129;
-            if (length <= 125)
-            {
-                frame[1] = (byte)length;
-                indexStartRawData = 2;
-            }
-            else if (length >= 126 && length <= 65535)
-            {
-                frame[1] = (byte)126;
-                frame[2] = (byte)((length >> 8) & 255);
-                frame[3] = (byte)(length & 255);
-                indexStartRawData = 4;
+                byte[] outputData;
+                byte[] bytesRaw = Encoding.UTF8.GetBytes(message);
+                byte[] frame = new byte[10];
+                int indexStartRawData = -1;
+                int length = bytesRaw.Length;
+                frame[0] = (byte)129;
+                if (length <= 125)
+                {
+                    frame[1] = (byte)length;
+                    indexStartRawData = 2;
+                }
+                else if (length >= 126 && length <= 65535)
+                {
+                    frame[1] = (byte)126;
+                    frame[2] = (byte)((length >> 8) & 255);
+                    frame[3] = (byte)(length & 255);
+                    indexStartRawData = 4;
+                }
+                else
+                {
+                    frame[1] = (byte)127;
+                    frame[2] = (byte)((length >> 56) & 255);
+                    frame[3] = (byte)((length >> 48) & 255);
+                    frame[4] = (byte)((length >> 40) & 255);
+                    frame[5] = (byte)((length >> 32) & 255);
+                    frame[6] = (byte)((length >> 24) & 255);
+                    frame[7] = (byte)((length >> 16) & 255);
+                    frame[8] = (byte)((length >> 8) & 255);
+                    frame[9] = (byte)(length & 255);
+                    indexStartRawData = 10;
+                }
+                outputData = new byte[indexStartRawData + length];
+                int reponseIdx = 0;
+                //Add the frame bytes to the reponse
+                for (int i = 0; i < indexStartRawData; i++, reponseIdx++)
+                    outputData[reponseIdx] = frame[i];
+                //Add the data bytes to the response
+                for (int i = 0; i < length; i++, reponseIdx++)
+                    outputData[reponseIdx] = bytesRaw[i];
+                lock (locker)
+                    tcpClient.GetStream().Write(outputData, 0, outputData.Length);
             }
             else
             {
-                frame[1] = (byte)127;
-                frame[2] = (byte)((length >> 56) & 255);
-                frame[3] = (byte)((length >> 48) & 255);
-                frame[4] = (byte)((length >> 40) & 255);
-                frame[5] = (byte)((length >> 32) & 255);
-                frame[6] = (byte)((length >> 24) & 255);
-                frame[7] = (byte)((length >> 16) & 255);
-                frame[8] = (byte)((length >> 8) & 255);
-                frame[9] = (byte)(length & 255);
-                indexStartRawData = 10;
-            }
-            outputData = new byte[indexStartRawData + length];
-            int i, reponseIdx = 0;
-            //Add the frame bytes to the reponse
-            for (i = 0; i < indexStartRawData; i++)
-            {
-                outputData[reponseIdx] = frame[i];
-                reponseIdx++;
-            }
-            //Add the data bytes to the response
-            for (i = 0; i < length; i++)
-            {
-                outputData[reponseIdx] = bytesRaw[i];
-                reponseIdx++;
-            }
-            lock (locker)
+                byte[] outputData = Encoding.UTF8.GetBytes(message + "\r\n");
                 tcpClient.GetStream().Write(outputData, 0, outputData.Length);
+            }
         }
 
         private string ReadHttp()
@@ -357,12 +389,12 @@ namespace Chat_server
 
         public class CW
         {
-            public string mestype { get; set; }
+            public string type { get; set; }
             public string body { get; set; }
 
             public CW(string mestype, string body)
             {
-                this.mestype = mestype;
+                this.type = mestype;
                 this.body = body;
             }
 
@@ -387,20 +419,27 @@ namespace Chat_server
                 public string message { get; set; }
             }
 
-            public class MessageToClient
+            public class MessageToClient : IComparable
             {
-                public DateTime date { get; set; }
+                public long id { get; set; }
                 public string from { get; set; }
                 public string to { get; set; }
+                public DateTime date { get; set; }
                 public string message { get; set; }
+                public int CompareTo(object o)
+                {
+                    MessageToClient m = o as MessageToClient;
+                    if (m != null)
+                        return id.CompareTo(m.id);
+                    else
+                        throw new NullReferenceException("Невозможно сравнить два объекта");
+                }
             }
 
             public class Data
             {
-                //public long id { get; set; }
                 public string login { get; set; }
                 public string[] online { get; set; }
-                public MessageToClient[] history { get; set; }
             }
         }
     }

@@ -67,17 +67,19 @@ namespace Chat_server
             DateTime date = DateTime.Now;
             if (recipient == "public")
             {
-                if (Program.mySql.AddMessage(date, sender.Login, message) > 0)
+                long id = Program.mySql.AddMessageP(date, sender.Id, message);
+                if (id > 0)
                     foreach (ClientClass cc in clients)
                         if (cc.Status == ClientClass.ClientStatus.Ready)
-                            cc.SendMessage(sender, date, message, null);
+                            cc.SendMessage(id, sender.Login, date, message);
             }
             else
             {
-                if (Program.mySql.AddMessage(date, sender.Login, message, recipient) > 0)
+                long id = Program.mySql.AddMessage(date, sender.Id, message, recipient);
+                if (id > 0)
                     foreach (ClientClass cc in clients)
-                        if (cc.Status == ClientClass.ClientStatus.Ready && cc.Login == recipient)
-                            cc.SendMessage(sender, date, message, recipient);
+                        if (cc.Status == ClientClass.ClientStatus.Ready && (cc.Login == recipient || cc.Login == sender.Login))
+                            cc.SendMessage(id, sender.Login, date, message, recipient);
             }
         }
 
@@ -86,14 +88,14 @@ namespace Chat_server
             if (!online.Contains(client.Login))
             {
                 online.Add(client.Login);
-                //TODO LOGIN
-                //Message(client, "Вошел в чат");
+                foreach (ClientClass cc in clients)
+                    if (cc.Status == ClientClass.ClientStatus.Ready && cc.Login != client.Login)
+                        cc.Send_Online(client.Login);
             }
         }
 
         internal void ClientClosed(ClientClass forDel)
         {
-            //ClientClass cc = clients.Find(delegate (ClientClass x) { return x.Id == Id; });
             forDel.Close();
             if (Program.DEBUG)
                 Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + forDel.Address + " " + forDel.Login + " отключен");
@@ -101,25 +103,19 @@ namespace Chat_server
             if (!clients.Exists(delegate (ClientClass x) { return x.Login == forDel.Login; }))
             {
                 online.Remove(forDel.Login);
-                //TODO LOGOUT
                 if (forDel.Status == ClientClass.ClientStatus.Ready || forDel.Status == ClientClass.ClientStatus.Stopped)
-                //Message(forDel, "Покинул чат");
                 foreach (ClientClass cc in clients)
-                {
                     if (cc.Status == ClientClass.ClientStatus.Ready)
-                    {
-                        //try{
-                            //cc.ClientOffline(sender, message, date);
-                        /*}catch (InvalidOperationException)
-                        {Task.Factory.StartNew(() => ClientClosed(cc));}*/
-                    }
-                }
+                        cc.Send_Offline(forDel.Login);
             }
-            //Console.WriteLine("Online: " + clients.Count + " " + ClientClass.Count);
             return;
         }
 
-        internal ReadOnlyCollection<string> Online { get { return online.AsReadOnly(); } }
+        internal string[] Online { get
+            {
+                return online.ToArray();
+            }
+        }
 
         public void Stop()
         {

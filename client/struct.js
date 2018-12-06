@@ -1,7 +1,7 @@
 var struct = {
 	CW: function(mestype, body){
 		var json = {
-			mestype: mestype,
+			type: mestype,
 			body: body
 		};
 		return JSON.stringify(json);
