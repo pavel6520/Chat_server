@@ -58,9 +58,9 @@ html, body {
 	cursor: pointer;
 	background-color: #edeef0;
 }
-.ChatBTN:hover{background-color: #5555ff;}
+.ChatBTN:hover[data]{background-color: #5555ff;}
 #ChatBody1{
-	margin-left: 201px;
+	margin-left: 202px;
 	height: 100%;
 }
 #ChatBody1 > div{

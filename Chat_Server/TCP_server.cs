@@ -30,7 +30,6 @@ namespace Chat_server
 
         public bool Start()
         {
-            //listener = new TcpListener(IPAddress.Parse(address), 8080);
             try
             {
                 listener.Start();
@@ -67,7 +66,7 @@ namespace Chat_server
             DateTime date = DateTime.Now;
             if (recipient == "public")
             {
-                long id = Program.mySql.AddMessageP(date, sender.Id, message);
+                long id = Program.mySql.AddMessagePub(date, sender.Id, message);
                 if (id > 0)
                     foreach (ClientClass cc in clients)
                         if (cc.Status == ClientClass.ClientStatus.Ready)
@@ -100,7 +99,8 @@ namespace Chat_server
             if (Program.DEBUG)
                 Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + forDel.Address + " " + forDel.Login + " отключен");
             clients.Remove(forDel);
-            if (!clients.Exists(delegate (ClientClass x) { return x.Login == forDel.Login; }))
+            //if (!clients.Exists(delegate (ClientClass x) { return x.Login == forDel.Login; }))
+            if (!clients.Exists(x => x.Login == forDel.Login))
             {
                 online.Remove(forDel.Login);
                 if (forDel.Status == ClientClass.ClientStatus.Ready || forDel.Status == ClientClass.ClientStatus.Stopped)

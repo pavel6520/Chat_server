@@ -8,11 +8,20 @@ $(function(){
 	cache('Contacts', $('#ChatList3'));
 	$('#tabs-logsign').tabs();
 	
-	/*ws = new WebSocket('ws://192.168.0.55:30000/websocket');*/
-	ws = new WebSocket('ws://127.0.0.1:30000/websocket');
-	/*ws = new WebSocket('ws://pavel6520.hopto.org:30000/websocket');*/
+	/*ws = new WebSocket('ws://192.168.43.37:30000/websocket');*/
+	/*ws = new WebSocket('ws://127.0.0.1:30000/websocket');*/
+	ws = new WebSocket('ws://pavel6520.hopto.org:30000/websocket');
 	
 	ws.onopen = function() {
+		if (localStorage.getItem('autologin') == 'true'){
+			cache('inputsAuth')[0].value = localStorage.getItem('login');
+			cache('inputsAuth')[1].value = localStorage.getItem('pass');
+			authFunc();
+			return;
+		}
+		$('#checkbox-save').checkboxradio();
+		$('#authBtn').on('click', authFunc);
+		$('#regBtn').on('click', regFunc);
 		cache('blockAuth').removeAttr('style');
 	};
 	ws.onerror = function(evt) { 
@@ -26,9 +35,6 @@ $(function(){
 		cache('blockErr').removeAttr('style');
 		cache('blockErr').text('SERVER CLOSED CONNECTION');
 	}
-	
-	$('#authBtn').on('click', authFunc);
-	$('#regBtn').on('click', regFunc);
 });
 
 function cache(key, value) {if (typeof value == 'undefined') { return cache[key]; }cache[key] = value;}
@@ -37,11 +43,17 @@ function authFunc(){
 	if (cache('inputsAuth')[0].value.length >= 4 && cache('inputsAuth')[1].value.length >= 4) {
 		var json = struct.CWLoginWithPass(cache('inputsAuth')[0].value, cache('inputsAuth')[1].value);
 		ws.onmessage = function(evt){
-			console.log(evt.data);
-			if (evt.data == "LOGINED-SUCCSESS-ENTER-CHAT")
+			if (evt.data == 'LOGINED-SUCCSESS-ENTER-CHAT') {
+				if ($('#checkbox-save').prop('checked')){
+					localStorage.setItem('autologin', true);
+					localStorage.setItem('login', cache('inputsAuth')[0].value);
+					localStorage.setItem('pass', cache('inputsAuth')[1].value);
+				}
 				enterChat();
+			}
 			else {
-				
+				cache('blockErr').removeAttr('style');
+				cache('blockErr').text(evt.data);
 			}
 		};
 		ws.send(json);
@@ -49,12 +61,15 @@ function authFunc(){
 };
 
 function regFunc() {
-	if (cache('inputsAuth')[2].value.length >= 4 && cache('inputsAuth')[3].value.length >= 4 && cache('inputsAuth')[4].value.length >= 4) {
-		var json = struct.CWReg(cache('inputsAuth')[2].value, cache('inputsAuth')[3].value, cache('inputsAuth')[4].value);
+	if (cache('inputsAuth')[3].value.length >= 4 && cache('inputsAuth')[4].value.length >= 4 && cache('inputsAuth')[5].value.length >= 4) {
+		var json = struct.CWReg(cache('inputsAuth')[3].value, cache('inputsAuth')[4].value, cache('inputsAuth')[5].value);
 		ws.onmessage = function(evt){
-			console.log(evt.data);
 			if (evt.data == "REGISTR-SUCCSESS-ENTER-CHAT")
 				enterChat();
+			else {
+				cache('blockErr').removeAttr('style');
+				cache('blockErr').text(evt.data);
+			}
 		};
 		ws.send(json);
 	}
@@ -65,6 +80,15 @@ function enterChat(){
 	var dialogSel = 'public';
 	cache('blockAuth').attr('style', 'display: none;');
 	cache('blockErr').attr('style', 'display: none;');
+	$('#ExitBTN').on('click', function() {
+		localStorage.setItem('autologin', false);
+		localStorage.setItem('login', null);
+		localStorage.setItem('pass', null);
+		location.reload();
+	}).button({
+		icon: 'ui-icon-circle-close',
+		showLabel: false
+	});
 	
 	var inputControl = {
 		lock: false,
@@ -91,7 +115,7 @@ function enterChat(){
 	cacheD = [];
 	cacheD['public'] = cache('ListDialog').children('[data="public"]');
 	
-	$('#ChatBlockContacts > div').on('click', '.ChatBTN', function() {
+	$('#ChatBlockContacts > div').on('click', '.ChatBTN[data]', function() {
 		cacheD[dialogSel].attr('style', 'display: none;');
 		dialogSel = $(this).attr('data');
 		if (cacheD[dialogSel] === undefined){
@@ -107,6 +131,7 @@ function enterChat(){
 		if (json.type == 'dat') {
 			json = JSON.parse(json.body);
 			Login = json.login;
+			document.title = 'CHAT ' + Login;
 			if (json.online !== 'undefined')
 				for(i = 0; i < json.online.length; i++)
 					if (json.online[i] != Login) {
@@ -136,10 +161,6 @@ function enterChat(){
 		}
 		else if (json.type == 'onl'){
 			cache('Contacts').append('<li class="ChatBTN" + data="' + json.body + '">' + json.body + '</li>');
-			/*if (cacheD[json.body] === undefined){
-				cache('ListDialog').append('<ul class="ChatBodyList2" data="'+json.body+'" style="display:none;"></ul>');
-				cacheD[json.body] = cache('ListDialog').children('[data="'+json.body+'"]');
-			}*/
 		}
 		else if (json.type == 'off'){
 			cache('Contacts').children('[data="'+json.body+'"]').remove();

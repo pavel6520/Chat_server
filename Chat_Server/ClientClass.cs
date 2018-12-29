@@ -59,19 +59,18 @@ namespace Chat_server
                 Status = ClientStatus.Authorization;
                 try
                 {
-                    if (Authorization()) Status = ClientStatus.LoggedIn;
+                    if (Authorization()) Status = ClientStatus.Logged;
                 }
                 catch (Exception)
                 {
                     tcpServer.ClientClosed(this);
                     return;
                 }
-                if (Status == ClientStatus.LoggedIn)
+                if (Status == ClientStatus.Logged)
                 {
                     //if (Program.DEBUG) Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " авторизовался как " + Login);
 
                     Status = ClientStatus.LoadData;
-                    //TODO: отправка данных
                     {
                         Send(JsonConvert.SerializeObject(new CW("dat", JsonConvert.SerializeObject(new CW.Data{
                             login = Login,
@@ -142,30 +141,6 @@ namespace Chat_server
             else tcpServer.ClientClosed(this);
         }
 
-        public void SendMessage(long id, string sender, DateTime date, string message, string recipient = "public")
-        {
-            Send(JsonConvert.SerializeObject(new CW("mes",
-                JsonConvert.SerializeObject(new CW.MessageToClient(){
-                    id = id,
-                    date = date,
-                    from = sender,
-                    to = recipient,
-                    message = message
-                }))));
-        }
-
-        public void Send_Online(string login)
-        {
-            Send(JsonConvert.SerializeObject(
-                new CW("onl", login)));
-        }
-
-        public void Send_Offline(string login)
-        {
-            Send(JsonConvert.SerializeObject(
-                new CW("off", login)));
-        }
-
         private bool Authorization()
         {
             string inputData = ReadHttp();
@@ -213,10 +188,7 @@ namespace Chat_server
                                 }
                                 else Send("ERROR-LOGIN-PASSWORD");
                             }
-                            else
-                            {
-                                Send("NOT-WORK-USE-WITHPASS");
-                            }
+                            else Send("NOT-WORK-USE-WITHPASS");
                         }
                         else
                         {
@@ -263,6 +235,30 @@ namespace Chat_server
                     return false;
                 }
             }
+        }
+
+        public void SendMessage(long id, string sender, DateTime date, string message, string recipient = "public")
+        {
+            Send(JsonConvert.SerializeObject(new CW("mes",
+                JsonConvert.SerializeObject(new CW.MessageToClient(){
+                    id = id,
+                    date = date,
+                    from = sender,
+                    to = recipient,
+                    message = message
+                }))));
+        }
+
+        public void Send_Online(string login)
+        {
+            Send(JsonConvert.SerializeObject(
+                new CW("onl", login)));
+        }
+
+        public void Send_Offline(string login)
+        {
+            Send(JsonConvert.SerializeObject(
+                new CW("off", login)));
         }
 
         private string Read()
@@ -381,7 +377,7 @@ namespace Chat_server
             Created,
             Start,
             Authorization,
-            LoggedIn,
+            Logged,
             LoadData,
             Ready,
             Stopped

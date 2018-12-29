@@ -153,8 +153,12 @@ namespace Chat_server
                                 case "images":
                                     if (RequestPath.Length == 3)
                                     {
-                                        byte[] img = File.ReadAllBytes($"{RequestPath[0]}/{RequestPath[1]}/{RequestPath[2]}");
-                                        response.OutputStream.Write(img, 0, img.Length);
+                                        try
+                                        {
+                                            byte[] img = File.ReadAllBytes($"{RequestPath[0]}/{RequestPath[1]}/{RequestPath[2]}");
+                                            response.OutputStream.Write(img, 0, img.Length);
+                                        }
+                                        catch { }
                                     }
                                     else{
                                         //NOT FOUND

@@ -15,7 +15,6 @@ namespace Chat_server
         private object lockerReg;
         private object lockerDial;
         private object lockerAddMes;
-        private List<string> errorRequest;
 
         public MySql_Client(string address, int port, string login, string pass)
         {
@@ -23,7 +22,6 @@ namespace Chat_server
             lockerReg = new object();
             lockerDial = new object();
             lockerAddMes = new object();
-            errorRequest = new List<string>();
         }
 
         public bool CheckConnect()
@@ -36,22 +34,6 @@ namespace Chat_server
             }
             catch { return false; }
             return true;
-        }
-
-        public void Start()
-        {
-            Task.Factory.StartNew(() =>
-            {
-                while (true)
-                {
-                    Thread.Sleep(1000);
-                    while (errorRequest.Count > 0)
-                    {
-                        File.AppendAllText("mysqlLog.log", DateTime.Now + " " + errorRequest[0] + "\r\n");
-                        errorRequest.RemoveAt(0);
-                    }
-                }
-            });
         }
 
         public long UserExist(string login, string email = null)
@@ -70,7 +52,7 @@ namespace Chat_server
             }
             catch (MySqlException ex)
             {
-                errorRequest.Add(request + " " + ex.Message);
+                Program.errorLog.Add(request + " " + ex.Message);
                 return -1;
             }
         }
@@ -92,7 +74,7 @@ namespace Chat_server
             }
             catch (MySqlException ex)
             {
-                errorRequest.Add(request + " " + ex.Message);
+                Program.errorLog.Add(request + " " + ex.Message);
                 return null;
             }
         }
@@ -113,7 +95,7 @@ namespace Chat_server
                 }
                 catch (MySqlException ex)
                 {
-                    errorRequest.Add(request + " " + ex.Message);
+                    Program.errorLog.Add(request + " " + ex.Message);
                     return -1;
                 }
             }
@@ -151,12 +133,12 @@ namespace Chat_server
             }
             catch (MySqlException ex)
             {
-                errorRequest.Add(request + " " + ex.Message);
+                Program.errorLog.Add(request + " " + ex.Message);
                 return -1;
             }
         }
 
-        public long AddMessageP(DateTime time, long senderID, string message)
+        public long AddMessagePub(DateTime time, long senderID, string message)
         {
             string request = "";
             try
@@ -171,7 +153,7 @@ namespace Chat_server
             }
             catch (MySqlException ex)
             {
-                errorRequest.Add(request + " " + ex.Message);
+                Program.errorLog.Add(request + " " + ex.Message);
                 return -1;
             }
         }
@@ -198,7 +180,7 @@ namespace Chat_server
             }
             catch (MySqlException ex)
             {
-                errorRequest.Add(request + " " + ex.Message);
+                Program.errorLog.Add(request + " " + ex.Message);
                 return null;
             }
         }
@@ -240,7 +222,7 @@ namespace Chat_server
             }
             catch (MySqlException ex)
             {
-                errorRequest.Add(request + " " + ex.Message);
+                Program.errorLog.Add(request + " " + ex.Message);
                 return null;
             }
         }
