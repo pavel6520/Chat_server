@@ -66,7 +66,7 @@ namespace Chat_server
             DateTime date = DateTime.Now;
             if (recipient == "public")
             {
-                long id = Program.mySql.AddMessagePub(date, sender.Id, message);
+                long id = MySql_Client.AddMessagePub(date, sender.Id, message);
                 if (id > 0)
                     foreach (ClientClass cc in clients)
                         if (cc.Status == ClientClass.ClientStatus.Ready)
@@ -74,7 +74,7 @@ namespace Chat_server
             }
             else
             {
-                long id = Program.mySql.AddMessage(date, sender.Id, message, recipient);
+                long id = MySql_Client.AddMessage(date, sender.Id, message, recipient);
                 if (id > 0)
                     foreach (ClientClass cc in clients)
                         if (cc.Status == ClientClass.ClientStatus.Ready && (cc.Login == recipient || cc.Login == sender.Login))

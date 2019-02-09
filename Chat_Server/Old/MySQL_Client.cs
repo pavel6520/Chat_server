@@ -9,23 +9,20 @@ using MySql.Data.MySqlClient;
 
 namespace Chat_server
 {
-    class MySql_Client
+    static class MySql_Client
     {
-        private string connStr;
-        private object lockerReg;
-        private object lockerDial;
-        private object lockerAddMes;
+        private static string connStr;
+        private static object lockerReg;
+        private static object lockerDial;
+        private static object lockerAddMes;
 
-        public MySql_Client(string address, int port, string login, string pass)
+        public static bool SetData_Check(string address, int port, string login, string pass)
         {
+
             connStr = $"server={address};port={port};user={login};password={pass};database=chat_db;";
             lockerReg = new object();
             lockerDial = new object();
             lockerAddMes = new object();
-        }
-
-        public bool CheckConnect()
-        {
             MySqlConnection conn = new MySqlConnection(connStr);
             try
             {
@@ -36,7 +33,7 @@ namespace Chat_server
             return true;
         }
 
-        public long UserExist(string login, string email = null)
+        public static long UserExist(string login, string email = null)
         {
             string request = $"SELECT id FROM user WHERE login = '{login}'{(email == null ? "" : $" and email = '{email}'")}";
             try
@@ -57,7 +54,7 @@ namespace Chat_server
             }
         }
 
-        public string[] CheckUser(string login, string pass)
+        public static string[] CheckUser(string login, string pass)
         {
             string request = $"SELECT id, login FROM user WHERE login = '{login}' and binary pass = '{pass}'";
             try
@@ -79,7 +76,7 @@ namespace Chat_server
             }
         }
 
-        public long RegNewUser(string login, string pass, string email)
+        public static long RegNewUser(string login, string pass, string email)
         {
             email = email.ToLower();
             if (UserExist(login, email) == 0)
@@ -102,7 +99,7 @@ namespace Chat_server
             else return 0;
         }
 
-        public long AddMessage(DateTime time, long senderID, string message, string recipient)
+        public static long AddMessage(DateTime time, long senderID, string message, string recipient)
         {
             string request = "";
             try
@@ -138,7 +135,7 @@ namespace Chat_server
             }
         }
 
-        public long AddMessagePub(DateTime time, long senderID, string message)
+        public static long AddMessagePub(DateTime time, long senderID, string message)
         {
             string request = "";
             try
@@ -158,7 +155,7 @@ namespace Chat_server
             }
         }
 
-        public ClientClass.CW.MessageToClient[] LoadMessagePublic(long userID, int count = 50)
+        public static ClientClass.CW.MessageToClient[] LoadMessagePublic(long userID, int count = 50)
         {
             string request = "";
             try
@@ -185,7 +182,7 @@ namespace Chat_server
             }
         }
 
-        public ClientClass.CW.MessageToClient[] LoadMessagePrivate(long userID, string recipient, int count = 50)
+        public static ClientClass.CW.MessageToClient[] LoadMessagePrivate(long userID, string recipient, int count = 50)
         {
             string request = "";
             try

@@ -76,7 +76,7 @@ namespace Chat_server
                             login = Login,
                             online = tcpServer.Online
                         }))));
-                        CW.MessageToClient[] history = Program.mySql.LoadMessagePublic(Id);
+                        CW.MessageToClient[] history = MySql_Client.LoadMessagePublic(Id);
                         if (history != null)
                             for (int i = 0; i < history.Length; i++)
                                 Send(JsonConvert.SerializeObject(new CW("mes", JsonConvert.SerializeObject(history[i]))));
@@ -119,7 +119,7 @@ namespace Chat_server
                                 {
                                     Task.Factory.StartNew(() =>
                                     {
-                                        CW.MessageToClient[] history = Program.mySql.LoadMessagePrivate(Id, wrap.body);
+                                        CW.MessageToClient[] history = MySql_Client.LoadMessagePrivate(Id, wrap.body);
                                         if (history != null)
                                             for (int i = 0; i < history.Length; i++)
                                                 Send(JsonConvert.SerializeObject(new CW("mes", JsonConvert.SerializeObject(history[i]))));
@@ -178,7 +178,7 @@ namespace Chat_server
                         {
                             if (loginJSON.withpass)
                             {
-                                string[] res = Program.mySql.CheckUser(loginJSON.login, loginJSON.pass);
+                                string[] res = MySql_Client.CheckUser(loginJSON.login, loginJSON.pass);
                                 if (res != null)
                                 {
                                     Id = Convert.ToInt64(res[0]);
@@ -204,7 +204,7 @@ namespace Chat_server
                                 if (Regular.CheckPass(regJSON.pass))
                                     if (Regular.CheckEmail(regJSON.email))
                                     {
-                                        Id = Program.mySql.RegNewUser(regJSON.login, regJSON.pass, regJSON.email);
+                                        Id = MySql_Client.RegNewUser(regJSON.login, regJSON.pass, regJSON.email);
                                         if (Id > 0)
                                         {
                                             Login = regJSON.login;
