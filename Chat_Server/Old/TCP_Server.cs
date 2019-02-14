@@ -96,8 +96,9 @@ namespace Chat_server
         internal void ClientClosed(ClientClass forDel)
         {
             forDel.Close();
-            if (Program.DEBUG)
+
                 Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + forDel.Address + " " + forDel.Login + " отключен");
+
             clients.Remove(forDel);
             //if (!clients.Exists(delegate (ClientClass x) { return x.Login == forDel.Login; }))
             if (!clients.Exists(x => x.Login == forDel.Login))

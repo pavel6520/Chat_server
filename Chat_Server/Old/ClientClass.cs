@@ -54,7 +54,7 @@ namespace Chat_server
         {
             if (tcpClient.Connected)
             {
-                if (Program.DEBUG) Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " подключился");
+                Console.WriteLine(DateTime.Now + " [DEBUG][TCP] " + tcpClient.Client.RemoteEndPoint + " подключился");
                 //АВТОРИЗАЦИЯ
                 Status = ClientStatus.Authorization;
                 try

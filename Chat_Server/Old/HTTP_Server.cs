@@ -89,15 +89,12 @@ namespace Chat_server
         {
             HttpListenerResponse response = context.Response;
             string[] RequestPath = context.Request.Url.LocalPath.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-
-            if (Program.DEBUG)
-            {
+            
                 Console.WriteLine(DateTime.Now + " [DEBUG][HTTP] Запрос: " + context.Request.RemoteEndPoint + " " + context.Request.Url.AbsoluteUri);
                 //DEBUG
                 /*for (int i = 0; i < context.Request.Headers.Count; i++)
                     Console.WriteLine(context.Request.Headers.Keys[i] + ": " + context.Request.Headers[i]);
                 Console.WriteLine();*/
-            }
 
             if (RequestPath.Length == 0)
             {
