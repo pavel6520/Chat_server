@@ -4,44 +4,38 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace Chat_server
-{
-    [Serializable]
-    public static class Config
-    {
+namespace WebServerCore {
+    public static class Config {
         private static string _file;
         private static Body body;
         public static MySQLstr mysql;
         public static HTTPstr http;
         public static HTTPSstr https;
 
-        public static bool Read(string file)
-        {
+        public static bool Read(string file) {
             bool result = false;
             _file = file;
             XmlSerializer formatter = new XmlSerializer(typeof(Body));
-            try
-            {
+            try {
                 FileStream fs = new FileStream(_file, FileMode.Open);
                 body = (Body)formatter.Deserialize(fs);
                 result = true;
+                Log.Write(false, "INFO", "Config", $"Файл {file} успешно прочитан");
             }
-            catch
-            {
-                try
-                {
+            catch {
+                try {
                     FileStream fs = new FileStream(_file, FileMode.Create);
                     body = new Body();
-                    body.mysql = new MySQLstr { login = "root", pass = "pass", host = "localhost", port = 3306 };
+                    body.mysql = new MySQLstr { login = "root", pass = "pass", host = "localhost", port = 3306, db = "chat" };
                     body.http = new HTTPstr { port = 80 };
                     body.https = new HTTPSstr { port = 443 };
                     formatter.Serialize(fs, body);
                 }
-                catch (Exception ex)
-                {
-                    Log.Write(false, "FATAL", "Config", $"Не удалось создать файл {file} с ошбкой: {ex.Message}");
-                    return false;
+                catch (Exception ex) {
+                    Log.Write(true, "FATAL", "Config", $"Не удалось создать файл {file} с ошбкой: {ex.Message}");
+                    Environment.Exit(2);
                 }
+                Log.Write(true, "WARN", "Config", $"Не удалось открыть файл {file} либо он повржден. Был создан новый файл");
             }
 
             mysql = body.mysql;
@@ -50,27 +44,24 @@ namespace Chat_server
 
             return result;
         }
-        
-        public class Body
-        {
+
+        public class Body {
             public MySQLstr mysql;
             public HTTPstr http;
             public HTTPSstr https;
         }
 
-        public struct MySQLstr
-        {
-            public string login;
-            public string pass;
+        public struct MySQLstr {
             public string host;
             public int port;
+            public string login;
+            public string pass;
+            public string db;
         }
-        public struct HTTPstr
-        {
+        public struct HTTPstr {
             public int port;
         }
-        public struct HTTPSstr
-        {
+        public struct HTTPSstr {
             public int port;
         }
 

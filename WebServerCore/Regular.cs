@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Chat_server
 {
-    static class Regular
+    static public class Regular
     {
         //TODO: разрешить "_" "-"
         static Regex Rlogin = new Regex("[^A-Za-z0-9]");

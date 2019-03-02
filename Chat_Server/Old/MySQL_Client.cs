@@ -16,10 +16,9 @@ namespace Chat_server
         private static object lockerDial;
         private static object lockerAddMes;
 
-        public static bool SetData_Check(string address, int port, string login, string pass)
+        public static bool SetData_Check(string address, int port, string login, string pass, string schema)
         {
-
-            connStr = $"server={address};port={port};user={login};password={pass};database=chat_db;";
+            connStr = $"server={address};port={port};user={login};password={pass};database={schema};";
             lockerReg = new object();
             lockerDial = new object();
             lockerAddMes = new object();
@@ -49,7 +48,6 @@ namespace Chat_server
             }
             catch (MySqlException ex)
             {
-                Program.errorLog.Add(request + " " + ex.Message);
                 return -1;
             }
         }
@@ -71,12 +69,11 @@ namespace Chat_server
             }
             catch (MySqlException ex)
             {
-                Program.errorLog.Add(request + " " + ex.Message);
                 return null;
             }
         }
 
-        public static long RegNewUser(string login, string pass, string email)
+        public static uint RegNewUser(string login, string pass, string email)
         {
             email = email.ToLower();
             if (UserExist(login, email) == 0)
@@ -88,12 +85,11 @@ namespace Chat_server
                     conn.Open();
                     MySqlCommand com = new MySqlCommand(request, conn);
                     lock (lockerReg) com.ExecuteScalar();
-                    return com.LastInsertedId;
+                    return (uint)com.LastInsertedId;
                 }
                 catch (MySqlException ex)
                 {
-                    Program.errorLog.Add(request + " " + ex.Message);
-                    return -1;
+                    return 0;
                 }
             }
             else return 0;
@@ -130,7 +126,6 @@ namespace Chat_server
             }
             catch (MySqlException ex)
             {
-                Program.errorLog.Add(request + " " + ex.Message);
                 return -1;
             }
         }
@@ -150,7 +145,6 @@ namespace Chat_server
             }
             catch (MySqlException ex)
             {
-                Program.errorLog.Add(request + " " + ex.Message);
                 return -1;
             }
         }
@@ -177,7 +171,6 @@ namespace Chat_server
             }
             catch (MySqlException ex)
             {
-                Program.errorLog.Add(request + " " + ex.Message);
                 return null;
             }
         }
@@ -219,7 +212,6 @@ namespace Chat_server
             }
             catch (MySqlException ex)
             {
-                Program.errorLog.Add(request + " " + ex.Message);
                 return null;
             }
         }
