@@ -57,14 +57,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Client\Connection.cs" />
+    <Compile Include="Client\ConnectionRead.cs" />
+    <Compile Include="Client\ConnectionWrite.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="Const.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="DBClient.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Regular.cs" />
-    <Compile Include="Server\Client\ConnectControl.cs" />
-    <Compile Include="Server\Client\HTTP.cs" />
+    <Compile Include="Client\Http\HttpContext.cs" />
+    <Compile Include="Client\Http\HttpMethod.cs" />
+    <Compile Include="Client\Http\HttpRequest.cs" />
+    <Compile Include="Client\Http\HttpResponse.cs" />
+    <Compile Include="Client\WebSocket.cs" />
     <Compile Include="Server\Listener.cs" />
   </ItemGroup>
   <ItemGroup>

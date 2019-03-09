@@ -5,10 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace WebServerCore {
-    public static class Core {
+    public class Core {
         private static Server.Listener listener;
+
         public static int Start() {
-            if (Log.Start() == 0)
+            if (Log.Start() != 0)
                 return 2;
             Console.WriteLine($"{DateTime.Now.ToString()} [INFO][Core] Program starting!");
             //Console.WriteLine(BitConverter.ToString(new SHA256Managed().ComputeHash(Encoding.Default.GetBytes(Console.ReadLine()))).Replace("-", ""));

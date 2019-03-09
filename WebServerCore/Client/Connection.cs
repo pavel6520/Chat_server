@@ -7,17 +7,18 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WebServerCore.Server.Client {
-    class ConnectControl {
-        public ConnectType? Type { get => type; }
+namespace WebServerCore.Client {
+    public class Connection {
+        public string UserAddress { get { return client.RemoteEndPoint.ToString(); } }
+        public bool Connected { get { return client.Connected; } }
+        public int Available { get { return client.Available; } }
 
-        private bool crypt;
-        private ConnectType? type;
-        private Socket client;
-        private SslStream sslStream;
-        private NetworkStream stream;
+        protected readonly bool crypt;
+        protected readonly Socket client;
+        protected readonly SslStream sslStream;
+        protected readonly NetworkStream stream;
 
-        public ConnectControl(Socket client, X509Certificate crypt = null) {
+        internal Connection(Socket client, X509Certificate crypt = null) {
             this.client = client;
             if (crypt != null) {
                 this.crypt = true;
@@ -30,7 +31,14 @@ namespace WebServerCore.Server.Client {
             }
         }
 
-        private byte? _ReadByte() {
+        protected Connection(Connection cc) {
+            crypt = cc.crypt;
+            client = cc.client;
+            sslStream = cc.sslStream;
+            stream = cc.stream;
+        }
+
+        public byte? ReadByte() {
             int readed;
             if (crypt)
                 readed = sslStream.ReadByte();
@@ -42,7 +50,7 @@ namespace WebServerCore.Server.Client {
                 return (byte)readed;
         }
 
-        private byte[] _Read(int count = 10000) {
+        public byte[] Read(int count = 10000) {
             byte[] read = null;
             if (crypt)
                 sslStream.Read(read, 0, count);
@@ -51,10 +59,10 @@ namespace WebServerCore.Server.Client {
             return read;
         }
 
-        private string _ReadLine() {
+        public string ReadLine() {
             bool r = false;
             string buf = "";
-            byte? readB = _ReadByte();
+            byte? readB = ReadByte();
             string read;
 
             while (readB != null) {
@@ -66,48 +74,27 @@ namespace WebServerCore.Server.Client {
                     break;
                 else
                     buf += read;
-                readB = _ReadByte();
+                readB = ReadByte();
             }
             return buf;
         }
 
-        private void _WriteByte(byte b) {
+        public void WriteByte(byte b) {
             if (crypt)
                 sslStream.WriteByte(b);
             else
                 stream.WriteByte(b);
         }
 
-        private void _Write(byte[] b) {
+        public void Write(byte[] b) {
             if (crypt)
                 sslStream.Write(b);
             else
                 stream.Write(b, 0, b.Length);
         }
 
-        public void GetMethod() {
-            if (type == null) {
-                string connect = _ReadLine();
-            }
-            else throw new Exception("Метод соединения уже определен");
-        }
-
-        public byte[] Read(uint? count = null) {
-
-
-
-            return null;
-        }
-
-        public string ReadLine() {
-
-            return null;
-        }
-
-        public enum ConnectType {
-            TCP = 0,
-            HTTP = 1,
-            WEBSOCKET = 2
+        public void WriteLine(string s) {
+            Write(Encoding.UTF8.GetBytes($"{s}\r\n"));
         }
     }
 }

@@ -4,10 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WebServerCore.Server.Client
-{
-    class HTTP
-    {
-
+namespace WebServerCore.Client {
+    class WebSocket {
     }
 }
