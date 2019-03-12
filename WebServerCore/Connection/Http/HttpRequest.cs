@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WebServerCore.Client.Http {
+namespace WebServerCore.Connection.Http {
     public sealed class HttpRequest {
         private readonly Connection cc;
 
@@ -32,7 +32,7 @@ namespace WebServerCore.Client.Http {
             this.cc = cc;
             UserAddress = cc.UserAddress;
             string sBuf = cc.ReadLine();
-            string[] buf = sBuf.Split(Const.SPLIT_SPACE);
+            string[] buf = sBuf.Split(Const.SPLIT_SPACE, StringSplitOptions.RemoveEmptyEntries);
             if (buf.Length != 3)
                 throw new FormatException($"Ожидался формат METHOD PATH PROTOCOL. Получена строка {sBuf}");
             Method = buf[0];

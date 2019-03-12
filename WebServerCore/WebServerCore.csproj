@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WebServerCore</RootNamespace>
     <AssemblyName>WebServerCore</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -57,9 +58,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client\Connection.cs" />
-    <Compile Include="Client\ConnectionRead.cs" />
-    <Compile Include="Client\ConnectionWrite.cs" />
+    <Compile Include="Connection\Connection.cs" />
+    <Compile Include="Connection\ConnectionRead.cs" />
+    <Compile Include="Connection\ConnectionWrite.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Const.cs" />
     <Compile Include="Core.cs" />
@@ -67,11 +68,11 @@
     <Compile Include="Log.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Regular.cs" />
-    <Compile Include="Client\Http\HttpContext.cs" />
-    <Compile Include="Client\Http\HttpMethod.cs" />
-    <Compile Include="Client\Http\HttpRequest.cs" />
-    <Compile Include="Client\Http\HttpResponse.cs" />
-    <Compile Include="Client\WebSocket.cs" />
+    <Compile Include="Connection\Http\HttpContext.cs" />
+    <Compile Include="Connection\Http\HttpMethod.cs" />
+    <Compile Include="Connection\Http\HttpRequest.cs" />
+    <Compile Include="Connection\Http\HttpResponse.cs" />
+    <Compile Include="Connection\WebSocket.cs" />
     <Compile Include="Server\Listener.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO.Compression;
 
-namespace WebServerCore.Client {
+namespace WebServerCore.Connection {
     public class ConnectionWrite : Connection {
         internal ConnectionWrite(Connection cc) : base(cc) {
         }

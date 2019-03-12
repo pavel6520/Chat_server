@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WebServerCore.Client {
+namespace WebServerCore.Connection {
     public class Connection {
         public string UserAddress { get { return client.RemoteEndPoint.ToString(); } }
         public bool Connected { get { return client.Connected; } }
@@ -23,12 +23,13 @@ namespace WebServerCore.Client {
             if (crypt != null) {
                 this.crypt = true;
                 sslStream = new SslStream(new NetworkStream(client));
-                sslStream.AuthenticateAsServer(crypt, false, System.Security.Authentication.SslProtocols.Tls12, false);
+                sslStream.AuthenticateAsServer(crypt);
             }
             else {
                 this.crypt = false;
                 stream = new NetworkStream(client);
             }
+            Log.Write(LogType.INFO, "Connection", $"Подключение от {client.RemoteEndPoint} {(crypt == null ? "без шифрования" : "с шифрованием")}");
         }
 
         protected Connection(Connection cc) {
@@ -59,6 +60,10 @@ namespace WebServerCore.Client {
             return read;
         }
 
+        /// <summary>
+        /// Читает из взодящего потока строку в кодировке ASCII до спец. символов \r\n (\r\n не возвращаются)
+        /// </summary>
+        /// <returns></returns>
         public string ReadLine() {
             bool r = false;
             string buf = "";
@@ -93,8 +98,12 @@ namespace WebServerCore.Client {
                 stream.Write(b, 0, b.Length);
         }
 
-        public void WriteLine(string s) {
-            Write(Encoding.UTF8.GetBytes($"{s}\r\n"));
+        /// <summary>
+        /// Записывает в исходящий поток строку в кодировке ASCII, добавляя спец. символы \r\n
+        /// </summary>
+        /// <param name="s"></param>
+        public void WriteLine(string s = "") {
+            Write(Encoding.ASCII.GetBytes($"{s}{Environment.NewLine}"));
         }
     }
 }

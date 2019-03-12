@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WebServerCore.Client {
+namespace WebServerCore.Connection {
     public sealed class ConnectionRead : Connection {
         internal ConnectionRead(Connection cc) : base(cc) {
         }
@@ -12,7 +12,6 @@ namespace WebServerCore.Client {
         private new void ReadByte() {
             base.ReadByte();
         }
-
 
         private new void Read(int count = 10000) {
             base.Read(count);

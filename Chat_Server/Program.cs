@@ -1,18 +1,13 @@
-﻿using MySql.Data.MySqlClient;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System;
 using WebServerCore;
 
 namespace Chat_server {
     class Program {
+        static Core core;
+
         static void Main(string[] args) {
-            Core.Start();
+            core = new Core();
+            core.Start();
 
             while (true) {
                 string command = Console.ReadLine();

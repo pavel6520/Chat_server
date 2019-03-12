@@ -20,7 +20,7 @@ namespace WebServerCore {
                 FileStream fs = new FileStream(_file, FileMode.Open);
                 body = (Body)formatter.Deserialize(fs);
                 result = true;
-                Log.Write(false, "INFO", "Config", $"Файл {file} успешно прочитан");
+                Log.Write(LogType.DEBUG, "Config", $"Файл {file} успешно прочитан");
             }
             catch {
                 try {
@@ -32,10 +32,10 @@ namespace WebServerCore {
                     formatter.Serialize(fs, body);
                 }
                 catch (Exception ex) {
-                    Log.Write(true, "FATAL", "Config", $"Не удалось создать файл {file} с ошбкой: {ex.Message}");
+                    Log.Write(LogType.FATAL, "Config", $"Не удалось создать файл {file} с ошбкой: {ex.Message}");
                     Environment.Exit(2);
                 }
-                Log.Write(true, "WARN", "Config", $"Не удалось открыть файл {file} либо он повржден. Был создан новый файл");
+                Log.Write(LogType.WARN, "Config", $"Не удалось открыть файл {file} либо он повржден. Был создан новый файл");
             }
 
             mysql = body.mysql;

@@ -1,4 +1,4 @@
-﻿namespace WebServerCore.Client.Http {
+﻿namespace WebServerCore.Connection.Http {
     enum HttpRequestMethod {
         GET,
         POST,

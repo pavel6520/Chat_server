@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WebServerCore.Client.Http {
+namespace WebServerCore.Connection.Http {
     public sealed class HttpContext {
         private readonly Connection cc;
 
@@ -15,6 +15,10 @@ namespace WebServerCore.Client.Http {
             this.cc = cc;
             Request = new HttpRequest(cc);
             Response = new HttpResponse(cc);
+        }
+
+        internal Connection GetConnection() {
+            return cc;
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WebServerCore.Client.Http {
+namespace WebServerCore.Connection.Http {
     public sealed class HttpResponse {
         private readonly Connection cc;
         private bool closed;
@@ -55,6 +55,7 @@ namespace WebServerCore.Client.Http {
             if (closed)
                 throw new Exception(); //TODO
             cc.WriteLine($"HTTP/{ProtocolVersion} {StatusCode}{(StatusDescription == null ? "": $" {StatusDescription}")}");
+            cc.WriteLine("Server: pavel6520/WebSererCore/1.0.0.0");
             if (ContentEncoding != null)
                 cc.WriteLine($"Content-Encoding: {ContentEncoding.WebName}");
             if (ContentLength64 != null)
@@ -64,11 +65,12 @@ namespace WebServerCore.Client.Http {
             if (RedirectLocation != null)
                 cc.WriteLine($"Location: {RedirectLocation}");
             for (int i = 0; i < Headers.Count; i++)
-                cc.WriteLine($"{Headers.GetKey(i)}: {Headers.GetValues(i)}");
+                if (Headers.GetKey(i) != "Server")
+                    cc.WriteLine($"{Headers.GetKey(i)}: {Headers.GetValues(i)}");
             for (int i = 0; i < Cookies.Count; i++)
                 cc.WriteLine($"Set-Cookie: {Cookies[i].Name}={Cookies[i].Value}{(Cookies[i].Path == null ? "" : $"; path={Cookies[i].Path};")}{(Cookies[i].Expires == null ? "" : $"; path={Cookies[i].Expires.ToString("R")};")}");
             closed = true;
-            cc.WriteLine("");
+            cc.WriteLine();
         }
     }
 }

@@ -23,7 +23,7 @@ namespace WebServerCore {
             try
             {
                 conn.Open();
-                Log.Write(false, "INFO", "DBClient", $"Connect successful! MySql Server {conn.ServerVersion}");
+                Log.Write(LogType.INFO, "DBClient", $"Connect successful! MySql Server {conn.ServerVersion}");
 
                 //MySqlCommand command = new MySqlCommand("select * from test where tet = @p", conn);
                 //command.Parameters.AddWithValue("@p", "test");
@@ -34,9 +34,7 @@ namespace WebServerCore {
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                Console.ReadKey();
-                Log.Write(true, "FATAL", "DBClient", $"Failed to connect with an error: {ex.Message}");
+                Log.Write(LogType.FATAL, "DBClient", $"Failed to connect with an error: {ex.Message}");
                 return false;
             }
         }
