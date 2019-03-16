@@ -8,16 +8,23 @@ using System.Threading.Tasks;
 namespace WebServerCore.Connection {
     class WebSocket {
         private Connection cc;
+        private Http.HttpContext context;
+
+        public System.Net.CookieCollection Cookie { get { return context.Request.Cookie; } }
+        public string HostName { get { return context.Request.HostName; } }
+        public string Path { get { return context.Request.Path; } }
+        public string UserAddress { get { return cc.UserAddress; } }
 
         internal WebSocket(Http.HttpContext context) {
-            if (!context.Request.isWebSocket) {
-                throw new Exception("Подключение не содержит запрос для включения WebSocket");//TODO
+            this.context = context;
+            if (!context.Request.IsWebSocket) {
+                throw new FormatException("Подключение не содержит запрос для включения WebSocket");
             }
             if (context.Request.Headers.GetValues("Sec-WebSocket-Version")[0] == "13") {
                 context.Response.StatusCode = 101;
                 context.Response.StatusDescription = "Switching Protocols";
-                context.Response.Headers.Add("Connection", "Upgrade");
                 context.Response.Headers.Add("Upgrade", "websocket");
+                context.Response.Headers.Add("Connection", "Upgrade");
                 context.Response.Headers.Add("Sec-WebSocket-Accept", Convert.ToBase64String(System.Security.Cryptography.SHA1.Create().ComputeHash(
                     Encoding.UTF8.GetBytes($"{context.Request.Headers.GetValues("Sec-WebSocket-Key")[0]}258EAFA5-E914-47DA-95CA-C5AB0DC85B11"))));
                 context.Response.Close();
@@ -25,129 +32,123 @@ namespace WebServerCore.Connection {
             }
         }
 
-        public byte[] Read(ref int code) {
+        public int ReadText(ref byte[] b) {
             List<byte> readBuf = new List<byte>();
-            int opcode = 0;
+            byte opcode = 0;
 
             while (true) {
-                bool FIN = false;
+                Frame frame = new Frame(cc, opcode);
+                ulong len = frame.Length_64;
+                if (frame.Code_4 == 1 || frame.Code_4 == 2 || (frame.Code_4 == 0 && (opcode == 1 || opcode == 2))) { //текст/двоичные данные
+                    while(len > 0) {
+                        if (len > 8191) {
+                            readBuf.AddRange(cc.Read(8191));
+                            len -= 8191;
+                        }
+                        else {
+                            readBuf.AddRange(cc.Read((int)len));
+                            len = 0;
+                        }
+                    }
+                    if (frame.Fin_1) {
+                        b = readBuf.ToArray();
+                        ApplyMask(ref b, frame.Mask_32);
+                        return 0;
+                    }
+                }
+                else if (frame.Code_4 == 8) { //Close
+                    b = null;
+                    return 1;
+                }
+                else if (frame.Code_4 == 9) { //PING
+                }
+                else if (frame.Code_4 == 10) { //PONG
+                    b = null;
+                    return 2;
+                }
+            }
+        }
+
+        public void WriteText(byte[] b) {
+            Frame.Write(cc, true, 1, false, (uint)b.Length, null);
+            cc.Write(b);
+        }
+
+        private void ApplyMask(ref byte[] b, byte[] mask) {
+            for (long i = 0; i < b.LongLength; i++) {
+                b[i] = (byte)(b[i] ^ mask[i % 4]);
+            }
+        }
+
+        internal class Frame {
+            public bool Fin_1;
+            //public bool RSV1_1, RSV2_1, RSV3_1;
+            public byte Code_4;
+            public bool MaskBool;
+            public byte[] Mask_32;
+            public ulong Length_64;
+
+            public Frame(Connection cc, byte codeOne = 0) {
                 byte? byteBuf = cc.ReadByte();
                 if (byteBuf == null) {
                     throw new NullReferenceException("Нет данных для чтения");
                 }
-                FIN = byteBuf >> 7 == 1;
-                int opcodeBuf = (int)byteBuf % 16;
+                Fin_1 = byteBuf >> 7 == 1;
+                Code_4 = Convert.ToByte(byteBuf % 16);
                 byteBuf = cc.ReadByte();
-                bool mask = byteBuf >> 7 == 1;
-                ulong len = (uint)byteBuf % 128;
+                MaskBool = byteBuf >> 7 == 1;
+                Length_64 = (uint)byteBuf % 128;
                 byte[] buf = null;
-                if(len == 126) {
+                if (Length_64 == 126) {
                     buf = cc.Read(2);
-                    len = ((uint)buf[0] << 8) + buf[1];
+                    Length_64 = ((uint)buf[0] << 8) + buf[1];
                 }
-                else if (len == 127) {
-                    buf = cc.Read(4);
-                    len = ((((((ulong)buf[0] << 8) + buf[1]) << 8) + buf[2]) << 8) + buf[3];
+                else if (Length_64 == 127) {
+                    buf = cc.Read(8);
+                    Length_64 = ((((((((((((((ulong)buf[0] << 8) + buf[1]) << 8) + buf[2]) << 8) + buf[3]) << 8) +buf[4]) << 8) +buf[5]) << 8) +buf[6]) << 8) +buf[7];
                 }
-                if (!FIN && opcodeBuf > 0) {
-                    opcode = opcodeBuf;
+                if (MaskBool) {
+                    Mask_32 = cc.Read(4);
                 }
-
-                if (opcodeBuf == 1 || opcodeBuf == 2) { //текст/двоичные данные
-                    readBuf.AddRange(cc.Read());
-                    code = 0;
-                    if (FIN) {
-                        return readBuf.ToArray();
-                    }
-                }
-                else if (opcodeBuf == 8) { //Close
-                    code = 1;
-                    return null;
-                }
-                else if (opcodeBuf == 9) { //PING
-
-                }
-                else if (opcodeBuf == 10) { //PONG
-                    code = 2;
-                    return null;
-                }
-                else if (opcodeBuf == 0) {
-                    if (opcode == 1 || opcode == 2) {
-                        readBuf.AddRange(cc.Read());
-                    }
-                    if (FIN) {
-                        return readBuf.ToArray();
-                    }
+                if (!Fin_1 && codeOne > 0) {
+                    Code_4 = codeOne;
                 }
             }
 
-            //{
-            //    byte[] buf = new byte[10000];
-            //    int readed = tcpClient.GetStream().Read(buf, 0, buf.Length);
-            //    byte[] inputData = new byte[readed];
-            //    for (long i = 0; i < readed; i++)
-            //        inputData[i] = buf[i];
-            //    byte secondByte = inputData[1];
-            //    int dataLength = secondByte & 127;
-            //    int indexFirstMask = 2;
-            //    if (dataLength == 126)
-            //        indexFirstMask = 4;
-            //    else if (dataLength == 127)
-            //        indexFirstMask = 10;
-
-            //    IEnumerable<byte> keys = inputData.Skip(indexFirstMask).Take(4);
-            //    int indexFirstDataByte = indexFirstMask + 4;
-
-            //    byte[] decoded = new byte[inputData.Length - indexFirstDataByte];
-            //    for (int i = indexFirstDataByte, j = 0; i < inputData.Length; i++, j++)
-            //        decoded[j] = (byte)(inputData[i] ^ keys.ElementAt(j % 4));
-
-            //    return Encoding.UTF8.GetString(decoded, 0, decoded.Length);
-            //}
-        }
-
-        public void Write(byte[] b) {
-
-
-
-            //byte[] outputData;
-            //byte[] bytesRaw = Encoding.UTF8.GetBytes(message);
-            //byte[] frame = new byte[10];
-            //int indexStartRawData = -1;
-            //int length = bytesRaw.Length;
-            //frame[0] = (byte)129;
-            //if (length <= 125) {
-            //    frame[1] = (byte)length;
-            //    indexStartRawData = 2;
-            //}
-            //else if (length >= 126 && length <= 65535) {
-            //    frame[1] = (byte)126;
-            //    frame[2] = (byte)((length >> 8) & 255);
-            //    frame[3] = (byte)(length & 255);
-            //    indexStartRawData = 4;
-            //}
-            //else {
-            //    frame[1] = (byte)127;
-            //    frame[2] = (byte)((length >> 56) & 255);
-            //    frame[3] = (byte)((length >> 48) & 255);
-            //    frame[4] = (byte)((length >> 40) & 255);
-            //    frame[5] = (byte)((length >> 32) & 255);
-            //    frame[6] = (byte)((length >> 24) & 255);
-            //    frame[7] = (byte)((length >> 16) & 255);
-            //    frame[8] = (byte)((length >> 8) & 255);
-            //    frame[9] = (byte)(length & 255);
-            //    indexStartRawData = 10;
-            //}
-            //outputData = new byte[indexStartRawData + length];
-            //int reponseIdx = 0;
-            ////Add the frame bytes to the reponse
-            //for (int i = 0; i < indexStartRawData; i++, reponseIdx++)
-            //    outputData[reponseIdx] = frame[i];
-            ////Add the data bytes to the response
-            //for (int i = 0; i < length; i++, reponseIdx++)
-            //    outputData[reponseIdx] = bytesRaw[i];
-            //lock (locker)
-            //    tcpClient.GetStream().Write(outputData, 0, outputData.Length);
+            public static void Write(Connection cc, bool Fin, byte Code, bool MaskBool, ulong Length, byte[] Mask) {
+                byte b1 = (byte)((Fin ? 128 : 0) + Code);
+                cc.WriteByte(b1);
+                byte b2;
+                byte[] b_len = null;
+                if (Length >= 65536) {
+                    b2 = (byte)((MaskBool ? 128 : 0) + 127);
+                    b_len = new byte[4];
+                    b_len[0] = (byte)((Length >> 56) & 255);
+                    b_len[1] = (byte)((Length >> 48) & 255);
+                    b_len[2] = (byte)((Length >> 40) & 255);
+                    b_len[3] = (byte)((Length >> 32) & 255);
+                    b_len[4] = (byte)((Length >> 24) & 255);
+                    b_len[5] = (byte)((Length >> 16) & 255);
+                    b_len[6] = (byte)((Length >> 8) & 255);
+                    b_len[7] = (byte)(Length & 255);
+                }
+                else if(Length >= 126) {
+                    b2 = (byte)((MaskBool ? 128 : 0) + 126);
+                    b_len = new byte[4];
+                    b_len[6] = (byte)((Length >> 8) & 255);
+                    b_len[7] = (byte)(Length & 255);
+                }
+                else {
+                    b2 = (byte)((MaskBool ? 128 : 0) + (byte)Length);
+                }
+                cc.WriteByte(b2);
+                if (Length >= 126) {
+                    cc.Write(b_len);
+                }
+                if (MaskBool) {
+                    cc.Write(Mask);
+                }
+            }
         }
     }
 }

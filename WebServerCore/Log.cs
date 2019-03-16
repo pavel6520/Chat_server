@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace WebServerCore {
-    static class Log {
+    public static class Log {
         private static object lockObj1 = new object();
         private static object lockObj2 = new object();
         private static string path = "logs";

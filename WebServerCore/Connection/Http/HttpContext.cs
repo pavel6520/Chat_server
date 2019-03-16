@@ -10,6 +10,7 @@ namespace WebServerCore.Connection.Http {
 
         public HttpRequest Request { get; private set; }
         public HttpResponse Response { get; private set; }
+        public bool IsCrypt { get { return cc.Crypt; } }
 
         internal HttpContext(Connection cc) {
             this.cc = cc;

@@ -59,9 +59,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Connection\Connection.cs" />
+    <Compile Include="Connection\ConnectionCloseException.cs" />
+    <Compile Include="Connection\ConnectionFormatException.cs" />
+    <Compile Include="Connection\ConnectionManager.cs" />
     <Compile Include="Connection\ConnectionRead.cs" />
     <Compile Include="Connection\ConnectionWrite.cs" />
-    <Compile Include="Config.cs" />
     <Compile Include="Const.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="DBClient.cs" />
@@ -69,7 +71,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Regular.cs" />
     <Compile Include="Connection\Http\HttpContext.cs" />
-    <Compile Include="Connection\Http\HttpMethod.cs" />
     <Compile Include="Connection\Http\HttpRequest.cs" />
     <Compile Include="Connection\Http\HttpResponse.cs" />
     <Compile Include="Connection\WebSocket.cs" />

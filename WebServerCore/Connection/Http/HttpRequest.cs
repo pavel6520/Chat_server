@@ -11,7 +11,7 @@ namespace WebServerCore.Connection.Http {
 
         public string[] Accept { get; private set; }
         public string[] AcceptEncoding { get; private set; }
-        public string Connection { get; private set; }
+        public string[] Connection { get; private set; }
         public System.Net.CookieCollection Cookie { get; private set; }
         public DateTime Date { get; private set; }
         public string HostName { get; private set; }
@@ -26,7 +26,7 @@ namespace WebServerCore.Connection.Http {
 
         public System.Collections.Specialized.NameValueCollection Headers { get; private set; }
 
-        public bool isWebSocket { get; private set; }
+        public bool IsWebSocket { get; private set; }
 
         internal HttpRequest(Connection cc) {
             this.cc = cc;
@@ -34,9 +34,12 @@ namespace WebServerCore.Connection.Http {
             string sBuf = cc.ReadLine();
             string[] buf = sBuf.Split(Const.SPLIT_SPACE, StringSplitOptions.RemoveEmptyEntries);
             if (buf.Length != 3)
-                throw new FormatException($"Ожидался формат METHOD PATH PROTOCOL. Получена строка {sBuf}");
+            {
+                throw new ConnectionCloseException($"Ожидался формат METHOD PATH PROTOCOL. Получена строка {sBuf}");
+            }
             Method = buf[0];
             Path = buf[1];
+            
             buf = buf[2].Split(Const.SPLIT_SLASH, StringSplitOptions.RemoveEmptyEntries);
             Protocol = buf[0];
             ProtocolVersion = buf[1];
@@ -44,10 +47,10 @@ namespace WebServerCore.Connection.Http {
             Cookie = new System.Net.CookieCollection();
             while (true) {
                 string read2 = cc.ReadLine();
-                if (read2.Length <= 4)
+                if (read2.Length == 0)
                     break;
                 int pos = read2.IndexOf(':');
-                string read1 = read2.Substring(0, pos).ToLower();
+                string read1 = read2.Substring(0, pos);
                 read2 = read2.Remove(0, pos + 2);
 #if DEBUG
                 Headers.Add(read1, read2);
@@ -63,7 +66,7 @@ namespace WebServerCore.Connection.Http {
                         UserLanguage = read2.Split(Const.SPLIT_DOT, StringSplitOptions.RemoveEmptyEntries);
                         break;
                     case "Connection":
-                        Connection = read2;
+                        Connection = read2.Split(Const.SPLIT_DOTSPACE, StringSplitOptions.RemoveEmptyEntries);
                         break;
                     case "Cookie":
                         buf = read2.Split(Const.SPLIT_SEMICOLON, StringSplitOptions.RemoveEmptyEntries);
@@ -92,7 +95,7 @@ namespace WebServerCore.Connection.Http {
                         break;
                 }
             }
-            isWebSocket = Connection == "Upgrade" && Upgrade == "websocket";
+            IsWebSocket = Connection.Contains("Upgrade") && Upgrade == "websocket";
         }
 
         public ConnectionRead GetReadStream() {

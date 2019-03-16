@@ -13,8 +13,8 @@ namespace WebServerCore {
 
         public static void Create()
         {
-            string StrConnect = $"server={Config.mysql.host};port={Config.mysql.port};user={Config.mysql.login};password={Config.mysql.pass};database={Config.mysql.db};";
-            connO = new MySqlConnection(StrConnect);
+            //string StrConnect = $"server={Config.mysql.host};port={Config.mysql.port};user={Config.mysql.login};password={Config.mysql.pass};database={Config.mysql.db};";
+            //connO = new MySqlConnection(StrConnect);
         }
 
         public static bool Check()

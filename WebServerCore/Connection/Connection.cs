@@ -12,8 +12,9 @@ namespace WebServerCore.Connection {
         public string UserAddress { get { return client.RemoteEndPoint.ToString(); } }
         public bool Connected { get { return client.Connected; } }
         public int Available { get { return client.Available; } }
+        public readonly bool Crypt;
+        public int ReceiveTimeout { get { return client.ReceiveTimeout; } set { client.ReceiveTimeout = value; } }
 
-        protected readonly bool crypt;
         protected readonly Socket client;
         protected readonly SslStream sslStream;
         protected readonly NetworkStream stream;
@@ -21,30 +22,48 @@ namespace WebServerCore.Connection {
         internal Connection(Socket client, X509Certificate crypt = null) {
             this.client = client;
             if (crypt != null) {
-                this.crypt = true;
+                this.Crypt = true;
                 sslStream = new SslStream(new NetworkStream(client));
                 sslStream.AuthenticateAsServer(crypt);
             }
             else {
-                this.crypt = false;
+                this.Crypt = false;
                 stream = new NetworkStream(client);
             }
             Log.Write(LogType.INFO, "Connection", $"Подключение от {client.RemoteEndPoint} {(crypt == null ? "без шифрования" : "с шифрованием")}");
         }
 
-        protected Connection(Connection cc) {
-            crypt = cc.crypt;
+        internal protected Connection(Connection cc) {
+            Crypt = cc.Crypt;
             client = cc.client;
             sslStream = cc.sslStream;
             stream = cc.stream;
         }
 
+        internal void Close() {
+            if (Crypt) {
+                if (sslStream != null) {
+                    sslStream.Close();
+                }
+            }
+            else {
+                if (stream != null) {
+                    stream.Close();
+                }
+            }
+        }
+
         public byte? ReadByte() {
             int readed;
-            if (crypt)
-                readed = sslStream.ReadByte();
-            else
-                readed = stream.ReadByte();
+            try {
+                if (Crypt)
+                    readed = sslStream.ReadByte();
+                else
+                    readed = stream.ReadByte();
+            }
+            catch (System.IO.IOException e) {
+                throw new ConnectionCloseException("Удаленный хост разорвал соединение", e);
+            }
             if (readed == -1)
                 return null;
             else
@@ -52,11 +71,16 @@ namespace WebServerCore.Connection {
         }
 
         public byte[] Read(int count = 10000) {
-            byte[] read = null;
-            if (crypt)
-                sslStream.Read(read, 0, count);
-            else
-                stream.Read(read, 0, count);
+            byte[] read = new byte[count];
+            try {
+                if (Crypt)
+                    sslStream.Read(read, 0, count);
+                else
+                    stream.Read(read, 0, count);
+            }
+            catch (System.IO.IOException e) {
+                throw new ConnectionCloseException("Удаленный хост разорвал соединение", e);
+            }
             return read;
         }
 
@@ -71,7 +95,7 @@ namespace WebServerCore.Connection {
             string read;
 
             while (readB != null) {
-                read = Encoding.ASCII.GetString(new byte[] { (byte)readB });
+                read = Encoding.UTF8.GetString(new byte[] { (byte)readB });
 
                 if (read == "\r")
                     r = true;
@@ -85,17 +109,27 @@ namespace WebServerCore.Connection {
         }
 
         public void WriteByte(byte b) {
-            if (crypt)
-                sslStream.WriteByte(b);
-            else
-                stream.WriteByte(b);
+            try {
+                if (Crypt)
+                    sslStream.WriteByte(b);
+                else
+                    stream.WriteByte(b);
+            }
+            catch (System.IO.IOException e) {
+                throw new ConnectionCloseException("Удаленный хост разорвал соединение", e);
+            }
         }
 
         public void Write(byte[] b) {
-            if (crypt)
-                sslStream.Write(b);
-            else
-                stream.Write(b, 0, b.Length);
+            try {
+                if (Crypt)
+                    sslStream.Write(b);
+                else
+                    stream.Write(b, 0, b.Length);
+            }
+            catch (System.IO.IOException e) {
+                throw new ConnectionCloseException("Удаленный хост разорвал соединение", e);
+            }
         }
 
         /// <summary>
