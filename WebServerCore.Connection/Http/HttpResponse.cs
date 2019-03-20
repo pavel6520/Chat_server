@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WebServerCore.Connection.Http {
     public sealed class HttpResponse {
-        private readonly Connection cc;
+        private readonly ConnectionClass cc;
         private bool closed;
         
         public string ProtocolVersion { get; set; }
@@ -21,7 +21,9 @@ namespace WebServerCore.Connection.Http {
         public WebHeaderCollection Headers { get; set; }
         public string RedirectLocation { get; set; }
 
-        internal HttpResponse(Connection cc) {
+        public bool IsCrypt { get { return cc.Crypt; } }
+
+        internal HttpResponse(ConnectionClass cc) {
             this.cc = cc;
             Cookies = new CookieCollection();
             Headers = new WebHeaderCollection();

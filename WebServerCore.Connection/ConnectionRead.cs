@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace WebServerCore.Connection {
-    public sealed class ConnectionRead : Connection {
-        internal ConnectionRead(Connection cc) : base(cc) {
+    public sealed class ConnectionRead : ConnectionClass {
+        internal ConnectionRead(ConnectionClass cc) : base(cc) {
         }
 
         private new void ReadByte() {

@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using System.IO.Compression;
 
 namespace WebServerCore.Connection {
-    public class ConnectionWrite : Connection {
-        internal ConnectionWrite(Connection cc) : base(cc) {
+    public class ConnectionWrite : ConnectionClass {
+        internal ConnectionWrite(ConnectionClass cc) : base(cc) {
         }
 
         private new void WriteByte(byte b) {

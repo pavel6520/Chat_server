@@ -18,9 +18,10 @@ namespace WebServerCore.Server {
 
         public Listener() {
             listenerList = new List<Socket>(1);
+            ConnectionManager.LoadPackage();
         }
 
-        public int StartListener(IPAddress address, int port, int maxQueue = 1000, X509Certificate certificate = null, int timeOutHTTP = 30000, int timeOutWS = 1800000) {
+        public int StartListener(IPAddress address, int port, string Domain, int maxQueue = 1000, X509Certificate certificate = null, int timeOutHTTP = 30000, int timeOutWS = 1800000) {
             try {
                 Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 listener.Bind(new IPEndPoint(address, port));
@@ -29,28 +30,28 @@ namespace WebServerCore.Server {
                 Task.Factory.StartNew(() => {
                     try {
                         while (true) {
-                            Socket client = socketListenerSSL.Accept();
+                            Socket client = listener.Accept();
                             client.ReceiveTimeout = timeOutHTTP;
                             Task.Factory.StartNew(() => {
                                 try {
-                                    ConnectionManager.ClientStart(client, certificate, timeOutWS);
+                                    ConnectionManager.ClientStart(client, certificate, timeOutWS, ref Domain);
                                 }
                                 catch (Exception e) {
-                                    Log.Write(LogType.ERROR, "Listener", $"Ошибка обработки подключения: {e.Message}", e.StackTrace);
+                                    Core.Log.Error("Ошибка обработки подключения", e);
                                 }
                             }, TaskCreationOptions.LongRunning);
                         }
                     }
                     catch (SocketException e) {
-                        Log.Write(LogType.INFO, "Listener", $"Прослушиватель порта {port} остановлен: {e.Message}");
+                        Core.Log.Info($"Прослушиватель порта {port} остановлен: {e.Message}");
                     }
                     catch (Exception e) {
-                        Log.Write(LogType.ERROR, "Listener", $"Ошибка приемника подключений: {e.Message}", e.StackTrace);
+                        Core.Log.Error("Ошибка приемника подключений", e);
                     }
                 }, TaskCreationOptions.LongRunning);
             }
             catch (Exception e) {
-                Log.Write(LogType.ERROR, "Listener", $"Ошибка запуска прослушивателя: {e.Message}", e.StackTrace);
+                Core.Log.Error("Ошибка запуска прослушивателя", e);
                 return 1;
             }
             return 0;
@@ -68,7 +69,7 @@ namespace WebServerCore.Server {
                         Task.Factory.StartNew(() => ClientStart(client), TaskCreationOptions.LongRunning);
                     }
                     catch (Exception e) {
-                        Log.Write(LogType.ERROR, "Listener", $"Ошибка обработки подключения: {e.Message}", e.StackTrace);
+                        Core.Log.Error("Ошибка обработки подключения", e);
                     }
                 }
             }, TaskCreationOptions.LongRunning);
@@ -84,7 +85,7 @@ namespace WebServerCore.Server {
                             ClientStart(client, true);
                         }
                         catch (Exception e) {
-                            Log.Write(LogType.ERROR, "Listener", $"Ошибка обработки подключения: {e.Message}", e.StackTrace);
+                            Core.Log.Error("Ошибка обработки подключения", e);
                         }//TODO
                     }, TaskCreationOptions.LongRunning);
                 }
@@ -95,22 +96,23 @@ namespace WebServerCore.Server {
         private void ClientStart(Socket client, bool crypt = false) {
             int num = count++;
             Console.WriteLine($"{num}===========================HTTP START");
-            Connection.Connection cc;
+            ConnectionClass cc;
             if (crypt) {
-                cc = new Connection.Connection(client, new X509Certificate2("cert.pfx", "6520"));
+                cc = new ConnectionClass(client, new X509Certificate2("cert.pfx", "6520"));
             }
             else {
-                cc = new Connection.Connection(client);
+                cc = new ConnectionClass(client);
             }
             bool end = true;
             HttpContext context = null;
             try {
                 while (end) {
-                    context = new HttpContext(cc);
+                    string d = "127.0.0.1";
+                    context = new HttpContext(cc, ref d);
                     HttpRequest request = context.Request;
                     HttpResponse response = context.Response;
 
-                    Console.WriteLine($"{num}==={request.Method} {request.Path} {request.Protocol}/{request.ProtocolVersion} - {request.UserAddress}");
+                    Console.WriteLine($"{num}==={request.Method} {request.Uri} {request.Protocol}/{request.ProtocolVersion} - {request.UserAddress}");
                     //for (int i = 0; i < request.Headers.Count; i++)
                     //    Console.WriteLine($"{request.Headers.GetKey(i)} : {request.Headers.GetValues(i)[0]}");
                     //Console.WriteLine();
@@ -186,7 +188,7 @@ namespace WebServerCore.Server {
                 }
             }
             catch (ConnectionCloseException) {
-                Log.Write(LogType.DEBUG, "Listener", $"Клиент {client.RemoteEndPoint} разорвал соединение до отправки данных");
+                Core.Log.Debug($"Клиент {client.RemoteEndPoint} разорвал соединение до отправки данных");
             }
             Console.WriteLine($"{num}===========================HTTP END");
         }

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace WebServerCore.Connection {
-    class ConnectionCloseException : Exception {
+    public class ConnectionCloseException : Exception {
         public ConnectionCloseException(string message) : base(message) { }
         public ConnectionCloseException(string message, Exception innerException) : base(message, innerException) { }
     }

@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace WebServerCore.Connection {
-    public class Connection {
+    public class ConnectionClass {
         public string UserAddress { get { return client.RemoteEndPoint.ToString(); } }
         public bool Connected { get { return client.Connected; } }
         public int Available { get { return client.Available; } }
@@ -19,7 +19,7 @@ namespace WebServerCore.Connection {
         protected readonly SslStream sslStream;
         protected readonly NetworkStream stream;
 
-        internal Connection(Socket client, X509Certificate crypt = null) {
+        public ConnectionClass(Socket client, X509Certificate crypt = null) {
             this.client = client;
             if (crypt != null) {
                 this.Crypt = true;
@@ -30,27 +30,27 @@ namespace WebServerCore.Connection {
                 this.Crypt = false;
                 stream = new NetworkStream(client);
             }
-            Log.Write(LogType.INFO, "Connection", $"Подключение от {client.RemoteEndPoint} {(crypt == null ? "без шифрования" : "с шифрованием")}");
         }
 
-        internal protected Connection(Connection cc) {
+        internal protected ConnectionClass(ConnectionClass cc) {
             Crypt = cc.Crypt;
             client = cc.client;
             sslStream = cc.sslStream;
             stream = cc.stream;
         }
 
-        internal void Close() {
-            if (Crypt) {
-                if (sslStream != null) {
-                    sslStream.Close();
-                }
-            }
-            else {
-                if (stream != null) {
-                    stream.Close();
-                }
-            }
+        public void Close() {
+        //    if (Crypt) {
+        //        if (sslStream != null) {
+        //            sslStream.Close();
+        //        }
+        //    }
+        //    else {
+        //        if (stream != null) {
+        //            stream.Close();
+        //        }
+        //    }
+            client.Close();
         }
 
         public byte? ReadByte() {

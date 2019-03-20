@@ -6,16 +6,16 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace WebServerCore.Connection {
-    class WebSocket {
-        private Connection cc;
+    public sealed class WebSocket {
+        private ConnectionClass cc;
         private Http.HttpContext context;
 
         public System.Net.CookieCollection Cookie { get { return context.Request.Cookie; } }
         public string HostName { get { return context.Request.HostName; } }
-        public string Path { get { return context.Request.Path; } }
+        public string Path { get { return context.Request.Uri; } }
         public string UserAddress { get { return cc.UserAddress; } }
 
-        internal WebSocket(Http.HttpContext context) {
+        public WebSocket(Http.HttpContext context) {
             this.context = context;
             if (!context.Request.IsWebSocket) {
                 throw new FormatException("Подключение не содержит запрос для включения WebSocket");
@@ -88,7 +88,7 @@ namespace WebServerCore.Connection {
             public byte[] Mask_32;
             public ulong Length_64;
 
-            public Frame(Connection cc, byte codeOne = 0) {
+            public Frame(ConnectionClass cc, byte codeOne = 0) {
                 byte? byteBuf = cc.ReadByte();
                 if (byteBuf == null) {
                     throw new NullReferenceException("Нет данных для чтения");
@@ -115,7 +115,7 @@ namespace WebServerCore.Connection {
                 }
             }
 
-            public static void Write(Connection cc, bool Fin, byte Code, bool MaskBool, ulong Length, byte[] Mask) {
+            public static void Write(ConnectionClass cc, bool Fin, byte Code, bool MaskBool, ulong Length, byte[] Mask) {
                 byte b1 = (byte)((Fin ? 128 : 0) + Code);
                 cc.WriteByte(b1);
                 byte b2;

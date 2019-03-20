@@ -13,7 +13,7 @@ namespace WebServerCore {
         private static string pathInfo = path + "/info.log";
         private static string pathDebug = path + "/debug.log";
 
-        public static int Start() {
+        internal static int Start() {
             try {
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);

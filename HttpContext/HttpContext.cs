@@ -12,9 +12,9 @@ namespace WebServerCore.Connection.Http {
         public HttpResponse Response { get; private set; }
         public bool IsCrypt { get { return cc.Crypt; } }
 
-        internal HttpContext(Connection cc) {
+        internal HttpContext(Connection cc, ref string Domain) {
             this.cc = cc;
-            Request = new HttpRequest(cc);
+            Request = new HttpRequest(cc, ref Domain);
             Response = new HttpResponse(cc);
         }
 

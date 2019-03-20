@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{862BED63-0901-4542-935B-F2976905CDE0}</ProjectGuid>
+    <ProjectGuid>{E2236C6D-A97C-4E99-9778-ADA45CEA36A0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ConnectionWorker</RootNamespace>
-    <AssemblyName>ConnectionWorker</AssemblyName>
+    <RootNamespace>HttpContext</RootNamespace>
+    <AssemblyName>HttpContext</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -41,14 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConnectionWorkerController_class.cs" />
+    <Compile Include="HttpContext.cs" />
+    <Compile Include="HttpRequest.cs" />
+    <Compile Include="HttpResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\WebServerCore.Connection\WebServerCore.Connection.csproj">
-      <Project>{affb6ed5-0341-45f5-808b-f7015620b792}</Project>
-      <Name>WebServerCore.Connection</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

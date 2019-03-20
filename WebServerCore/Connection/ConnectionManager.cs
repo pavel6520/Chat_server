@@ -6,18 +6,25 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using WebServerCore.Connection.Http;
+using PackageManager;
 
 namespace WebServerCore.Connection {
-    static class ConnectionManager {
-        internal static void ClientStart(Socket client, X509Certificate certificate, int timeoutWS) {
-            Connection cc = new Connection(client, certificate);
+    internal static class ConnectionManager {
+        private static PackageManagerClass manager;
+
+        internal static void LoadPackage() {
+            manager = new PackageManagerClass($"{System.IO.Path.DirectorySeparatorChar}application{System.IO.Path.DirectorySeparatorChar}");
+        }
+
+        internal static void ClientStart(Socket client, X509Certificate certificate, int timeoutWS, ref string Domain) {
+            ConnectionClass cc = new ConnectionClass(client, certificate);
             bool end = true;
             HttpContext context = null;
             try {
                 while (end) {
-                    context = new HttpContext(cc);
+                    context = new HttpContext(cc, ref Domain);
 #if DEBUG
-                    Console.WriteLine($"{context.Request.Method} {context.Request.Path} {context.Request.Protocol}/{context.Request.ProtocolVersion} - {context.Request.UserAddress}");
+                    Console.WriteLine($"{context.Request.Method} {context.Request.Uri} {context.Request.Protocol}/{context.Request.ProtocolVersion} - {context.Request.UserAddress}");
 #endif
                     if (context.Request.IsWebSocket) {
                         cc.ReceiveTimeout = timeoutWS;
@@ -26,15 +33,19 @@ namespace WebServerCore.Connection {
                         break;
                     }
                     else {
-
-                        break;
+                        manager.WorkHttp(ref context);
                     }
                 }
             }
             catch (ConnectionCloseException) {
-                Log.Write(LogType.DEBUG, "Listener", $"Клиент {client.RemoteEndPoint} разорвал соединение до отправки данных");
+                Core.Log.Debug($"Клиент {client.RemoteEndPoint} разорвал соединение до отправки данных");
             }
+            finally {
+                cc.Close();
+            }
+#if DEBUG
             Console.WriteLine("===========================HTTP END");
+#endif
         }
     }
 }

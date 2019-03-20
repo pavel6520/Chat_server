@@ -18,27 +18,31 @@ namespace WebServerCore.Connection.Http {
         public string Method { get; private set; }
         public string Protocol { get; private set; }
         public string ProtocolVersion { get; private set; }
-        public string Path { get; private set; }
+        public string Uri { get; private set; }
+        public readonly Uri UriParse;
         public string Upgrade { get; private set; }
         public string UserAddress { get; private set; }
         public string UserAgent { get; private set; }
         public string[] UserLanguage { get; private set; }
+        public string SettedDomain { get; private set; }
 
         public System.Collections.Specialized.NameValueCollection Headers { get; private set; }
 
+        public bool IsCrypt { get { return cc.Crypt; } }
         public bool IsWebSocket { get; private set; }
 
-        internal HttpRequest(Connection cc) {
+        internal HttpRequest(Connection cc, ref string Domain) {
+            SettedDomain = Domain;
             this.cc = cc;
             UserAddress = cc.UserAddress;
             string sBuf = cc.ReadLine();
             string[] buf = sBuf.Split(Const.SPLIT_SPACE, StringSplitOptions.RemoveEmptyEntries);
             if (buf.Length != 3)
             {
-                throw new ConnectionCloseException($"Ожидался формат METHOD PATH PROTOCOL. Получена строка {sBuf}");
+                throw new ConnectionCloseException($"Ожидался формат METHOD URI PROTOCOL. Получена строка {sBuf}");
             }
             Method = buf[0];
-            Path = buf[1];
+            this.Uri = buf[1];
             
             buf = buf[2].Split(Const.SPLIT_SLASH, StringSplitOptions.RemoveEmptyEntries);
             Protocol = buf[0];
@@ -95,6 +99,28 @@ namespace WebServerCore.Connection.Http {
                         break;
                 }
             }
+            string path = this.Uri;
+            if (path.IndexOf("://") == -1) {
+                string scheme;
+                if (IsCrypt) {
+                    scheme = "https://";
+                }
+                else {
+                    scheme = "http://";
+                }
+                try {
+                    UriParse = new UriBuilder(scheme + HostName + path).Uri;
+                }
+                catch {
+                    UriParse = new UriBuilder(scheme + SettedDomain + path).Uri;
+                }
+            }
+            else {
+                UriParse = new UriBuilder(path).Uri;
+            }
+
+
+
             IsWebSocket = Connection.Contains("Upgrade") && Upgrade == "websocket";
         }
 

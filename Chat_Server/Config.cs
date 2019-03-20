@@ -19,23 +19,26 @@ namespace WebServerCore {
             try {
                 FileStream fs = new FileStream(_file, FileMode.Open);
                 body = (Body)formatter.Deserialize(fs);
+                fs.Close();
                 result = true;
-                Log.Write(LogType.DEBUG, "Config", $"Файл {file} успешно прочитан");
+                //Log.Write(LogType.DEBUG, "Config", $"Файл {file} успешно прочитан");
             }
             catch {
                 try {
                     FileStream fs = new FileStream(_file, FileMode.Create);
-                    body = new Body();
-                    body.mysql = new MySQLstr { login = "root", pass = "pass", host = "localhost", port = 3306, db = "chat" };
-                    body.http = new HTTPstr { port = 80 };
-                    body.https = new HTTPSstr { port = 443 };
+                    body = new Body {
+                        mysql = new MySQLstr { login = "root", pass = "pass", host = "localhost", port = 3306, db = "chat" },
+                        http = new HTTPstr { port = 80 },
+                        https = new HTTPSstr { port = 443 }
+                    };
                     formatter.Serialize(fs, body);
                 }
                 catch (Exception ex) {
-                    Log.Write(LogType.FATAL, "Config", $"Не удалось создать файл {file} с ошбкой: {ex.Message}");
+                    //Log.Write(LogType.FATAL, "Config", $"Не удалось создать файл {file} с ошбкой: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Не удалось создать файл {file} с ошбкой: {ex.Message}");
                     Environment.Exit(2);
                 }
-                Log.Write(LogType.WARN, "Config", $"Не удалось открыть файл {file} либо он повржден. Был создан новый файл");
+                //Log.Write(LogType.WARN, "Config", $"Не удалось открыть файл {file} либо он повржден. Был создан новый файл");
             }
 
             mysql = body.mysql;
