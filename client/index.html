@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CHAT</title>
+	<meta charset="utf-8">
+	<link href="client/style.css" rel="stylesheet">
+	<link href="client/jquery-ui.css" rel="stylesheet">
+	<link href="client/jquery-ui.structure.css" rel="stylesheet">
+	<link href="client/jquery-ui.theme.css" rel="stylesheet">
+	<script src="client/jquery.js"></script>
+	<script src="client/jquery-ui.js"></script>
+	<script src="client/func.js"></script>
+	<script src="client/struct.js"></script>
+</head>
+<body>
+	<div id="blockErr" style="display: none;"></div>
+	<div id="blockAuth" style="display: none;">
+		<div id="tabs-logsign">
+			<ul>
+				<li><a href="#tabs-login">Log-In</a></li>
+				<li><a href="#tabs-signup">Sign-Up</a></li>
+			</ul>
+			<div id="tabs-login"><p>
+				<input id="authLogin" name="login" type="text" placeholder="Login" />
+				<input id="authPass" name="password" type="password" placeholder="Password" />
+				<button id="authBtn">Войти</button>
+				<label for="checkbox-save">Запомнить</label>
+				<input id="checkbox-save" type="checkbox" name="checkbox-1">
+			</p></div>
+			<div id="tabs-signup"><p>
+				<input id="regLogin" name="login" type="text" placeholder="Login" />
+				<input id="regPass" name="password" type="password" placeholder="Password" />
+				<input id="regEmail" name="email" type="email" placeholder="Email" />
+				<button id="regBtn">Зарегистрироваться</button>
+			</p></div>
+		</div>
+	</div>
+	<div id="blockChat" style="display: none;">
+		<div id="ChatBlockContacts">
+			<div>
+				<div class="ChatBTN"><button id="ExitBTN">Exit</button></div>
+				<div class="ChatBTN" data="public">Public</div>
+				<div id="ChatList2">
+					<ul id="ChatList3"></ul>
+				</div>
+			</div>
+		</div>
+		<div id="ChatBody1">
+			<div>
+				<div id="ChatBodyList1"></div>
+				<div id="ChatBodyInput">
+					<div>
+						<div id="ChatTextArea"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

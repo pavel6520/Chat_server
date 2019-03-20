@@ -1,25 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Reflection;
+using WebServerCore;
 
-namespace Chat_server
-{
-    class Program
-    {
-        static HTTP_Server http;
-        static TCP_server tcp;
+namespace Chat_server {
+    class Program {
+        static Core core;
 
-        static void Main(string[] args)
-        {
-            http = new HTTP_Server(30000);
-            tcp = new TCP_server(8080);
-            http.Start();
-            tcp.Start();
-            while (true)
-            {
-                Console.ReadKey();
-                http.LoadFile();
+        static void Main(string[] args) {
+            string path = Assembly.GetExecutingAssembly().Location;
+            Environment.CurrentDirectory = path.Substring(0, path.LastIndexOf(System.IO.Path.DirectorySeparatorChar));
+            
+            //Config.Read("config.xml");
+            core = new Core();
+            core.Start();
+
+            while (true) {
+                string command = Console.ReadLine();
+                if (command == "up") {
+
+                }
+                else if (command == "close") {
+                    Console.WriteLine($"{DateTime.Now} Program close");
+                    return;
+                }
+                else Console.WriteLine("Error command");
             }
         }
     }
