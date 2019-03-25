@@ -61,25 +61,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Connection\ConnectionManager.cs" />
     <Compile Include="Const.cs" />
+    <Compile Include="Plugins\ControllerSettings.cs" />
+    <Compile Include="Plugins\ControllerTreeElement.cs" />
     <Compile Include="Core.cs" />
+    <Compile Include="Exceptions.cs" />
+    <Compile Include="Plugins\Plugin.cs" />
+    <Compile Include="Plugins\PluginLoader.cs" />
+    <Compile Include="Plugins\PluginManagerClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Regular.cs" />
-    <Compile Include="Server\Listener.cs" />
+    <Compile Include="Listener.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PackageManager\PackageManager.csproj">
-      <Project>{7c81d174-2ec5-402a-a1d4-837c5a85c9f8}</Project>
-      <Name>PackageManager</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\WebServerCore.Connection\WebServerCore.Connection.csproj">
-      <Project>{affb6ed5-0341-45f5-808b-f7015620b792}</Project>
-      <Name>WebServerCore.Connection</Name>
+    <ProjectReference Include="..\ConnectionWorker\ConnectionWorker.csproj">
+      <Project>{862bed63-0901-4542-935b-f2976905cde0}</Project>
+      <Name>ConnectionWorker</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
