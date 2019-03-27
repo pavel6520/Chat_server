@@ -5,9 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ConnectionWorker {
-	class LayoutWorker : PluginWorker {
-		public void Init() {
+	public class LayoutWorker : PluginWorker {
+		private bool contentIncluded;
 
+		public LayoutWorker() : base() { contentIncluded = false; }
+
+		public void IncludeContent() {
+			if (!contentIncluded) {
+				contentIncluded = true;
+				contentType.Add(10);
+			}
 		}
 	}
 }

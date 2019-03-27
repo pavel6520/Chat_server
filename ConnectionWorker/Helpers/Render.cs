@@ -7,9 +7,16 @@ using System.Threading.Tasks;
 namespace ConnectionWorker.Helpers {
 	[Serializable]
 	public class RenderClass {
-		public bool isDefault { get; private set; }
+		public string layout { get; private set; }
 		public bool isEnabled { get; private set; }
 
+		public RenderClass() {
+			isEnabled = true;
+			layout = "default";
+		}
+
 		public void DissableRender() { isEnabled = false; }
+
+		public void SetLayout(string name) { layout = name; }
 	}
 }

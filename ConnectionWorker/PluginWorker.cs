@@ -11,26 +11,37 @@ using ConnectionWorker.Helpers;
 namespace ConnectionWorker {
 	public abstract class PluginWorker : MarshalByRefObject {
 		public HelperClass _helper;
-		private List<byte> contentType;
-		private List<string> contentString;
+		protected List<byte> contentType;
+		protected List<string> contentString;
 		private List<MySqlDataObject> contentMySqlDataObject;
 		private List<MSSqlDataObject> contentMSSqlDataObject;
 
-		public void _SetContext(HelperClass helper) {
+		public void _SetHelper(HelperClass helper) {
 			_helper = helper;
+		}
+
+		public void _Work(string methodName = null) {
 			contentType = new List<byte>(0);
 			contentString = new List<string>(0);
 			contentMySqlDataObject = new List<MySqlDataObject>(0);
 			contentMSSqlDataObject = new List<MSSqlDataObject>(0);
-		}
-
-		public void _Work(string methodName) {
-			GetType().GetMethod(methodName).Invoke(this, null);
+			System.Reflection.MethodInfo m = GetType().GetMethod("Init");
+			if (m != null) {
+				m.Invoke(this, null);
+			}
+			if (methodName != null) {
+				GetType().GetMethod(methodName).Invoke(this, null);
+			}
 		}
 
 		public void Echo(string s) {
 			contentType.Add(0);
 			contentString.Add(s);
+		}
+
+		public void IncludeLayout(string name) {
+			contentType.Add(11);
+			contentString.Add(name);
 		}
 
 		public void EchoMySQLReader(MySqlCommand command, Func<MySqlDataReader, string> func) {
@@ -67,6 +78,13 @@ namespace ConnectionWorker {
 						contentString.RemoveAt(0);
 						break;
 					case 10:
+						contentType.RemoveAt(0);
+						ec = new EchoClass { type = EchoClass.EchoType.Content };
+						break;
+					case 11:
+						contentType.RemoveAt(0);
+						ec = new EchoClass { type = EchoClass.EchoType.Layout, param = contentString[0] };
+						contentString.RemoveAt(0);
 						break;
 					case 20:
 						if (contentMySqlDataObject[0].reader.Read()) {

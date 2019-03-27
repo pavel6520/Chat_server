@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace defaultLayout {
-	public class defaultLayout : PluginWorker {
-
+public class defaultLayout : LayoutWorker {
+	public void Init() {
+		Echo("<html><head><title>Default Layout WORKED!</title></head><body>");
+		IncludeContent();
+		Echo("</body></html>");
 	}
 }

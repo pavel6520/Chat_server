@@ -19,7 +19,7 @@ public class indexController : ControllerWorker {
         Echo("IndexController - indexAction WORKED!<br>");
         //MySqlConnection connection = new MySqlConnection("server=127.0.0.1;port=3306;user=root;password=6520;database=chat;");
         //connection.Open();
-        MySqlCommand command = new MySqlCommand("select * from testTable");
+        MySqlCommand command = new MySqlCommand("select * from testTable limit 1000");
         EchoMySQLReader(command, reader => {
             return $"<span>ТЕСТОВЫЙ ВЫВОД => {reader[0].ToString()} === {reader[1].ToString()}</span><br>";
         });
@@ -45,7 +45,7 @@ public class indexController : ControllerWorker {
 		Echo("IndexController - testAction WORKED!<br>");
 		MySqlConnection connection = new MySqlConnection("server=127.0.0.1;port=3306;user=root;password=6520;database=chat;");
 		connection.Open();
-		MySqlCommand command = new MySqlCommand("select * from testTable", connection);
+		MySqlCommand command = new MySqlCommand("select * from testTable limit 1000", connection);
 		string s = null;
 		MySqlDataReader dataReader = command.ExecuteReader();
 		while (dataReader.Read()) {

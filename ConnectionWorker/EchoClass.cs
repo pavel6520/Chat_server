@@ -11,8 +11,8 @@
 
 		public enum EchoType {
 			String,
+			Content,
 			Layout,
-			MySqlCommand,
 			End
 		}
 	}

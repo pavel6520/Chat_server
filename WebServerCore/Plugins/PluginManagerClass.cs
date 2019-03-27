@@ -1,4 +1,5 @@
 ﻿using ConnectionWorker;
+using ConnectionWorker.Helpers;
 using log4net;
 using MySql.Data.MySqlClient;
 using System;
@@ -168,42 +169,33 @@ namespace WebServerCore.Plugins {
 			}
 			if (tree.isLoad && tree.Actions.Contains(action)) {
 				HttpListenerContext context = helper.Context;
-				ControllerWorker worker = (ControllerWorker)tree.plugin.GetPluginRefObject();
-				worker._SetContext(helper);
+				ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
+				controller._SetHelper(helper);
 				try {
-					worker._Work(action);
+					controller._Work(action);
 				}
 				catch { throw; }
-				byte[] buf;
-				context.Response.ContentType = "text/html; charset=UTF-8";
-				context.Response.StatusDescription = "OK";
-				EchoClass ec;
-				buf = Encoding.UTF8.GetBytes("<html><body>");
 				string bufS = "";
-				bool end = true;
-				while (end) {
-					if (bufS.Length > 16000) {
-						buf = Encoding.UTF8.GetBytes(bufS);
-						bufS = "";
-						helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
-					}
-					ec = worker._GetNextContent();
-					switch (ec.type) {
-						case EchoClass.EchoType.String:
-							bufS += (string)ec.param;
-							break;
-						case EchoClass.EchoType.Layout:
-							break;
-						case EchoClass.EchoType.End:
-							end = false;
-							buf = Encoding.UTF8.GetBytes(bufS);
-							helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
-							break;
-					}
-				}
 
-				buf = Encoding.UTF8.GetBytes($"</body></html>");
-				context.Response.OutputStream.Write(buf, 0, buf.Length);
+				//TODO
+				//helper = controller._GetHelper();
+				helper._render = new RenderClass();
+
+				if (helper._render.isEnabled) {
+
+					helper.Context.Response.ContentType = "text/html; charset=UTF-8";
+					helper.Context.Response.StatusDescription = "OK";
+					ResentLayout(ref helper, ref controller, ref bufS);
+				}
+				else {
+
+				}
+				if (bufS.Length > 0) {
+					byte[] buf = Encoding.UTF8.GetBytes(bufS);
+					helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
+					buf = null;
+					bufS = null;
+				}
 			}
 			else {
 				ControllerTreeElement treeElement = (ControllerTreeElement)tree.elements[action];
@@ -213,6 +205,49 @@ namespace WebServerCore.Plugins {
 				else {
 					throw new PathNotFoundException("");
 				}
+			}
+		}
+
+		void ResentLayout(ref HelperClass helper, ref ControllerWorker controller, ref string bufS) {
+			LayoutWorker layout = (LayoutWorker)((Plugin)layoutPlugins[helper._render.layout]).GetPluginRefObject();
+			layout._Work();
+			byte[] buf;
+			EchoClass ec = layout._GetNextContent();
+			while (ec.type != EchoClass.EchoType.End) {
+				switch (ec.type) {
+					case EchoClass.EchoType.String:
+						bufS += (string)ec.param;
+						break;
+					case EchoClass.EchoType.Layout:
+						break;
+					case EchoClass.EchoType.Content:
+						ResentContent(ref helper, ref controller, ref bufS);
+						break;
+				}
+				if (bufS.Length > 16000) {
+					buf = Encoding.UTF8.GetBytes(bufS.Substring(0, 16000));
+					bufS = bufS.Remove(0, 16000);
+					helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
+				}
+				ec = layout._GetNextContent();
+			}
+		}
+
+		void ResentContent(ref HelperClass helper, ref ControllerWorker controller, ref string bufS) {
+			byte[] buf;
+			EchoClass ec = controller._GetNextContent();
+			while (ec.type != EchoClass.EchoType.End) {
+				switch (ec.type) {
+					case EchoClass.EchoType.String:
+						bufS += (string)ec.param;
+						break;
+				}
+				if (bufS.Length > 16000) {
+					buf = Encoding.UTF8.GetBytes(bufS.Substring(0, 16000));
+					bufS = bufS.Remove(0, 16000);
+					helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
+				}
+				ec = controller._GetNextContent();
 			}
 		}
 	}
