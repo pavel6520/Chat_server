@@ -11,90 +11,93 @@ using ConnectionWorker.Helpers;
 namespace ConnectionWorker {
 	public abstract class PluginWorker : MarshalByRefObject {
 		public HelperClass _helper;
-		private List<int> contentType;
+		private List<byte> contentType;
 		private List<string> contentString;
 		private List<MySqlDataObject> contentMySqlDataObject;
 		private List<MSSqlDataObject> contentMSSqlDataObject;
 
 		public void _SetContext(HelperClass helper) {
 			_helper = helper;
+			contentType = new List<byte>(0);
+			contentString = new List<string>(0);
+			contentMySqlDataObject = new List<MySqlDataObject>(0);
+			contentMSSqlDataObject = new List<MSSqlDataObject>(0);
 		}
 
 		public void _Work(string methodName) {
-			GetType().GetMethod($"{methodName}Action").Invoke(this, null);
+			GetType().GetMethod(methodName).Invoke(this, null);
 		}
 
 		public void Echo(string s) {
-			if (contentType == null) {
-				contentType = new List<int>(0);
-			}
-			if (contentString == null) {
-				contentString = new List<string>(0);
-			}
 			contentType.Add(0);
 			contentString.Add(s);
 		}
 
-		public void EchoFromMySQL(MySqlConnection connect, MySqlDataReader reader, Func<MySqlDataReader, string> func) {
-			if (contentType == null) {
-				contentType = new List<int>(0);
-			}
-			if (contentMySqlDataObject == null) {
-				contentMySqlDataObject = new List<MySqlDataObject>(0);
-			}
-			contentType.Add(1);
+		public void EchoMySQLReader(MySqlCommand command, Func<MySqlDataReader, string> func) {
+			MySqlConnection connect = new MySqlConnection("server=127.0.0.1;port=3306;user=root;password=6520;database=chat;");
+			connect.Open();
+			command.Connection = connect;
+			contentType.Add(20);
 			contentMySqlDataObject.Add(new MySqlDataObject {
 				connect = connect,
-				reader = reader,
+				reader = command.ExecuteReader(),
 				func = func
 			});
 		}
 
-		public void EchoFromMSSQL(SqlConnection connect, SqlDataReader reader, Func<SqlDataReader, string> func) {
-			if (contentType == null) {
-				contentType = new List<int>(0);
-			}
-			if (contentMSSqlDataObject == null) {
-				contentMSSqlDataObject = new List<MSSqlDataObject>(0);
-			}
-			contentType.Add(2);
+		public void EchoMSSqlReader(SqlCommand command, Func<SqlDataReader, string> func) {
+			SqlConnection connect = new SqlConnection(@"Data Source=62.76.36.20;Initial Catalog=outside;User Id=web_man;Password=dVhj7!wKM");
+			connect.Open();
+			command.Connection = connect;
+			contentType.Add(30);
 			contentMSSqlDataObject.Add(new MSSqlDataObject {
 				connect = connect,
-				reader = reader,
+				reader = command.ExecuteReader(),
 				func = func
 			});
 		}
 
-		public string _GetNextContentString() {
-			string s = null;
+		public EchoClass _GetNextContent() {
+			EchoClass ec = null;
 			if (contentType.Count > 0) {
-				if (contentType[0] == 0) {
-					contentType.RemoveAt(0);
-					s = contentString[0];
-					contentString.RemoveAt(0);
-				}
-				else if (contentType[0] == 1) {
-					s = contentMySqlDataObject[0].func(contentMySqlDataObject[0].reader);
-					if (s == null) {
+				switch (contentType[0]) {
+					case 0:
 						contentType.RemoveAt(0);
-						contentMySqlDataObject[0].reader.Close();
-						contentMySqlDataObject[0].connect.Close();
-						contentMySqlDataObject.RemoveAt(0);
-						s = _GetNextContentString();
-					}
-				}
-				else if (contentType[0] == 2) {
-					s = contentMSSqlDataObject[0].func(contentMSSqlDataObject[0].reader);
-					if (s == null) {
-						contentType.RemoveAt(0);
-						contentMSSqlDataObject[0].reader.Close();
-						contentMSSqlDataObject[0].connect.Close();
-						contentMSSqlDataObject.RemoveAt(0);
-						s = _GetNextContentString();
-					}
+						ec = new EchoClass { type = EchoClass.EchoType.String, param = contentString[0] };
+						contentString.RemoveAt(0);
+						break;
+					case 10:
+						break;
+					case 20:
+						if (contentMySqlDataObject[0].reader.Read()) {
+							ec = new EchoClass { type = EchoClass.EchoType.String, param = contentMySqlDataObject[0].func(contentMySqlDataObject[0].reader) };
+						}
+						else {
+							contentType.RemoveAt(0);
+							contentMySqlDataObject[0].reader.Close();
+							contentMySqlDataObject[0].connect.Close();
+							contentMySqlDataObject.RemoveAt(0);
+							ec = _GetNextContent();
+						}
+						break;
+					case 30:
+						if (contentMSSqlDataObject[0].reader.Read()) {
+							ec = new EchoClass { type = EchoClass.EchoType.String, param = contentMSSqlDataObject[0].func(contentMSSqlDataObject[0].reader) };
+						}
+						else {
+							contentType.RemoveAt(0);
+							contentMSSqlDataObject[0].reader.Close();
+							contentMSSqlDataObject[0].connect.Close();
+							contentMSSqlDataObject.RemoveAt(0);
+							ec = _GetNextContent();
+						}
+						break;
 				}
 			}
-			return s;
+			else {
+				ec = new EchoClass(EchoClass.EchoType.End);
+			}
+			return ec;
 		}
 
 		private class MySqlDataObject {

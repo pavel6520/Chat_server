@@ -9,64 +9,48 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 public class indexController : ControllerWorker {
-    public indexController() : base() { }
+    public indexController() : base() {
+		var t1 = typeof(JsonSerializer);
+		var t2 = typeof(MySqlConnection);
+		var t3 = typeof(SqlConnection);
+	}
 
     public void indexAction() {
         Echo("IndexController - indexAction WORKED!<br>");
-        MySqlConnection connection = new MySqlConnection("server=127.0.0.1;port=3306;user=root;password=6520;database=chat;");
-        connection.Open();
-        MySqlCommand command = new MySqlCommand("select * from testTable where string like '%ab%'", connection);
-        EchoFromMySQL(connection, command.ExecuteReader(), reader => {
-            if (reader.Read()) {
-                return $"<span>ТЕСТОВЫЙ ВЫВОД => {reader[0].ToString()} === {reader[1].ToString()}</span><br>";
-            }
-            else {
-                return null;
-            }
+        //MySqlConnection connection = new MySqlConnection("server=127.0.0.1;port=3306;user=root;password=6520;database=chat;");
+        //connection.Open();
+        MySqlCommand command = new MySqlCommand("select * from testTable");
+        EchoMySQLReader(command, reader => {
+            return $"<span>ТЕСТОВЫЙ ВЫВОД => {reader[0].ToString()} === {reader[1].ToString()}</span><br>";
         });
     }
 
 	public void mssqlAction() {
 		Echo("IndexController - mssqlAction WORKED!<br>");
-		SqlConnection connection = new SqlConnection(@"Data Source=62.76.36.20;Initial Catalog=outside;User Id=web_man;Password=dVhj7!wKM");
-
-		connection.Open();
 		SqlCommand command = new SqlCommand("select w.idisuup, family, name, secondname, NameScienceLevel, NameScienceRank, date_edit, Address, Phone, Email " +
 			"from worker2014 w " +
 			"join employeeInfo2016 ei on w.idisuup = ei.employee_id " +
-			"where activeEmpl = 'y'", connection);
-		EchoFromMSSQL(connection, command.ExecuteReader(), reader => {
-			if (reader.Read()) {
-				string s = null;
-				for (int i = 0; i < reader.FieldCount; i++) {
-					s += $"<span><b>{reader.GetName(i)}</b>: { reader[i].ToString()}</span><br>";
-				}
-				s += "<br>";
-				return s;
+			"where activeEmpl = 'y'");
+		EchoMSSqlReader(command, reader => {
+			string s = null;
+			for (int i = 0; i < reader.FieldCount; i++) {
+				s += $"<span><b>{reader.GetName(i)}</b>: { reader[i].ToString()}</span><br>";
 			}
-			else {
-				return null;
-			}
+			s += "<br>";
+			return s;
 		});
 	}
 
     public void testAction() {
-        Echo("<html><body><span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>" +
-            "<span>IndexController - testAction WORKED!</span><br>");
-    }
+		Echo("IndexController - testAction WORKED!<br>");
+		MySqlConnection connection = new MySqlConnection("server=127.0.0.1;port=3306;user=root;password=6520;database=chat;");
+		connection.Open();
+		MySqlCommand command = new MySqlCommand("select * from testTable", connection);
+		string s = null;
+		MySqlDataReader dataReader = command.ExecuteReader();
+		while (dataReader.Read()) {
+			s += "<span>ТЕСТОВЫЙ ВЫВОД => " + dataReader[0].ToString() + " === " + dataReader[1].ToString() + "</span><br>";
+		}
+		Echo(s);
+	}
 }

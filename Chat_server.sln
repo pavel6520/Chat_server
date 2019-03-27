@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "authController", "authContr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "defaultLayout", "defaultLayout\defaultLayout.csproj", "{78D085C2-5169-4BF4-B62A-14D69D4C74F3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{E18FE268-70D0-496A-86AC-A6BCCD5606F1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +50,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DD15D22D-8E25-452B-8C2B-CEA670690AB3} = {E18FE268-70D0-496A-86AC-A6BCCD5606F1}
+		{B55F3FF2-B37A-41F3-9B44-D9A1419D5D07} = {E18FE268-70D0-496A-86AC-A6BCCD5606F1}
+		{78D085C2-5169-4BF4-B62A-14D69D4C74F3} = {E18FE268-70D0-496A-86AC-A6BCCD5606F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {032FC2A7-F4CB-4FFC-A26B-D4301464D058}
