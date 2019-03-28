@@ -9,7 +9,7 @@ namespace ConnectionWorker.Helpers {
 	[Serializable]
 	public class HelperClass {
 		[NonSerialized]
-		public readonly HttpListenerContext Context;
+		public HttpListenerContext Context;
 		public RenderClass _render;
 		public RequestInfo Request;
 
@@ -20,6 +20,7 @@ namespace ConnectionWorker.Helpers {
 		private ReturnType returnType;
 
 		public HelperClass(ref HttpListenerContext context) {
+			_render = new RenderClass();
 			Context = context;
 			Request = new RequestInfo(context.Request);
 			returnType = ReturnType.Content;

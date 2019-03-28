@@ -20,6 +20,10 @@ namespace ConnectionWorker {
 			_helper = helper;
 		}
 
+		public HelperClass _GetHelper() {
+			return _helper;
+		}
+
 		public void _Work(string methodName = null) {
 			contentType = new List<byte>(0);
 			contentString = new List<string>(0);

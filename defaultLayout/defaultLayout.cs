@@ -7,7 +7,10 @@ using System.Threading.Tasks;
 
 public class defaultLayout : LayoutWorker {
 	public void Init() {
-		Echo("<html><head><title>Default Layout WORKED!</title></head><body>");
+		Echo("<html><head>");
+		IncludeLayout("head");
+		Echo("</head><body>");
+		IncludeLayout("header");
 		IncludeContent();
 		Echo("</body></html>");
 	}
