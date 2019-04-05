@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ConnectionWorker {
 	public class ControllerWorker : PluginWorker {
-		new public void _Work(string action) {
-			base._Work($"{action}Action");
+		public HttpListenerContext context;
+
+		new public void _Work(string action, object[] args = null) {
+			base._Work($"{action}Action", args);
 		}
 		
 		public string[] _GetActionList() {
@@ -18,5 +21,13 @@ namespace ConnectionWorker {
 			}
 			return names.ToArray();
 		}
+
+		//unsafe public void Test(/*IntPtr contextRef*/void* cRef) {
+		//	//string s = System.Runtime.CLR.EntityPtr.ToInstance<string>(contextRef);
+		//	char c = *(char*)cRef;
+		//	Console.WriteLine(c);
+
+		//	//HttpListenerContext context1 = System.Runtime.CLR.EntityPtr.ToInstance<HttpListenerContext>(contextRef);
+		//}
 	}
 }

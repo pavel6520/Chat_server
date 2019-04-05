@@ -7,24 +7,30 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using ConnectionWorker.Helpers;
+using System.Collections;
 
 namespace ConnectionWorker {
 	public abstract class PluginWorker : MarshalByRefObject {
+		public string[] staticInclude;
 		public HelperClass _helper;
 		protected List<byte> contentType;
 		protected List<string> contentString;
 		private List<MySqlDataObject> contentMySqlDataObject;
 		private List<MSSqlDataObject> contentMSSqlDataObject;
 
-		public void _SetHelper(HelperClass helper) {
+		public void _SetHelper(ref HelperClass helper) {
 			_helper = helper;
+		}
+
+		public string[] _GetStaticInclude() {
+			return staticInclude;
 		}
 
 		public HelperClass _GetHelper() {
 			return _helper;
 		}
 
-		public void _Work(string methodName = null) {
+		public object _Work(string methodName = null, object[] args = null) {
 			contentType = new List<byte>(0);
 			contentString = new List<string>(0);
 			contentMySqlDataObject = new List<MySqlDataObject>(0);
@@ -34,7 +40,10 @@ namespace ConnectionWorker {
 				m.Invoke(this, null);
 			}
 			if (methodName != null) {
-				GetType().GetMethod(methodName).Invoke(this, null);
+				return GetType().GetMethod(methodName).Invoke(this, args);
+			}
+			else {
+				return null;
 			}
 		}
 
@@ -49,25 +58,17 @@ namespace ConnectionWorker {
 		}
 
 		public void EchoMySQLReader(MySqlCommand command, Func<MySqlDataReader, string> func) {
-			MySqlConnection connect = new MySqlConnection("server=127.0.0.1;port=3306;user=root;password=6520;database=chat;");
-			connect.Open();
-			command.Connection = connect;
 			contentType.Add(20);
 			contentMySqlDataObject.Add(new MySqlDataObject {
-				connect = connect,
-				reader = command.ExecuteReader(),
+				command = command,
 				func = func
 			});
 		}
 
 		public void EchoMSSqlReader(SqlCommand command, Func<SqlDataReader, string> func) {
-			SqlConnection connect = new SqlConnection(@"Data Source=62.76.36.20;Initial Catalog=outside;User Id=web_man;Password=dVhj7!wKM");
-			connect.Open();
-			command.Connection = connect;
 			contentType.Add(30);
 			contentMSSqlDataObject.Add(new MSSqlDataObject {
-				connect = connect,
-				reader = command.ExecuteReader(),
+				command = command,
 				func = func
 			});
 		}
@@ -91,6 +92,12 @@ namespace ConnectionWorker {
 						contentString.RemoveAt(0);
 						break;
 					case 20:
+						if (contentMySqlDataObject[0].connect == null) {
+							contentMySqlDataObject[0].connect = new MySqlConnection("server=127.0.0.1;port=3306;user=root;password=6520;database=chat;");
+							contentMySqlDataObject[0].connect.Open();
+							contentMySqlDataObject[0].command.Connection = contentMySqlDataObject[0].connect;
+							contentMySqlDataObject[0].reader = contentMySqlDataObject[0].command.ExecuteReader();
+						}
 						if (contentMySqlDataObject[0].reader.Read()) {
 							ec = new EchoClass { type = EchoClass.EchoType.String, param = contentMySqlDataObject[0].func(contentMySqlDataObject[0].reader) };
 						}
@@ -103,6 +110,12 @@ namespace ConnectionWorker {
 						}
 						break;
 					case 30:
+						if (contentMSSqlDataObject[0].connect == null) {
+							contentMSSqlDataObject[0].connect = new SqlConnection(@"Data Source=62.76.36.20;Initial Catalog=outside;User Id=web_man;Password=dVhj7!wKM");
+							contentMSSqlDataObject[0].connect.Open();
+							contentMSSqlDataObject[0].command.Connection = contentMSSqlDataObject[0].connect;
+							contentMSSqlDataObject[0].reader = contentMSSqlDataObject[0].command.ExecuteReader();
+						}
 						if (contentMSSqlDataObject[0].reader.Read()) {
 							ec = new EchoClass { type = EchoClass.EchoType.String, param = contentMSSqlDataObject[0].func(contentMSSqlDataObject[0].reader) };
 						}
@@ -124,12 +137,14 @@ namespace ConnectionWorker {
 
 		private class MySqlDataObject {
 			public MySqlConnection connect;
+			public MySqlCommand command;
 			public MySqlDataReader reader;
 			public Func<MySqlDataReader, string> func;
 		}
 
 		private class MSSqlDataObject {
 			public SqlConnection connect;
+			public SqlCommand command;
 			public SqlDataReader reader;
 			public Func<SqlDataReader, string> func;
 		}

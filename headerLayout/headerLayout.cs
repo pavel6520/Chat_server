@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 
 public class headerLayout : LayoutWorker {
 	public void Init() {
-		Echo("<h1>header Layout WORKED!</h1><br>");
+		//Echo("<h1>header Layout WORKED!</h1><br>");
 	}
 }

@@ -7,7 +7,7 @@ namespace WebServerCore.Plugins {
 			public bool isLoad { get; private set; }
 			public string Name;
 			public string FullPath;
-			public ControllerSettings Settings;
+			//public ControllerSettings Settings;
 			public string[] Actions;
 			public Plugin plugin;
 			public Hashtable elements;

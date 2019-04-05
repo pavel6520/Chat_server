@@ -22,9 +22,6 @@ namespace WebServerCore {
         }
 
         public int Start() {
-            
-            //Console.WriteLine(BitConverter.ToString(new SHA256Managed().ComputeHash(Encoding.Default.GetBytes(Console.ReadLine()))).Replace("-", ""));
-
             //DBClient.Create();
             try {
                 //if (DBClient.Check()) {

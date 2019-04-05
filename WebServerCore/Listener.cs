@@ -46,60 +46,64 @@ namespace WebServerCore {
         }
 
         private void Listen() {
-            try {
-                while (enabled) {
-                    var context = listener.GetContext();
-                    Task.Factory.StartNew(() => {
-                        try {
-                            Log.Info($"Подключение {context.Request.RemoteEndPoint.ToString()} запрос {context.Request.Url.PathAndQuery}");
+			try {
+				while (enabled) {
+					var context = listener.GetContext();
+					Task.Factory.StartNew(() => {
+						var SW = new System.Diagnostics.Stopwatch();
+						SW.Start();
+						try {
+							Log.Info($"Подключение {context.Request.RemoteEndPoint.ToString()} запрос {context.Request.Url.PathAndQuery}");
 #if DEBUG
-                            string ip = context.Request.RemoteEndPoint.ToString();
-                            Console.WriteLine($"{context.Request.HttpMethod} {context.Request.Url.OriginalString} {context.Request.ProtocolVersion} - {ip}");
+							string ip = context.Request.RemoteEndPoint.ToString();
+							Console.WriteLine($"{context.Request.HttpMethod} {context.Request.Url.OriginalString} - {ip}");
 #endif
-                            try {
-                                if (context.Request.IsWebSocketRequest) {
-                                    //WebSocket webSocket = new WebSocket(context);
-                                    Task<HttpListenerWebSocketContext> task = context.AcceptWebSocketAsync("", new TimeSpan(1000 * 60 * 30));
-                                    task.Wait();
-                                    HttpListenerWebSocketContext webSocketContext = task.Result;
-                                }
-                                else {
-                                    context.Response.Headers.Add(HttpResponseHeader.Server, "pavel6520/WebServerCore");
-                                    packageManager.HttpContextWork(ref context);
-                                }
-                            }
-                            catch (PathNotFoundException e) {
-                                Log.Debug($"Не найден путь {e.Message}");
-                            }
-                            finally {
-                                if (!context.Request.IsWebSocketRequest) {
-                                    context.Response.Close();
-                                }
-                            }
+							try {
+								if (context.Request.IsWebSocketRequest) {
+									//WebSocket webSocket = new WebSocket(context);
+									Task<HttpListenerWebSocketContext> task = context.AcceptWebSocketAsync(null, new TimeSpan(1000 * 60 * 30));
+									task.Wait();
+									HttpListenerWebSocketContext webSocketContext = task.Result;
+								}
+								else {
+									context.Response.Headers.Add(HttpResponseHeader.Server, "pavel6520/WebServerCore");
+									packageManager.HttpContextWork(ref context);
+								}
+							}
+							catch (PathNotFoundException e) {
+								Log.Debug($"Не найден путь {e.Message}");
+							}
+							finally {
+								if (!context.Request.IsWebSocketRequest) {
+									context.Response.Close();
+								}
+							}
 #if DEBUG
-                            Console.WriteLine($"===========================HTTP END - {ip}");
+							Console.WriteLine($"===========================HTTP END - {ip}");
 #endif
-                        }
-                        catch (Exception e) {
-                            Log.Error("Ошибка обработки подключения", e);
-                        }
-                    }, TaskCreationOptions.LongRunning);
-                }
-            }
-            catch (SocketException e) {
-                Log.Info($"Прослушиватель остановлен: {e.Message}");
-            }
-            catch (HttpListenerException e) {
-                if (e.ErrorCode == 995) {
-                    Log.Info("Прослушиватель остановлен");
-                }
-                else {
-                    Log.Error("Ошибка обработки подключения", e);
-                }
-            }
-            catch (Exception e) {
-                Log.Error("Ошибка обработки подключения", e);
-            }
+						}
+						catch (Exception e) {
+							Log.Error("Ошибка обработки подключения", e);
+						}
+						SW.Stop();
+						Console.WriteLine("TIME = " + Convert.ToString(SW.ElapsedMilliseconds));
+					}, TaskCreationOptions.LongRunning);
+				}
+			}
+			catch (SocketException e) {
+				Log.Info($"Прослушиватель остановлен: {e.Message}");
+			}
+			catch (HttpListenerException e) {
+				if (!enabled) {
+					Log.Info("Прослушиватель остановлен");
+				}
+				else {
+					Log.Error("Ошибка обработки подключения", e);
+				}
+			}
+			catch (Exception e) {
+				Log.Error("Ошибка обработки подключения", e);
+			}
         }
     }
 }

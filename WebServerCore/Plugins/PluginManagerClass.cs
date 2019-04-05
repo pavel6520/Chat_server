@@ -18,6 +18,7 @@ namespace WebServerCore.Plugins {
 		private DirectoryInfo baseDirectory;
         private ControllerTreeElement controllerTree;
 		private Hashtable layoutPlugins;
+		private Hashtable staticPlugins;
 		private readonly ILog Log;
 
         public PluginManagerClass(ref ILog log, string path) {
@@ -33,6 +34,7 @@ namespace WebServerCore.Plugins {
 				}
 			}
 			layoutPlugins = _LoadLayouts();
+			staticPlugins = _LoadStatic();
 			
 			controllerTree = _LoadControllerTree("", true);
 		}
@@ -50,6 +52,28 @@ namespace WebServerCore.Plugins {
 				}
 				_FileCompare(ref baseD, ref workD);
 				Plugin plugin = new Plugin(workD, item.Name, "Layout");
+				plugin.LoadPlugin();
+				if (plugin.isLoad) {
+					hashtable.Add(item.Name, plugin);
+				}
+			}
+			return hashtable;
+		}
+
+		private Hashtable _LoadStatic() {
+			Hashtable hashtable = new Hashtable();
+			DirectoryInfo baseLD = new DirectoryInfo($"{baseDirectory.FullName}static{Path.DirectorySeparatorChar}");
+			DirectoryInfo workLD = new DirectoryInfo($"{baseDirectory.FullName}staticWork{Path.DirectorySeparatorChar}");
+
+			foreach (var item in baseLD.GetDirectories()) {
+				DirectoryInfo baseD = new DirectoryInfo($"{baseLD.FullName}{item.Name}{Path.DirectorySeparatorChar}");
+				DirectoryInfo workD = new DirectoryInfo($"{workLD.FullName}{item.Name}{Path.DirectorySeparatorChar}");
+				if (!workD.Exists) {
+					workD.Create();
+				}
+				_FileCompare(ref baseD, ref workD);
+				Plugin plugin = new Plugin(workD, item.Name, "S" +
+					"tatic");
 				plugin.LoadPlugin();
 				if (plugin.isLoad) {
 					hashtable.Add(item.Name, plugin);
@@ -141,8 +165,12 @@ namespace WebServerCore.Plugins {
                 pathSplit.Enqueue("index");
             }
             try {
-				HelperClass helper = new HelperClass(ref context);
-				
+#if DEBUG
+				HelperClass helper = new HelperClass(ref context, "server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", "127.0.0.1");
+#else
+				HelperClass helper = new HelperClass(ref context, "server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", "pavel6520.hopto.org");
+#endif
+
 				_HttpContextWork(ref controllerTree, ref helper, ref pathSplit);
             }
             catch (PathNotFoundException) {
@@ -158,8 +186,8 @@ namespace WebServerCore.Plugins {
                 throw;
             }
         }
-		
-		private void _HttpContextWork(ref ControllerTreeElement tree, ref ConnectionWorker.Helpers.HelperClass helper, ref Queue<string> pathSplit) {
+
+		private void _HttpContextWork(ref ControllerTreeElement tree, ref HelperClass helper, ref Queue<string> pathSplit) {
 			string action;
 			if (pathSplit.Count == 0) {
 				action = "index";
@@ -169,31 +197,46 @@ namespace WebServerCore.Plugins {
 			}
 			if (tree.isLoad && tree.Actions.Contains(action)) {
 				HttpListenerContext context = helper.Context;
+
 				ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
-				controller._SetHelper(helper);
 				try {
+					string[] staticInclude = controller._GetStaticInclude();
+					if (staticInclude != null) {
+						helper.staticPlugins = new Hashtable();
+						for (int i = 0; i < staticInclude.Length; i++) {
+							helper.staticPlugins.Add(staticInclude[i], ((Plugin)staticPlugins[staticInclude[i]]).GetPluginRefObject());
+						}
+					}
+
+					controller._SetHelper(ref helper);
 					controller._Work(action);
 				}
 				catch { throw; }
-				string bufS = "";
 				
 				helper = controller._GetHelper();
-				helper.Context = context;
 
-				helper.Context.Response.ContentType = "text/html; charset=UTF-8";
-				helper.Context.Response.StatusDescription = "OK";
+				context.Response.Headers.Add(helper.Responce.Headers);
 
-				if (helper._render.isEnabled) {
-					ResentLayout(ref helper, ref controller, ref bufS, helper._render.layout);
+				if (helper.returnType == ReturnType.Content) {
+					context.Response.ContentType = "text/html; charset=UTF-8";
+					context.Response.StatusDescription = "OK";
+
+					string bufS = "";
+					if (helper.Render.isEnabled) {
+						ResentLayout(ref context, ref controller, ref bufS, helper.Render.layout, true);
+					}
+					else {
+						ResentContent(ref context, ref controller, ref bufS);
+					}
+					if (bufS.Length > 0) {
+						byte[] buf = Encoding.UTF8.GetBytes(bufS);
+						context.Response.OutputStream.Write(buf, 0, buf.Length);
+						buf = null;
+						bufS = null;
+					}
 				}
 				else {
-					ResentContent(ref helper, ref controller, ref bufS);
-				}
-				if (bufS.Length > 0) {
-					byte[] buf = Encoding.UTF8.GetBytes(bufS);
-					helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
-					buf = null;
-					bufS = null;
+					context.Response.Redirect(helper.RedirectLocation);
 				}
 			}
 			else {
@@ -207,7 +250,7 @@ namespace WebServerCore.Plugins {
 			}
 		}
 
-		void ResentLayout(ref HelperClass helper, ref ControllerWorker controller, ref string bufS, string layoutName) {
+		void ResentLayout(ref HttpListenerContext context, ref ControllerWorker controller, ref string bufS, string layoutName, bool content) {
 			LayoutWorker layout = (LayoutWorker)((Plugin)layoutPlugins[layoutName]).GetPluginRefObject();
 			layout._Work();
 			byte[] buf;
@@ -218,23 +261,24 @@ namespace WebServerCore.Plugins {
 						bufS += (string)ec.param;
 						break;
 					case EchoClass.EchoType.Layout:
-						ResentLayout(ref helper, ref controller, ref bufS, (string)ec.param);
+						ResentLayout(ref context, ref controller, ref bufS, (string)ec.param, content);
 						break;
 					case EchoClass.EchoType.Content:
-						ResentContent(ref helper, ref controller, ref bufS);
+						if (content) {
+							ResentContent(ref context, ref controller, ref bufS);
+						}
 						break;
 				}
 				if (bufS.Length > 16000) {
-					buf = Encoding.UTF8.GetBytes(bufS/*.Substring(0, 16000)*/);
-					//bufS = bufS.Remove(0, 16000);
-					bufS = null;
-					helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
+					buf = Encoding.UTF8.GetBytes(bufS.Substring(0, 16000));
+					bufS = bufS.Remove(0, 16000);
+					context.Response.OutputStream.Write(buf, 0, buf.Length);
 				}
 				ec = layout._GetNextContent();
 			}
 		}
 
-		void ResentContent(ref HelperClass helper, ref ControllerWorker controller, ref string bufS) {
+		void ResentContent(ref HttpListenerContext context, ref ControllerWorker controller, ref string bufS) {
 			byte[] buf;
 			EchoClass ec = controller._GetNextContent();
 			while (ec.type != EchoClass.EchoType.End) {
@@ -242,12 +286,14 @@ namespace WebServerCore.Plugins {
 					case EchoClass.EchoType.String:
 						bufS += (string)ec.param;
 						break;
+					case EchoClass.EchoType.Layout:
+						ResentLayout(ref context, ref controller, ref bufS, (string)ec.param, false);
+						break;
 				}
-				if (bufS.Length > 16000) {
-					buf = Encoding.UTF8.GetBytes(bufS/*.Substring(0, 16000)*/);
-					//bufS = bufS.Remove(0, 16000);
-					bufS = null;
-					helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
+				while (bufS.Length > 16000) {
+					buf = Encoding.UTF8.GetBytes(bufS.Substring(0, 16000));
+					bufS = bufS.Remove(0, 16000);
+					context.Response.OutputStream.Write(buf, 0, buf.Length);
 				}
 				ec = controller._GetNextContent();
 			}

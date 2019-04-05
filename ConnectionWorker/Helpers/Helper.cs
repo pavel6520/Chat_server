@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -10,32 +11,43 @@ namespace ConnectionWorker.Helpers {
 	public class HelperClass {
 		[NonSerialized]
 		public HttpListenerContext Context;
-		public RenderClass _render;
+		public RenderClass Render;
+		public AuthInfo Auth;
 		public RequestInfo Request;
+		public ResponceInfo Responce;
+		public string dbConnectString;
+		public string domainName;
+		public bool isAuth;
 
-		public bool isAuth { get; private set; }
 		public bool isSecureConnection { get { return Request.IsSecureConnection; } }
 		public string RedirectLocation { get; private set; }
 
-		private ReturnType returnType;
+		public ReturnType returnType;//{ get; private set; }
+		public Hashtable staticPlugins;
 
-		public HelperClass(ref HttpListenerContext context) {
-			_render = new RenderClass();
+		public HelperClass(ref HttpListenerContext context, string db, string domain) {
+			Render = new RenderClass();
+			dbConnectString = db;
+			domainName = domain;
+			isAuth = false;
+			RedirectLocation = null;
+			staticPlugins = null;
 			Context = context;
 			Request = new RequestInfo(context.Request);
+			Responce = new ResponceInfo();
 			returnType = ReturnType.Content;
 		}
 
 		public void Redirect(string url) {
-			returnType = ReturnType.Redirect;
+			returnType = ReturnType.Info;
+			Render.DissableRender();
 			RedirectLocation = url;
 		}
 	}
 
 	public enum ReturnType {
 		Content,
-		NotFound404,
-		Redirect,
-		Error
+		Info,
+		Special
 	}
 }
