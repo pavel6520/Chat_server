@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Collections.Specialized;
 using System.Security.Policy;
+using System.Net.WebSockets;
 
 namespace ConnectionWorker.Helpers {
     [Serializable]
@@ -56,5 +57,5 @@ namespace ConnectionWorker.Helpers {
 				request.InputStream.Read(Content, 0, Content.Length);
 			}
 		}
-    }
+	}
 }

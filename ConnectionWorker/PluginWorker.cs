@@ -39,7 +39,7 @@ namespace ConnectionWorker {
 			if (m != null) {
 				m.Invoke(this, null);
 			}
-			if (methodName != null) {
+			if (methodName != null && _helper.Render.isEnabled) {
 				return GetType().GetMethod(methodName).Invoke(this, args);
 			}
 			else {

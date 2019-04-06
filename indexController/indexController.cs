@@ -11,7 +11,8 @@ using System.Net;
 
 public class indexController : ControllerWorker {
 	public void indexAction() {
-		Echo($"<a href=\"https://{_helper.domainName}/auth\">Перейти к регистрации</a>");
+		Echo($"<a href=\"https://{_helper.domainName}/auth/login\">Перейти к авторизации</a><br>");
+		Echo($"<a href=\"https://{_helper.domainName}/auth/signin\">Перейти к регистрации</a>");
 	}
 
 	//    public void indexAction() {

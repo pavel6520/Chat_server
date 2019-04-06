@@ -158,34 +158,44 @@ namespace WebServerCore.Plugins {
 			}
 		}
 		
-        public void HttpContextWork(ref HttpListenerContext context) {
-            string path = $"/{context.Request.Url.GetComponents(UriComponents.Path, UriFormat.SafeUnescaped)}";
+        public void HttpContextWork(ref HelperClass helper) {
+			//var SW = new System.Diagnostics.Stopwatch();
+			//SW.Start();
+			string path = $"/{helper.Context.Request.Url.GetComponents(UriComponents.Path, UriFormat.SafeUnescaped)}";
             Queue<string> pathSplit = new Queue<string>(path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries));
             if (pathSplit.Count == 0) {
                 pathSplit.Enqueue("index");
             }
             try {
-#if DEBUG
-				HelperClass helper = new HelperClass(ref context, "server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", "127.0.0.1");
-#else
-				HelperClass helper = new HelperClass(ref context, "server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", "pavel6520.hopto.org");
-#endif
-
 				_HttpContextWork(ref controllerTree, ref helper, ref pathSplit);
-            }
+				//SW.Stop();
+				//Console.WriteLine($"TIME_Controller {Convert.ToString(SW.ElapsedMilliseconds)}   {helper.Context.Request.Url.OriginalString}");
+			}
             catch (PathNotFoundException) {
-                try {
-                    FileInfo fi = new FileInfo($"{baseDirectory.FullName}public{Path.DirectorySeparatorChar}{path.Replace('/', Path.DirectorySeparatorChar)}");
-                    using (FileStream reader = new FileStream(fi.FullName, FileMode.Open)) {
-                        context.Response.ContentLength64 = reader.Length;
-                        reader.CopyTo(context.Response.OutputStream, 16384);
-                    }
-                    return;
-                }
-                catch { }
+				if (!helper.isWebSocket) {
+					try {
+						//SW.Stop();
+						//Console.WriteLine($"TIME_Controller {Convert.ToString(SW.ElapsedMilliseconds)}   {helper.Context.Request.Url.OriginalString}");
+						//SW.Start();
+						//Console.WriteLine(path);
+						//string tmp = $"{baseDirectory.FullName}public{path.Replace('/', Path.DirectorySeparatorChar)}";
+						//Console.WriteLine(tmp);
+						FileInfo fi = new FileInfo($"{baseDirectory.FullName}public{path.Replace('/', Path.DirectorySeparatorChar)}");
+						using (FileStream reader = new FileStream(fi.FullName, FileMode.Open)) {
+							helper.Context.Response.ContentLength64 = reader.Length;
+							reader.CopyTo(helper.Context.Response.OutputStream, 16384);
+							//reader.CopyTo(helper.Context.Response.OutputStream, 8192);
+							//reader.CopyTo(helper.Context.Response.OutputStream, 4096);
+						}
+						//SW.Stop();
+						//Console.WriteLine($"TIME_FILE {Convert.ToString(SW.ElapsedMilliseconds)}   {helper.Context.Request.Url.OriginalString}");
+						return;
+					}
+					catch { }
+				}
                 throw;
-            }
-        }
+			}
+		}
 
 		private void _HttpContextWork(ref ControllerTreeElement tree, ref HelperClass helper, ref Queue<string> pathSplit) {
 			string action;
@@ -196,52 +206,57 @@ namespace WebServerCore.Plugins {
 				action = pathSplit.Dequeue().ToLower();
 			}
 			if (tree.isLoad && tree.Actions.Contains(action)) {
-				HttpListenerContext context = helper.Context;
+				if (!helper.isWebSocket) {
+					HttpListenerContext context = helper.Context;
 
-				ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
-				try {
-					string[] staticInclude = controller._GetStaticInclude();
-					if (staticInclude != null) {
-						helper.staticPlugins = new Hashtable();
-						for (int i = 0; i < staticInclude.Length; i++) {
-							helper.staticPlugins.Add(staticInclude[i], ((Plugin)staticPlugins[staticInclude[i]]).GetPluginRefObject());
+					ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
+					try {
+						string[] staticInclude = controller._GetStaticInclude();
+						if (staticInclude != null) {
+							helper.staticPlugins = new Hashtable();
+							for (int i = 0; i < staticInclude.Length; i++) {
+								helper.staticPlugins.Add(staticInclude[i], ((Plugin)staticPlugins[staticInclude[i]]).GetPluginRefObject());
+							}
+						}
+
+						controller._SetHelper(ref helper);
+						controller._Work(action);
+					}
+					catch { throw; }
+
+					helper = controller._GetHelper();
+
+					context.Response.Headers.Add(helper.Responce.Headers);
+
+					if (helper.returnType == ReturnType.Content) {
+						context.Response.ContentType = "text/html; charset=UTF-8";
+						context.Response.StatusDescription = "OK";
+
+						string bufS = "";
+						if (helper.Render.isEnabled) {
+							ResentLayout(ref context, ref controller, ref bufS, helper.Render.layout, true);
+						}
+						else {
+							ResentContent(ref context, ref controller, ref bufS);
+						}
+						if (bufS.Length > 0) {
+							byte[] buf = Encoding.UTF8.GetBytes(bufS);
+							context.Response.OutputStream.Write(buf, 0, buf.Length);
+							buf = null;
+							bufS = null;
 						}
 					}
-
-					controller._SetHelper(ref helper);
-					controller._Work(action);
-				}
-				catch { throw; }
-				
-				helper = controller._GetHelper();
-
-				context.Response.Headers.Add(helper.Responce.Headers);
-
-				if (helper.returnType == ReturnType.Content) {
-					context.Response.ContentType = "text/html; charset=UTF-8";
-					context.Response.StatusDescription = "OK";
-
-					string bufS = "";
-					if (helper.Render.isEnabled) {
-						ResentLayout(ref context, ref controller, ref bufS, helper.Render.layout, true);
-					}
 					else {
-						ResentContent(ref context, ref controller, ref bufS);
-					}
-					if (bufS.Length > 0) {
-						byte[] buf = Encoding.UTF8.GetBytes(bufS);
-						context.Response.OutputStream.Write(buf, 0, buf.Length);
-						buf = null;
-						bufS = null;
+						context.Response.Redirect(helper.RedirectLocation);
 					}
 				}
 				else {
-					context.Response.Redirect(helper.RedirectLocation);
+
 				}
 			}
 			else {
-				ControllerTreeElement treeElement = (ControllerTreeElement)tree.elements[action];
-				if (treeElement != null) {
+				if (tree.elements.Contains(action)) {
+					ControllerTreeElement treeElement = (ControllerTreeElement)tree.elements[action];
 					_HttpContextWork(ref treeElement, ref helper, ref pathSplit);
 				}
 				else {

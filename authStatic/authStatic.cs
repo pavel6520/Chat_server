@@ -32,10 +32,24 @@ public class authStatic : PluginWorker {
 
 	}
 
+	public void delSession() {
+		var authCookie = _helper.Request.Cookies["auth"];
+		if (authCookie != null) {
+			MySqlConnection connection = new MySqlConnection(_helper.dbConnectString);
+			connection.Open();
+			MySqlCommand command = new MySqlCommand("delete from userauthkey where hash = @hash or datecreate > @time", connection);
+			command.Parameters.AddWithValue("@hash", authCookie.Value);
+			command.Parameters.AddWithValue("@time", DateTime.UtcNow);
+			command.ExecuteNonQuery();
+			connection.Close();
+			_helper.Responce.Headers.Add(System.Net.HttpResponseHeader.SetCookie, $"{authCookie.Name}={authCookie.Value}; Max-Age=-1; path=/;");
+		}
+	}
+
 	public void addSession() {
 		var authCookie = _helper.Request.Cookies["auth"];
 		if (authCookie != null) {
-			_helper.Responce.Headers.Add(System.Net.HttpResponseHeader.SetCookie, $"{authCookie.Name}={authCookie.Value}; Max-Age=-1;");
+			_helper.Responce.Headers.Add(System.Net.HttpResponseHeader.SetCookie, $"{authCookie.Name}={authCookie.Value}; Max-Age=-1; path=/;");
 		}
 		DateTime time = DateTime.UtcNow;
 		string hash = BitConverter.ToString(new SHA256Managed().ComputeHash(Encoding.Default.GetBytes($"{_helper.Auth.Login}{time}"))).Replace("-", "");
@@ -55,7 +69,9 @@ public class authStatic : PluginWorker {
 			command.Parameters.AddWithValue("@hash", hash);
 		}
 		command.ExecuteNonQuery();
-		_helper.Responce.Headers.Add(System.Net.HttpResponseHeader.SetCookie, $"auth={hash}; secure; HttpOnly; domain={_helper.domainName}; path=/; Expires={time.AddDays(1).ToString("R")}");
+		Console.WriteLine("TESTOUT");
+		//_helper.Responce.Headers.Add(System.Net.HttpResponseHeader.SetCookie, $"auth={hash}; secure; HttpOnly; domain={_helper.domainName}; path=/; Expires={time.AddDays(1).ToString("R")}");
+		_helper.Responce.Headers.Add(System.Net.HttpResponseHeader.SetCookie, $"auth={hash}; secure; HttpOnly; path=/; Expires={time.AddDays(1).ToString("R")}");
 		
 		connection.Close();
 
@@ -75,8 +91,8 @@ public class authStatic : PluginWorker {
 		}
 		Dictionary<string, string> keyValues = ConnectionWorker.Helpers.UriHelper.DecodeQueryParameters(uri);
 		bool res = false;
-		string login = keyValues["login"];
-		string pass = keyValues["password"];
+		string login = keyValues["logininput"];
+		string pass = keyValues["passwordinput"];
 		if (login != null && pass != null) {
 			MySqlConnection connection = new MySqlConnection(_helper.dbConnectString);
 			connection.Open();
@@ -84,14 +100,15 @@ public class authStatic : PluginWorker {
 			command.Parameters.AddWithValue("@login", login);
 			command.Parameters.AddWithValue("@pass", pass);
 			//try {
-				MySqlDataReader reader = command.ExecuteReader();
-				if (reader.Read()) {
-					_helper.Auth = new ConnectionWorker.Helpers.AuthInfo() { Login = Convert.ToString(reader["login"]) };
-					addSession();
-				}
+			MySqlDataReader reader = command.ExecuteReader();
+			if (reader.Read()) {
+				_helper.Auth = new ConnectionWorker.Helpers.AuthInfo() { Login = Convert.ToString(reader["login"]) };
+				addSession();
+				res = true;
+			}
 
-				reader.Close();
-				connection.Close();
+			reader.Close();
+			connection.Close();
 			//}
 			//catch { }
 		}
@@ -110,9 +127,9 @@ public class authStatic : PluginWorker {
 			uri = _helper.Request.Url;
 		}
 		Dictionary<string, string> keyValues = ConnectionWorker.Helpers.UriHelper.DecodeQueryParameters(uri);
-		string login = keyValues["login"];
-		string pass = keyValues["password"];
-		string passconf = keyValues["password_confirm"];
+		string login = keyValues["logininput"];
+		string pass = keyValues["passwordinput"];
+		string passconf = keyValues["password_confirminput"];
 		if (login != null && pass != null && passconf != null && pass == passconf) {
 			MySqlConnection connection = new MySqlConnection(_helper.dbConnectString);
 			connection.Open();

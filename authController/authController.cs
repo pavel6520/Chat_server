@@ -15,7 +15,7 @@ public class authController : ControllerWorker {
 		if (_helper.isSecureConnection) {
 			PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
 			auth._SetHelper(ref _helper);
-			if ((bool)auth._Work("checkSession")) {
+			if (_helper.Request.Url.AbsolutePath != "/auth/logout" && (bool)auth._Work("checkSession")) {
 				_helper = auth._GetHelper();
 				if (_helper.Auth != null) {
 					_helper.Redirect("/chat");
@@ -27,82 +27,65 @@ public class authController : ControllerWorker {
 		}
 	}
 
-	public void indexAction() {
-		if (_helper.Render.isEnabled) {
-			Echo("<span>authController - loginAction WORKED!</span>");
-			Echo("<div id=\"containerauth\">");
-			Echo("<a class=\"hiddenanchor\" id=\"tosubscribe\"></a>");
-			Echo("<a class=\"hiddenanchor\" id=\"tologin\"></a>");
-			Echo("<div id=\"wrapper\">");
-			Echo("<div id=\"login\" class=\"animate form\">");
-			Echo("<form action=\"auth/login\" autocomplete=\"on\" method=\"POST\">");
-			Echo("<h1>Log in</h1>");
-			Echo("<p>");
-			Echo("<label for=\"login\" class=\"uname\" data-icon=\"u\"> Your username </label>");
-			Echo("<input id=\"login\" name=\"login\" required=\"required\" type=\"text\" placeholder=\"myusername\" />");
-			Echo("</p>");
-			Echo("<p>");
-			Echo("<label for=\"password\" class=\"youpasswd\" data-icon=\"p\"> Your password </label>");
-			Echo("<input id=\"password\" name=\"password\" required=\"required\" type=\"password\"/>");
-			Echo("</p>");
-			//Echo("<p class=\"keeplogin\"> ");
-			//Echo("<input type=\"checkbox\" name=\"loginkeeping\" id=\"loginkeeping\" value=\"loginkeeping\" />");
-			//Echo("<label for=\"loginkeeping\">Keep me logged in</label>");
-			//Echo("</p>");
-			Echo("<p class=\"login button\">");
-			Echo("<input type=\"submit\" value=\"Login\" />");
-			Echo("</p>");
-			Echo("<p class=\"change_link\">");
-			Echo("Not a member yet ?");
-			Echo("<a href=\"#tosubscribe\" class=\"to_subscribe\">Join us</a>");
-			Echo("</p>");
-			Echo("</form>");
-			Echo("</div>");
-
-			Echo("<div id=\"reg\" class=\"animate form\">");
-			Echo("<form  action=\"auth/signin\" autocomplete=\"on\" method=\"POST\">");
-			Echo("<h1> Sign up </h1>");
-			Echo("<p>");
-			Echo("<label for=\"login\" class=\"uname\" data-icon=\"u\">Your username </label>");
-			Echo("<input id=\"login\" name=\"login\" required=\"required\" type=\"text\" placeholder=\"mysuperusername690\" />");
-			Echo("</p>");
-			//Echo("<p>");
-			//Echo("<label for=\"emailsignup\" class=\"youmail\" data-icon=\"e\" > Your email</label>");
-			//Echo("<input id=\"emailsignup\" name=\"emailsignup\" required=\"required\" type=\"text\" placeholder=\"mysupermail@mail.com\"/>");
-			//Echo("</p>");
-			Echo("<p>");
-			Echo("<label for=\"password\" class=\"youpasswd\" data-icon=\"p\">Your password </label>");
-			Echo("<input id=\"password\" name=\"password\" required=\"required\" type=\"password\"/>");
-			Echo("</p>");
-			Echo("<p>");
-			Echo("<label for=\"password_confirm\" class=\"youpasswd\" data-icon=\"p\">Please confirm your password </label>");
-			Echo("<input id=\"password_confirm\" name=\"password_confirm\" required=\"required\" type=\"password\"/>");
-			Echo("</p>");
-			Echo("<p class=\"signin button\">");
-			Echo("<input type=\"submit\" value=\"Sign up\"/>");
-			Echo("</p><p class=\"change_link\">Already a member ?<a href=\"#tologin\" class=\"to_subscribe\">Go and log in </a></p>");
-			Echo("</form></div></div></div>");
-		}
-	}
+	//public void indexAction() {
+	//	if (_helper.Render.isEnabled) {
+	//	}
+	//}
 
 	public void loginAction() {
 		if (_helper.isSecureConnection) {
 			if (_helper.Request.HttpMethod == "POST") {
 				PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
 				auth._SetHelper(ref _helper);
-				Console.WriteLine(Encoding.UTF8.GetString(_helper.Request.Content));
 				if ((bool)auth._Work("loginUser")) {
 					_helper = auth._GetHelper();
 					_helper.Redirect("/chat");
 				}
 				else {
 					_helper = auth._GetHelper();
-					_helper.Redirect("/auth");
+					_helper.Redirect("/auth/login");
 				}
+			}
+			else {
+				Echo("<link href=\"/assets/css/styleform.css\" rel=\"stylesheet\">");
+				Echo("<link href=\"/assets/css/animateform.css\" rel=\"stylesheet\">");
+				Echo("<div id=\"containerauth\">");
+				Echo("<!-- спрятанный якорь, чтобы избежать прыжков http://www.css3create.com/Astuce-Empecher-le-scroll-avec-l-utilisation-de-target#wrap4  -->");
+				Echo("<a class=\"hiddenanchor\" id=\"toregister\"></a>");
+				Echo("<a class=\"hiddenanchor\" id=\"tologin\"></a>");
+				Echo("<div id=\"wrapper\">");
+				Echo("<div id=\"login\" class=\"animate form\">");
+				Echo("<form action=\"login\" autocomplete=\"on\" method=\"POST\">");
+				Echo("<h1>Log in</h1>");
+				Echo("<p>");
+				Echo("<label for=\"logininput\" class=\"uname\" data-icon=\"u\"> Your username </label>");
+				Echo("<input id=\"logininput\" name=\"logininput\" required=\"required\" type=\"text\" placeholder=\"myusername\" />");
+				Echo("</p>");
+				Echo("<p>");
+				Echo("<label for=\"passwordinput\" class=\"youpasswd\" data-icon=\"p\"> Your password </label>");
+				Echo("<input id=\"passwordinput\" name=\"passwordinput\" required=\"required\" type=\"password\"/>");
+				Echo("</p>");
+				//Echo("<p class=\"keeplogin\"> ");
+				//Echo("<input type=\"checkbox\" name=\"loginkeeping\" id=\"loginkeeping\" value=\"loginkeeping\" />");
+				//Echo("<label for=\"loginkeeping\">Keep me logged in</label>");
+				//Echo("</p>");
+				Echo("<p class=\"login button\"><input type=\"submit\" value=\"Login\" /></p>");
+				Echo("<p class=\"change_link\">Not a member yet ?<a href=\"/auth/signin\" class=\"to_subscribe\">Join us</a></p>");
+				Echo("</div></div></div>");
 			}
 		}
 		else {
 			_helper.Redirect($"https://{_helper.domainName}{_helper.Request.Url.PathAndQuery}");
+		}
+	}
+
+	public void logoutAction() {
+		if (_helper.isSecureConnection) {
+			PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
+			auth._SetHelper(ref _helper);
+			auth._Work("delSession");
+			_helper = auth._GetHelper();
+			_helper.Redirect("/");
 		}
 	}
 
@@ -113,16 +96,49 @@ public class authController : ControllerWorker {
 				auth._SetHelper(ref _helper);
 				if ((bool)auth._Work("addUser")) {
 					_helper = auth._GetHelper();
-					_helper.Redirect("/");
+					_helper.Redirect("/chat");
 				}
 				else {
-					_helper.Redirect("/auth");
+					_helper.Redirect("/auth/signin");
 				}
+			}
+			else {
+				Echo("<link href=\"/assets/css/styleform.css\" rel=\"stylesheet\">");
+				Echo("<link href=\"/assets/css/animateform.css\" rel=\"stylesheet\">");
+				Echo("<div id=\"containerauth\">");
+				Echo("<!-- спрятанный якорь, чтобы избежать прыжков http://www.css3create.com/Astuce-Empecher-le-scroll-avec-l-utilisation-de-target#wrap4  -->");
+				Echo("<a class=\"hiddenanchor\" id=\"toregister\"></a>");
+				Echo("<a class=\"hiddenanchor\" id=\"tologin\"></a>");
+				Echo("<div id=\"wrapper\">");
+
+				Echo("<div id=\"reg\" class=\"animate form\">");
+				Echo("<form  action=\"signin\" autocomplete=\"on\" method=\"POST\">");
+				Echo("<h1> Sign up </h1>");
+				Echo("<p>");
+				Echo("<label for=\"loginreginput\" class=\"uname\" data-icon=\"u\">Your username </label>");
+				Echo("<input id=\"loginreginput\" name=\"logininput\" required=\"required\" type=\"text\" placeholder=\"mysuperusername690\" />");
+				Echo("</p>");
+				//Echo("<p>");
+				//Echo("<label for=\"emailsignup\" class=\"youmail\" data-icon=\"e\" > Your email</label>");
+				//Echo("<input id=\"emailsignup\" name=\"emailsignup\" required=\"required\" type=\"text\" placeholder=\"mysupermail@mail.com\"/>");
+				//Echo("</p>");
+				Echo("<p>");
+				Echo("<label for=\"passwordreginput\" class=\"youpasswd\" data-icon=\"p\">Your password </label>");
+				Echo("<input id=\"passwordreginput\" name=\"passwordinput\" required=\"required\" type=\"password\"/>");
+				Echo("</p>");
+				Echo("<p>");
+				Echo("<label for=\"password_confirmreginput\" class=\"youpasswd\" data-icon=\"p\">Please confirm your password </label>");
+				Echo("<input id=\"password_confirmreginput\" name=\"password_confirminput\" required=\"required\" type=\"password\"/>");
+				Echo("</p>");
+				Echo("<p class=\"signin button\">");
+				Echo("<input type=\"submit\" value=\"Sign up\"/>");
+				Echo("</p><p class=\"change_link\">Already a member ?<a href=\"/auth/login\" class=\"to_subscribe\">Go and log in </a></p>");
+				Echo("</form></div></div></div>");
 			}
 		}
 		else {
 			_helper.Redirect($"https://{_helper.domainName}{_helper.Request.Url.PathAndQuery}");
 		}
 		//Echo("<span>authController - signinAction WORKED!</span>");
-    }
+	}
 }

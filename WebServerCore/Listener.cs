@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using ConnectionWorker.Helpers;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -50,25 +51,36 @@ namespace WebServerCore {
 				while (enabled) {
 					var context = listener.GetContext();
 					Task.Factory.StartNew(() => {
-						var SW = new System.Diagnostics.Stopwatch();
-						SW.Start();
+						//var SW = new System.Diagnostics.Stopwatch();
+						//SW.Start();
 						try {
 							Log.Info($"Подключение {context.Request.RemoteEndPoint.ToString()} запрос {context.Request.Url.PathAndQuery}");
 #if DEBUG
 							string ip = context.Request.RemoteEndPoint.ToString();
-							Console.WriteLine($"{context.Request.HttpMethod} {context.Request.Url.OriginalString} - {ip}");
+							//Console.WriteLine($"{context.Request.HttpMethod} {context.Request.Url.OriginalString} - {ip}");
 #endif
+							HelperClass helper;
+							HttpListenerWebSocketContext webSocketContext = null;
 							try {
+								context.Response.Headers.Add(HttpResponseHeader.Server, "pavel6520/WebServerCore");
+#if DEBUG
+								string domain = "127.0.0.1";
+#else
+								string domain = "pavel6520.hopto.org";
+								//string domain = "127.0.0.1";
+#endif
+
 								if (context.Request.IsWebSocketRequest) {
 									//WebSocket webSocket = new WebSocket(context);
 									Task<HttpListenerWebSocketContext> task = context.AcceptWebSocketAsync(null, new TimeSpan(1000 * 60 * 30));
 									task.Wait();
-									HttpListenerWebSocketContext webSocketContext = task.Result;
+									webSocketContext = task.Result;
+									helper = new HelperClass(ref context, "server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", domain, ref webSocketContext);
 								}
 								else {
-									context.Response.Headers.Add(HttpResponseHeader.Server, "pavel6520/WebServerCore");
-									packageManager.HttpContextWork(ref context);
+									helper = new HelperClass(ref context, "server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", domain);
 								}
+								packageManager.HttpContextWork(ref helper);
 							}
 							catch (PathNotFoundException e) {
 								Log.Debug($"Не найден путь {e.Message}");
@@ -77,16 +89,19 @@ namespace WebServerCore {
 								if (!context.Request.IsWebSocketRequest) {
 									context.Response.Close();
 								}
+								else {
+									webSocketContext.WebSocket.Abort();
+								}
 							}
 #if DEBUG
-							Console.WriteLine($"===========================HTTP END - {ip}");
+							//Console.WriteLine($"===========================HTTP END - {ip}");
 #endif
 						}
 						catch (Exception e) {
 							Log.Error("Ошибка обработки подключения", e);
 						}
-						SW.Stop();
-						Console.WriteLine("TIME = " + Convert.ToString(SW.ElapsedMilliseconds));
+						//SW.Stop();
+						//Console.WriteLine($"TIME {context.Request.Url.OriginalString} = {Convert.ToString(SW.ElapsedMilliseconds)}");
 					}, TaskCreationOptions.LongRunning);
 				}
 			}

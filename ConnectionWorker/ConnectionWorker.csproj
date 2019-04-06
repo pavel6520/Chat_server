@@ -67,7 +67,7 @@
     <Compile Include="ControllerWorker.cs" />
     <Compile Include="EchoClass.cs" />
     <Compile Include="Helpers\AuthInfo.cs" />
-    <Compile Include="Helpers\Helper.cs" />
+    <Compile Include="Helpers\HelperClass.cs" />
     <Compile Include="Helpers\Render.cs" />
     <Compile Include="Helpers\ResponceInfo.cs" />
     <Compile Include="Helpers\UriHelper.cs" />

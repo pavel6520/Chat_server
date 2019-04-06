@@ -15,7 +15,7 @@ public class chatController : ControllerWorker {
 			PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
 			auth._SetHelper(ref _helper);
 			if (!(bool)auth._Work("checkSession")) {
-				_helper.Redirect("/auth");
+				_helper.Redirect("/auth/login");
 			}
 		}
 		else {
@@ -24,6 +24,15 @@ public class chatController : ControllerWorker {
 	}
 
 	public void indexAction() {
-		Echo("");
+		Echo("<div id=\"blockChat\">");
+		Echo("<div id=\"ChatBlockContacts\"><div>");
+		Echo("<div class=\"ChatBTN\"><a href=\"/auth/logout\" class=\"refbutton\">EXIT</a></div>");
+		Echo("<div class=\"ChatBTN\" data=\"public\">Public</div>");
+		Echo("<div id=\"ChatList2\">");
+		Echo("<ul id=\"ChatList3\"></ul>");
+		Echo("</div> </div> </div>");
+		Echo("<div id=\"ChatBody1\"><div><div id=\"ChatBodyList1\"></div><div id=\"ChatBodyInput\"><div><div id=\"ChatTextArea\">");
+		Echo("</div></div></div></div></div>");
+		Echo("</div>");
 	}
 }
