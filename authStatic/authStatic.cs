@@ -37,9 +37,9 @@ public class authStatic : PluginWorker {
 		if (authCookie != null) {
 			MySqlConnection connection = new MySqlConnection(_helper.dbConnectString);
 			connection.Open();
-			MySqlCommand command = new MySqlCommand("delete from userauthkey where hash = @hash or datecreate > @time", connection);
+			MySqlCommand command = new MySqlCommand("delete from userauthkey where hash = @hash or datecreate < @datetime", connection);
 			command.Parameters.AddWithValue("@hash", authCookie.Value);
-			command.Parameters.AddWithValue("@time", DateTime.UtcNow);
+			command.Parameters.AddWithValue("@datetime", DateTime.UtcNow.AddDays(-1));
 			command.ExecuteNonQuery();
 			connection.Close();
 			_helper.Responce.Headers.Add(System.Net.HttpResponseHeader.SetCookie, $"{authCookie.Name}={authCookie.Value}; Max-Age=-1; path=/;");
@@ -58,18 +58,16 @@ public class authStatic : PluginWorker {
 		connection.Open();
 		MySqlCommand command;
 		if (authCookie != null) {
-			command = new MySqlCommand("update userauthkey set hash = @newhash where hash = @hash", connection);
+			command = new MySqlCommand("update userauthkey set datecreate = @datetime where hash = @hash", connection);
 			command.Parameters.AddWithValue("@hash", authCookie.Value);
-			command.Parameters.AddWithValue("@newhash", hash);
 		}
 		else {
-			command = new MySqlCommand("insert into userauthkey (login, datecreate, hash) values(@login, @time, @hash)", connection);
+			command = new MySqlCommand("insert into userauthkey (login, datecreate, hash) values(@login, @datetime, @hash)", connection);
 			command.Parameters.AddWithValue("@login", _helper.Auth.Login);
-			command.Parameters.AddWithValue("@time", time);
 			command.Parameters.AddWithValue("@hash", hash);
 		}
+		command.Parameters.AddWithValue("@datetime", time);
 		command.ExecuteNonQuery();
-		Console.WriteLine("TESTOUT");
 		//_helper.Responce.Headers.Add(System.Net.HttpResponseHeader.SetCookie, $"auth={hash}; secure; HttpOnly; domain={_helper.domainName}; path=/; Expires={time.AddDays(1).ToString("R")}");
 		_helper.Responce.Headers.Add(System.Net.HttpResponseHeader.SetCookie, $"auth={hash}; secure; HttpOnly; path=/; Expires={time.AddDays(1).ToString("R")}");
 		

@@ -9,6 +9,7 @@ using ConnectionWorker;
 using System.Net;
 using log4net;
 using System.Runtime.Remoting;
+using System.Threading;
 
 namespace WebServerCore.Plugins {
     class Plugin {
@@ -35,10 +36,10 @@ namespace WebServerCore.Plugins {
 					FullName = AssemblyName.GetAssemblyName(workF.FullName).FullName;
 
 					var ds = new AppDomainSetup {
-						ApplicationBase = workD.FullName,
-						ApplicationName = $"WebServerCore {Name}{type}Worker"
+						ApplicationBase = workD.FullName
 					};
 					domain = AppDomain.CreateDomain($"{Name}{type}Worker", AppDomain.CurrentDomain.Evidence, ds);
+					((PluginWorker)GetPluginRefObject())._LoadDefault();
 					isLoad = true;
 				}
 				else {
@@ -51,13 +52,46 @@ namespace WebServerCore.Plugins {
 					domain = null;
 				}
 				isLoad = false;
-				throw;
+			}
+		}
+
+		public void _FileCompare(ref DirectoryInfo baseD, string module, string path) {
+			DirectoryInfo treeD = new DirectoryInfo($"{baseD.FullName}{module}{path}{Path.DirectorySeparatorChar}");
+			DirectoryInfo workD = new DirectoryInfo($"{baseD.FullName}{module}Work{path}{Path.DirectorySeparatorChar}");
+			List<string> filesWork = new List<string>();
+			foreach (var item in workD.GetFiles()) {
+				filesWork.Add(item.Name);
+			}
+			foreach (var item in treeD.GetFiles()) {
+				string workF = $"{workD.FullName}{item.Name}";
+				if (filesWork.Contains(item.Name)) {
+					filesWork.Remove(item.Name);
+					if (File.GetLastWriteTimeUtc(workF) < item.LastWriteTimeUtc) {
+						item.CopyTo(workF, true);
+					}
+				}
+				else {
+					while (true) {
+						try {
+							item.CopyTo(workF, true);
+							break;
+						}
+						catch {
+							Thread.Sleep(50);
+						}
+					}
+				}
+			}
+			foreach (var item in filesWork) {
+				File.Delete($"{workD.FullName}{item}");
 			}
 		}
 
 		public void UnloadPlugin() {
-			AppDomain.Unload(domain);
-			domain = null;
+			if (domain != null) {
+				AppDomain.Unload(domain);
+				domain = null;
+			}
 			isLoad = false;
 		}
 

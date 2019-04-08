@@ -1,5 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using ConnectionWorker;
+using System.Collections;
+using System.IO;
 
 namespace WebServerCore.Plugins {
 	public partial class PluginManagerClass {
@@ -16,9 +17,19 @@ namespace WebServerCore.Plugins {
 				isLoad = false;
 			}
 
-			public void Load() {
-				if (!isLoad && plugin != null) {
+			public void Load(ref DirectoryInfo baseD) {
+				if (!isLoad || plugin != null) {
+					plugin._FileCompare(ref baseD, "controllers", FullPath);
 					plugin.LoadPlugin();
+					try {
+						if (plugin.isLoad) {
+							ControllerWorker controller = (ControllerWorker)plugin.GetPluginRefObject();
+							Actions = controller._GetActionList();
+						}
+					}
+					catch {
+						plugin.UnloadPlugin();
+					}
 					isLoad = plugin.isLoad;
 				}
 			}
@@ -30,11 +41,13 @@ namespace WebServerCore.Plugins {
 			}
 
 			public void Delete() {
-				if (isLoad)
-					plugin.UnloadPlugin();
-				foreach(DictionaryEntry item in elements) {
+				Unload();
+				foreach (DictionaryEntry item in elements) {
 					((ControllerTreeElement)item.Value).Delete();
 					elements.Remove(item.Key);
+					if (elements.Count == 0) {
+						break;
+					}
 				}
 			}
 

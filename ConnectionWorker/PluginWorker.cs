@@ -18,6 +18,13 @@ namespace ConnectionWorker {
 		private List<MySqlDataObject> contentMySqlDataObject;
 		private List<MSSqlDataObject> contentMSSqlDataObject;
 
+		public void _LoadDefault() {
+			new MySqlCommand();
+			new SqlCommand();
+			new Newtonsoft.Json.JsonSerializer();
+			new System.Transactions.TransactionException();
+		}
+
 		public void _SetHelper(ref HelperClass helper) {
 			_helper = helper;
 		}
