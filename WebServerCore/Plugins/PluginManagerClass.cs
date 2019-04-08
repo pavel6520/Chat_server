@@ -72,7 +72,6 @@ namespace WebServerCore.Plugins {
 			count = fullPath.IndexOf(Path.DirectorySeparatorChar);
 			string module = fullPath.Substring(0, count);
 			fullPath = fullPath.Remove(0, count);
-			//Console.WriteLine("TESTOUT " + fullPath);
 			bool fileDelete = false;
 			if (fullPath.LastIndexOf('.') > fullPath.LastIndexOf(Path.DirectorySeparatorChar)) {
 				count = fullPath.LastIndexOf(Path.DirectorySeparatorChar);
@@ -82,7 +81,7 @@ namespace WebServerCore.Plugins {
 			fullPath = fullPath.Replace('\\', '/');
 			if (module == "controllers") {
 				Queue<string> pathSplit = new Queue<string>(fullPath.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries));
-				
+				//Console.WriteLine("TESTOUT " + fullPath + " " + changeType + " " + path);
 				switch (changeType) {
 					case WatcherChangeTypes.Deleted: {
 							ControllerTreeElement tree = _SearchController(ref controllerTree, ref pathSplit, true);
@@ -112,14 +111,21 @@ namespace WebServerCore.Plugins {
 						}
 					case WatcherChangeTypes.Changed: {
 							ControllerTreeElement tree = _SearchController(ref controllerTree, ref pathSplit, true);
-							tree.Unload();
-							tree.Load(ref baseDirectory);
+							if (fileDelete) {
+								tree = (ControllerTreeElement)tree.elements[pathSplit.Dequeue()];
+								tree.Unload();
+								tree.Load(ref baseDirectory);
+								//Console.WriteLine("TESTOUT1 " + fullPath + " " + changeType + " " + tree.FullPath);
+							}
 							break;
 						}
 					case WatcherChangeTypes.Renamed: {
 							ControllerTreeElement tree = _SearchController(ref controllerTree, ref pathSplit, true);
-							tree.Unload();
-							tree.Load(ref baseDirectory);
+							if (fileDelete) {
+								tree = (ControllerTreeElement)tree.elements[pathSplit.Dequeue()];
+								tree.Unload();
+								tree.Load(ref baseDirectory);
+							}
 							break;
 						}
 				}
