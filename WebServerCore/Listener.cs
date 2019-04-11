@@ -80,7 +80,7 @@ namespace WebServerCore {
 								else {
 									helper = new HelperClass(ref context, "server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", domain);
 								}
-								packageManager.HttpContextWork(ref helper);
+								packageManager.Work(ref helper);
 							}
 							catch (PathNotFoundException e) {
 								Log.Debug($"Не найден путь {e.Message}");

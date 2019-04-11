@@ -14,9 +14,9 @@ using System.Threading;
 namespace WebServerCore.Plugins {
     class Plugin {
         public static ILog Log;
-        private DirectoryInfo workD;
         private AppDomain domain;
         private string FullName;
+		private DirectoryInfo workD;
 		private string type;
 		
 		public bool isLoad { get; private set; }
@@ -57,7 +57,6 @@ namespace WebServerCore.Plugins {
 
 		public void _FileCompare(ref DirectoryInfo baseD, string module, string path) {
 			DirectoryInfo treeD = new DirectoryInfo($"{baseD.FullName}{module}{path}{Path.DirectorySeparatorChar}");
-			DirectoryInfo workD = new DirectoryInfo($"{baseD.FullName}{module}Work{path}{Path.DirectorySeparatorChar}");
 			List<string> filesWork = new List<string>();
 			foreach (var item in workD.GetFiles()) {
 				filesWork.Add(item.Name);
