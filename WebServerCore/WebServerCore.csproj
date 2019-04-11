@@ -71,6 +71,7 @@
     <Compile Include="Core.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="Plugins\Plugin.cs" />
+    <Compile Include="Plugins\PluginLoader.cs" />
     <Compile Include="Plugins\PluginManagerClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Regular.cs" />
