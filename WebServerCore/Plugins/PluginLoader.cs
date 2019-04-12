@@ -59,5 +59,34 @@ namespace WebServerCore.Plugins {
 				File.Delete($"{workD.FullName}{filesWork[i]}");
 			}
 		}
+
+		public void Load() {
+			if (plugin == null) {
+				plugin = new Plugin($"{Name}{Module[0]}");
+			}
+			Unload();
+			Compare();
+			var workD = new DirectoryInfo($"{baseDirectory.FullName}{Module[1]}Work{AbsPath}{Path.DirectorySeparatorChar}");
+			plugin.LoadPlugin(ref workD);
+		}
+
+		public void Unload() {
+			if(plugin != null) {
+				plugin.UnloadPlugin();
+			}
+		}
+
+		public void RemoveWorkFiles() {
+			Unload();
+			FileInfo[] tmp = new DirectoryInfo($"{baseDirectory.FullName}{Module[1]}Work{AbsPath}{Path.DirectorySeparatorChar}").GetFiles();
+			for (int i = 0; i < tmp.Length; i++) {
+				tmp[i].Delete();
+			}
+		}
+
+		public void RemoveWorkDir() {
+			RemoveWorkFiles();
+			new DirectoryInfo($"{baseDirectory.FullName}{Module[1]}Work{AbsPath}{Path.DirectorySeparatorChar}").Delete(true);
+		}
 	}
 }
