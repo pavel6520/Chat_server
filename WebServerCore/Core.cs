@@ -23,7 +23,7 @@ namespace WebServerCore {
 
         public int Start() {
             //DBClient.Create();
-            try {
+            //try {
                 //if (DBClient.Check()) {
                 listener = new Listener(ref Log, ref packageManager);
                 listener.Prefixes.Add("http://*/");
@@ -33,12 +33,12 @@ namespace WebServerCore {
                 Console.WriteLine($"{DateTime.Now.ToString()} [INFO][Core] Program running!");
                 Log.Info("Program running!");
                 //}
-            }
-            catch (Exception ex) {
-                Console.WriteLine($"{DateTime.Now.ToString()} [FATAL][Core] Error running!");
-                Log.Fatal("Ошибка в главном потоке WebServerCore", ex);
-                return 2;
-            }
+            //}
+            //catch (Exception ex) {
+            //    Console.WriteLine($"{DateTime.Now.ToString()} [FATAL][Core] Error running!");
+            //    Log.Fatal("Ошибка в главном потоке WebServerCore", ex);
+            //    return 2;
+            //}
             return 1;
         }
 

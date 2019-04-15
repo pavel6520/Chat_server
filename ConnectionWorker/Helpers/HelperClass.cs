@@ -2,10 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
+using WebSocketSharp.Net;
+using WebSocketSharp.Net.WebSockets;
 
 namespace ConnectionWorker.Helpers {
 	[Serializable]
@@ -59,6 +59,17 @@ namespace ConnectionWorker.Helpers {
 			returnType = ReturnType.Info;
 			Render.DissableRender();
 			RedirectLocation = url;
+		}
+
+		public void GetData(HelperClass helper) {
+			Render = helper.Render;
+			Auth = helper.Auth;
+			Request = helper.Request;
+			Responce = helper.Responce;
+			isAuth = helper.isAuth;
+			RedirectLocation = helper.RedirectLocation;
+			staticPlugins = helper.staticPlugins;
+			returnType = helper.returnType;
 		}
 	}
 

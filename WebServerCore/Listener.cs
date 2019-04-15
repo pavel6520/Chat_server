@@ -4,13 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Sockets;
-using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using WebServerCore.Plugins;
+using WebSocketSharp.Net;
+using WebSocketSharp.Net.WebSockets;
 
 namespace WebServerCore {
     sealed class Listener {
@@ -29,6 +29,7 @@ namespace WebServerCore {
 
         public int Start() {
             try {
+				listener.SslConfiguration.ServerCertificate = new System.Security.Cryptography.X509Certificates.X509Certificate2("cert.pfx", "6520");
                 listener.Start();
                 Thread thread = new Thread(new ThreadStart(Listen));
                 thread.Start();
@@ -69,18 +70,15 @@ namespace WebServerCore {
 								string domain = "pavel6520.hopto.org";
 								//string domain = "127.0.0.1";
 #endif
-
 								if (context.Request.IsWebSocketRequest) {
-									//WebSocket webSocket = new WebSocket(context);
-									Task<HttpListenerWebSocketContext> task = context.AcceptWebSocketAsync(null, new TimeSpan(1000 * 60 * 30));
-									task.Wait();
-									webSocketContext = task.Result;
+									webSocketContext = context.AcceptWebSocket("13");
 									helper = new HelperClass(ref context, "server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", domain, ref webSocketContext);
+									packageManager.WorkWS(ref helper);
 								}
 								else {
 									helper = new HelperClass(ref context, "server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", domain);
+									packageManager.Work(ref helper);
 								}
-								packageManager.Work(ref helper);
 							}
 							catch (PathNotFoundException e) {
 								Log.Debug($"Не найден путь {e.Message}");
@@ -90,7 +88,7 @@ namespace WebServerCore {
 									context.Response.Close();
 								}
 								else {
-									webSocketContext.WebSocket.Abort();
+									//webSocketContext.WebSocket.Close(WebSocketSharp.CloseStatusCode.Normal);
 								}
 							}
 #if DEBUG
