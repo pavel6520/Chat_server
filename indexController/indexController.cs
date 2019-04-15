@@ -13,6 +13,7 @@ public class indexController : ControllerWorker {
 	public void indexAction() {
 		Echo($"<a href=\"https://{_helper.domainName}/auth/login\">Перейти к авторизации</a><br>");
 		Echo($"<a href=\"https://{_helper.domainName}/auth/signin\">Перейти к регистрации</a>");
+		Echo("<button id=\"testb\"></><script>$('#testb').on('click', function(){ws.send('test message ' + new Date().getTime());});</script>");
 	}
 
 	//    public void indexAction() {

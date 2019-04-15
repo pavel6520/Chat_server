@@ -7,9 +7,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using WebSocketSharp.Net;
+using WebSocketSharp.Net.WebSockets;
 
 namespace WebServerCore.Plugins {
 	public partial class PluginManagerClass {
@@ -176,24 +178,6 @@ namespace WebServerCore.Plugins {
 			return hashtable;
 		}
 
-		private void DirCompare(ref DirectoryInfo treeD, ref DirectoryInfo workD) {
-			List<string> dirsWork = new List<string>();
-			foreach (var item in workD.GetDirectories()) {
-				dirsWork.Add(item.Name);
-			}
-			foreach (var item in treeD.GetDirectories()) {
-				if (dirsWork.Contains(item.Name)) {
-					dirsWork.Remove(item.Name);
-				}
-				else {
-					Directory.CreateDirectory($"{workD.FullName}{item.Name}");
-				}
-			}
-			for (int i = 0; i < dirsWork.Count; i++) {
-				Directory.Delete($"{workD.FullName}{dirsWork[i]}", true);
-			}
-		}
-
 		public void Work(ref HelperClass helper) {
 			string path = $"{helper.Context.Request.Url.GetComponents(UriComponents.Path, UriFormat.SafeUnescaped)}";
 			Queue<string> pathSplit = new Queue<string>(path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries));
@@ -219,13 +203,15 @@ namespace WebServerCore.Plugins {
 				}
 				catch { throw; }
 
-				helper = controller._GetHelper();
+				helper.GetData(controller._GetHelper());
 
 				context.Response.Headers.Add(helper.Responce.Headers);
 
 				if (helper.returnType == ReturnType.Content) {
 					context.Response.ContentType = "text/html; charset=UTF-8";
 					context.Response.StatusDescription = "OK";
+
+					//context.Response.
 
 					string bufS = "";
 					if (helper.Render.isEnabled) {
@@ -234,12 +220,17 @@ namespace WebServerCore.Plugins {
 					else {
 						ResentContent(ref helper, ref controller, ref bufS);
 					}
-					if (bufS.Length > 0) {
-						byte[] buf = Encoding.UTF8.GetBytes(bufS);
-						context.Response.OutputStream.Write(buf, 0, buf.Length);
-						buf = null;
-						bufS = null;
-					}
+					//byte[] buf;
+					//while (bufS.Length > 0) {
+					//	buf = Encoding.UTF8.GetBytes(bufS.Substring(0, bufS.Length > 16000 ? 16000 : bufS.Length));
+					//	bufS = bufS.Remove(0, bufS.Length > 16000 ? 16000 : bufS.Length);
+					//	context.Response.OutputStream.Write(buf, 0, buf.Length);
+					//}
+					byte[] buf = Encoding.UTF8.GetBytes(bufS);
+					context.Response.ContentLength64 = buf.Length;
+					context.Response.OutputStream.Write(buf, 0, buf.Length);
+					buf = null;
+					bufS = null;
 				}
 				else {
 					context.Response.Redirect(helper.RedirectLocation);
@@ -261,38 +252,25 @@ namespace WebServerCore.Plugins {
 			}
 		}
 
-		private ControllerTreeElement SearchController(ref ControllerTreeElement tree, ref Queue<string> pathSplit, bool returnRoot = false) {
-			string action;
-			if (pathSplit.Count == 0) {
-				action = "index";
-			}
-			else {
-				action = pathSplit.Dequeue().ToLower();
-			}
-			if (returnRoot && pathSplit.Count == 0) {
-				pathSplit.Enqueue(action);
-				return tree;
-			}
-			if (tree.isLoad && tree.Actions.Contains(action)) {
-				pathSplit.Enqueue(action);
-				return tree;
-			}
-			else {
-				if (tree.elements.Contains(action)) {
-					ControllerTreeElement treeElement = (ControllerTreeElement)tree.elements[action];
-					return SearchController(ref treeElement, ref pathSplit, returnRoot);
-				}
-				else {
-					return null;
-				}
-			}
+		public void WorkWS(ref HelperClass helper) {
+			
+			helper.ContextWs.WebSocket.Accept();
+			helper.ContextWs.WebSocket.OnMessage += (sender, args) => {
+				Console.WriteLine(args.Data);
+				//helper.ContextWs.WebSocket.Send($"test WS message {helper.isSecureConnection}");
+			};
+
+			//for (int i = 0; i < 100; i++) {
+			helper.ContextWs.WebSocket.Send($"test WS message {helper.isSecureConnection}");
+			//}
 		}
 
 		void ResentLayout(ref HelperClass helper, ref ControllerWorker controller, ref string bufS, string layoutName, bool content) {
 			LayoutWorker layout = (LayoutWorker)((PluginLoader)layoutsPlugins[layoutName]).plugin.GetPluginRefObject();
 			layout._SetHelper(ref helper);
 			layout._Work();
-			byte[] buf;
+			helper.GetData(layout._GetHelper());
+			//byte[] buf;
 			EchoClass ec = layout._GetNextContent();
 			while (ec.type != EchoClass.EchoType.End) {
 				switch (ec.type) {
@@ -308,17 +286,17 @@ namespace WebServerCore.Plugins {
 						}
 						break;
 				}
-				if (bufS.Length > 16000) {
-					buf = Encoding.UTF8.GetBytes(bufS.Substring(0, 16000));
-					bufS = bufS.Remove(0, 16000);
-					helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
-				}
+				//while (bufS.Length > 16000) {
+				//	buf = Encoding.UTF8.GetBytes(bufS.Substring(0, 16000));
+				//	bufS = bufS.Remove(0, 16000);
+				//	helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
+				//}
 				ec = layout._GetNextContent();
 			}
 		}
 
 		void ResentContent(ref HelperClass helper, ref ControllerWorker controller, ref string bufS) {
-			byte[] buf;
+			//byte[] buf;
 			EchoClass ec = controller._GetNextContent();
 			while (ec.type != EchoClass.EchoType.End) {
 				switch (ec.type) {
@@ -329,11 +307,11 @@ namespace WebServerCore.Plugins {
 						ResentLayout(ref helper, ref controller, ref bufS, (string)ec.param, false);
 						break;
 				}
-				while (bufS.Length > 16000) {
-					buf = Encoding.UTF8.GetBytes(bufS.Substring(0, 16000));
-					bufS = bufS.Remove(0, 16000);
-					helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
-				}
+				//while (bufS.Length > 16000) {
+				//	buf = Encoding.UTF8.GetBytes(bufS.Substring(0, 16000));
+				//	bufS = bufS.Remove(0, 16000);
+				//	helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
+				//}
 				ec = controller._GetNextContent();
 			}
 		}

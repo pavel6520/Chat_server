@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Net;
 using System.Collections.Specialized;
 using System.Security.Policy;
-using System.Net.WebSockets;
+using WebSocketSharp.Net;
+using WebSocketSharp.Net.WebSockets;
 
 namespace ConnectionWorker.Helpers {
     [Serializable]
@@ -22,7 +22,7 @@ namespace ConnectionWorker.Helpers {
         public bool isLocal;
         public bool IsSecureConnection;
         public bool KeepAlive;
-        public IPEndPoint RemoteEndPoint;
+        public System.Net.IPEndPoint RemoteEndPoint;
         public string ServiceName;
         public Uri Url;
         public Uri UrlReferrer;
@@ -45,7 +45,7 @@ namespace ConnectionWorker.Helpers {
 			IsSecureConnection = request.IsSecureConnection;
 			KeepAlive = request.KeepAlive;
 			RemoteEndPoint = request.RemoteEndPoint;
-			ServiceName = request.ServiceName;
+			//ServiceName = request.ServiceName;
 			Url = request.Url;
 			UrlReferrer = request.UrlReferrer;
 			UserAgent = request.UserAgent;

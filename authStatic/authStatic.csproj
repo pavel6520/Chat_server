@@ -64,6 +64,10 @@
       <Project>{862BED63-0901-4542-935B-F2976905CDE0}</Project>
       <Name>ConnectionWorker</Name>
     </ProjectReference>
+    <ProjectReference Include="C:\Users\pavmu\source\repos\websocket-sharp\websocket-sharp\websocket-sharp.csproj">
+      <Project>{b357bac7-529e-4d81-a0d2-71041b19c8de}</Project>
+      <Name>websocket-sharp</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

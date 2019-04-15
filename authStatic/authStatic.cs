@@ -89,8 +89,8 @@ public class authStatic : PluginWorker {
 		}
 		Dictionary<string, string> keyValues = ConnectionWorker.Helpers.UriHelper.DecodeQueryParameters(uri);
 		bool res = false;
-		string login = keyValues["logininput"];
-		string pass = keyValues["passwordinput"];
+		string login = keyValues["username"];
+		string pass = keyValues["password"];
 		if (login != null && pass != null) {
 			MySqlConnection connection = new MySqlConnection(_helper.dbConnectString);
 			connection.Open();
@@ -125,9 +125,9 @@ public class authStatic : PluginWorker {
 			uri = _helper.Request.Url;
 		}
 		Dictionary<string, string> keyValues = ConnectionWorker.Helpers.UriHelper.DecodeQueryParameters(uri);
-		string login = keyValues["logininput"];
-		string pass = keyValues["passwordinput"];
-		string passconf = keyValues["password_confirminput"];
+		string login = keyValues["login"];
+		string pass = keyValues["password"];
+		string passconf = keyValues["password_confirm"];
 		if (login != null && pass != null && passconf != null && pass == passconf) {
 			MySqlConnection connection = new MySqlConnection(_helper.dbConnectString);
 			connection.Open();
