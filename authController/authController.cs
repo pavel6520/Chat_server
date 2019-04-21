@@ -14,7 +14,7 @@ public class authController : ControllerWorker {
 	public void Init() {
 		if (_helper.isSecureConnection) {
 			PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
-			auth._SetHelper(ref _helper);
+			auth._SetHelper(_helper);
 			if (_helper.Request.Url.AbsolutePath != "/auth/logout" && (bool)auth._Work("checkSession")) {
 				_helper = auth._GetHelper();
 				if (_helper.Auth != null) {
@@ -36,7 +36,7 @@ public class authController : ControllerWorker {
 		if (_helper.isSecureConnection) {
 			if (_helper.Request.HttpMethod == "POST") {
 				PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
-				auth._SetHelper(ref _helper);
+				auth._SetHelper(_helper);
 				if ((bool)auth._Work("loginUser")) {
 					_helper = auth._GetHelper();
 					_helper.Redirect("/chat");
@@ -79,7 +79,7 @@ public class authController : ControllerWorker {
 	public void logoutAction() {
 		if (_helper.isSecureConnection) {
 			PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
-			auth._SetHelper(ref _helper);
+			auth._SetHelper(_helper);
 			auth._Work("delSession");
 			_helper = auth._GetHelper();
 			_helper.Redirect("/");
@@ -90,7 +90,7 @@ public class authController : ControllerWorker {
 		if (_helper.isSecureConnection) {
 			if (_helper.Request.HttpMethod == "POST") {
 				PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
-				auth._SetHelper(ref _helper);
+				auth._SetHelper(_helper);
 				if ((bool)auth._Work("addUser")) {
 					_helper = auth._GetHelper();
 					_helper.Redirect("/chat");

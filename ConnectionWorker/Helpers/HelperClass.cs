@@ -42,7 +42,7 @@ namespace ConnectionWorker.Helpers {
 			returnType = ReturnType.Content;
 		}
 
-		public HelperClass(ref HttpListenerContext context, string db, string domain, ref HttpListenerWebSocketContext contextWs) {
+		public HelperClass(ref HttpListenerContext context, string db, string domain, HttpListenerWebSocketContext contextWs) {
 			Render = new RenderClass();
 			dbConnectString = db;
 			domainName = domain;
