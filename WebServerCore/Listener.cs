@@ -60,8 +60,6 @@ namespace WebServerCore {
 							string ip = context.Request.RemoteEndPoint.ToString();
 							//Console.WriteLine($"{context.Request.HttpMethod} {context.Request.Url.OriginalString} - {ip}");
 #endif
-							HelperClass helper;
-							HttpListenerWebSocketContext webSocketContext = null;
 							try {
 								context.Response.Headers.Add(HttpResponseHeader.Server, "pavel6520/WebServerCore");
 #if DEBUG
@@ -71,13 +69,19 @@ namespace WebServerCore {
 								//string domain = "127.0.0.1";
 #endif
 								if (context.Request.IsWebSocketRequest) {
-									webSocketContext = context.AcceptWebSocket("13");
-									helper = new HelperClass(ref context, "server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", domain, ref webSocketContext);
-									packageManager.WorkWS(ref helper);
+									packageManager.WorkWS(
+										new HelperClass(
+											ref context, 
+											"server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", 
+											domain, 
+											context.AcceptWebSocket("13")));
 								}
 								else {
-									helper = new HelperClass(ref context, "server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", domain);
-									packageManager.Work(ref helper);
+									packageManager.Work(
+										new HelperClass(
+											ref context, 
+											"server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", 
+											domain));
 								}
 							}
 							catch (PathNotFoundException e) {
@@ -86,9 +90,6 @@ namespace WebServerCore {
 							finally {
 								if (!context.Request.IsWebSocketRequest) {
 									context.Response.Close();
-								}
-								else {
-									//webSocketContext.WebSocket.Close(WebSocketSharp.CloseStatusCode.Normal);
 								}
 							}
 #if DEBUG

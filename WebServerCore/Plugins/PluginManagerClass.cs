@@ -24,6 +24,8 @@ namespace WebServerCore.Plugins {
 		private Hashtable staticPlugins;
 		private readonly ILog Log;
 
+		private Hashtable WSclients = new Hashtable();
+
 		public PluginManagerClass(ref ILog log, string path) {
 			Plugin.Log = Log = log;
 			ControllerTreeElement.Module = Modules[0];
@@ -178,7 +180,7 @@ namespace WebServerCore.Plugins {
 			return hashtable;
 		}
 
-		public void Work(ref HelperClass helper) {
+		public void Work(HelperClass helper) {
 			string path = $"{helper.Context.Request.Url.GetComponents(UriComponents.Path, UriFormat.SafeUnescaped)}";
 			Queue<string> pathSplit = new Queue<string>(path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries));
 			if (pathSplit.Count == 0) {
@@ -186,8 +188,6 @@ namespace WebServerCore.Plugins {
 			}
 			ControllerTreeElement tree = controllerTree.Search(ref pathSplit, out string action);
 			if (tree != null) {
-				HttpListenerContext context = helper.Context;
-
 				ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
 				try {
 					string[] staticInclude = controller._GetStaticInclude();
@@ -198,20 +198,18 @@ namespace WebServerCore.Plugins {
 						}
 					}
 
-					controller._SetHelper(ref helper);
+					controller._SetHelper(helper);
 					controller._Work(action);
 				}
 				catch { throw; }
 
 				helper.GetData(controller._GetHelper());
 
-				context.Response.Headers.Add(helper.Responce.Headers);
+				helper.Context.Response.Headers.Add(helper.Responce.Headers);
 
 				if (helper.returnType == ReturnType.Content) {
-					context.Response.ContentType = "text/html; charset=UTF-8";
-					context.Response.StatusDescription = "OK";
-
-					//context.Response.
+					helper.Context.Response.ContentType = "text/html; charset=UTF-8";
+					helper.Context.Response.StatusDescription = "OK";
 
 					string bufS = "";
 					if (helper.Render.isEnabled) {
@@ -224,19 +222,19 @@ namespace WebServerCore.Plugins {
 					//while (bufS.Length > 0) {
 					//	buf = Encoding.UTF8.GetBytes(bufS.Substring(0, bufS.Length > 16000 ? 16000 : bufS.Length));
 					//	bufS = bufS.Remove(0, bufS.Length > 16000 ? 16000 : bufS.Length);
-					//	context.Response.OutputStream.Write(buf, 0, buf.Length);
+					//	helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
 					//}
 					byte[] buf = Encoding.UTF8.GetBytes(bufS);
-					context.Response.ContentLength64 = buf.Length;
-					context.Response.OutputStream.Write(buf, 0, buf.Length);
+					helper.Context.Response.ContentLength64 = buf.Length;
+					helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
 					buf = null;
 					bufS = null;
 				}
 				else {
-					context.Response.Redirect(helper.RedirectLocation);
+					helper.Context.Response.Redirect(helper.RedirectLocation);
 				}
 			}
-			else if (!helper.isWebSocket) {
+			else {
 				try {
 					FileInfo fi = new FileInfo($"{baseDirectory.FullName}public{Path.DirectorySeparatorChar}{path.Replace('/', Path.DirectorySeparatorChar)}");
 					using (FileStream reader = new FileStream(fi.FullName, FileMode.Open)) {
@@ -252,25 +250,61 @@ namespace WebServerCore.Plugins {
 			}
 		}
 
-		public void WorkWS(ref HelperClass helper) {
-			
-			helper.ContextWs.WebSocket.Accept();
-			helper.ContextWs.WebSocket.OnMessage += (sender, args) => {
-				Console.WriteLine(args.Data);
-				//helper.ContextWs.WebSocket.Send($"test WS message {helper.isSecureConnection}");
+		public void WorkWS(HelperClass _helper) {
+			_helper.ContextWs.WebSocket.OnMessage += (sender, args) => {
+				HelperClass helper = (HelperClass)WSclients[sender];
+				var json = Newtonsoft.Json.Linq.JObject.Parse(args.Data);
+				if (!json.ContainsKey("path") || !json.ContainsKey("type") || !json.ContainsKey("body")) {
+					helper.ContextWs.WebSocket.Close(WebSocketSharp.CloseStatusCode.InvalidData, "Invalid message content");
+					return;
+				}
+				string path = (string)json["path"];
+				Queue<string> pathSplit = new Queue<string>(path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries));
+				if (pathSplit.Count == 0) {
+					return;
+				}
+				ControllerTreeElement tree = controllerTree.SearchWS(ref pathSplit, out string action);
+				if (tree != null) {
+					ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
+					//try {
+						string[] staticInclude = controller._GetStaticInclude();
+						if (staticInclude != null) {
+							helper.staticPlugins = new Hashtable();
+							for (int i = 0; i < staticInclude.Length; i++) {
+								helper.staticPlugins.Add(staticInclude[i], ((PluginLoader)staticPlugins[staticInclude[i]]).plugin.GetPluginRefObject());
+							}
+						}
+
+						controller._SetHelper(helper);
+						controller._WorkWS(action, new object[] { (string)json["type"], (string)json["body"] });
+					//}
+					//catch { }
+
+					helper.GetData(controller._GetHelper());
+
+					if (helper.returnType == ReturnType.Content) {
+						string bufS = "";
+						ResentContent(ref helper, ref controller, ref bufS);
+						helper.ContextWs.WebSocket.Send(bufS);
+						bufS = null;
+					}
+				}
+			};
+			_helper.ContextWs.WebSocket.OnClose += (sender, args) => {
+				HelperClass helper = (HelperClass)WSclients[sender];
+				WSclients.Remove(sender);
+				//Console.WriteLine("TESTCLOSED " + args.Reason);
 			};
 
-			//for (int i = 0; i < 100; i++) {
-			helper.ContextWs.WebSocket.Send($"test WS message {helper.isSecureConnection}");
-			//}
+			WSclients.Add(_helper.ContextWs.WebSocket, _helper);
+			_helper.ContextWs.WebSocket.Accept();
 		}
 
 		void ResentLayout(ref HelperClass helper, ref ControllerWorker controller, ref string bufS, string layoutName, bool content) {
 			LayoutWorker layout = (LayoutWorker)((PluginLoader)layoutsPlugins[layoutName]).plugin.GetPluginRefObject();
-			layout._SetHelper(ref helper);
+			layout._SetHelper(helper);
 			layout._Work();
 			helper.GetData(layout._GetHelper());
-			//byte[] buf;
 			EchoClass ec = layout._GetNextContent();
 			while (ec.type != EchoClass.EchoType.End) {
 				switch (ec.type) {
@@ -287,7 +321,7 @@ namespace WebServerCore.Plugins {
 						break;
 				}
 				//while (bufS.Length > 16000) {
-				//	buf = Encoding.UTF8.GetBytes(bufS.Substring(0, 16000));
+				//	byte[] buf = Encoding.UTF8.GetBytes(bufS.Substring(0, 16000));
 				//	bufS = bufS.Remove(0, 16000);
 				//	helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
 				//}
@@ -296,7 +330,6 @@ namespace WebServerCore.Plugins {
 		}
 
 		void ResentContent(ref HelperClass helper, ref ControllerWorker controller, ref string bufS) {
-			//byte[] buf;
 			EchoClass ec = controller._GetNextContent();
 			while (ec.type != EchoClass.EchoType.End) {
 				switch (ec.type) {
@@ -308,7 +341,7 @@ namespace WebServerCore.Plugins {
 						break;
 				}
 				//while (bufS.Length > 16000) {
-				//	buf = Encoding.UTF8.GetBytes(bufS.Substring(0, 16000));
+				//	byte[] buf = Encoding.UTF8.GetBytes(bufS.Substring(0, 16000));
 				//	bufS = bufS.Remove(0, 16000);
 				//	helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
 				//}

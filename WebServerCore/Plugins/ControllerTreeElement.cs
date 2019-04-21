@@ -10,6 +10,7 @@ namespace WebServerCore.Plugins {
 			public static DirectoryInfo baseDirectory;
 
 			public string[] Actions;
+			public string[] ActionsWS;
 			public string Name { get { return loader.Name; } }
 			public string AbsPath { get { return loader == null ? "" : loader.AbsPath; } }
 			public PluginLoader loader;
@@ -44,7 +45,8 @@ namespace WebServerCore.Plugins {
 				try {
 					if (isLoad) {
 						ControllerWorker controller = (ControllerWorker)loader.plugin.GetPluginRefObject();
-						Actions = controller._GetActionList();
+						Actions = controller._GetActions();
+						ActionsWS = controller._GetActionsWS();
 					}
 				}
 				catch {
@@ -87,6 +89,24 @@ namespace WebServerCore.Plugins {
 			public ControllerTreeElement Search(ref System.Collections.Generic.Queue<string> pathSplit, out string serched) {
 				string action = pathSplit.Count == 0 ? "index" : pathSplit.Dequeue().ToLower();
 				if (isLoad && Actions.Contains(action)) {
+					serched = action;
+					return this;
+				}
+				else {
+					if (elements.Contains(action)) {
+						ControllerTreeElement treeElement = (ControllerTreeElement)elements[action];
+						return treeElement.Search(ref pathSplit, out serched);
+					}
+					else {
+						serched = null;
+						return null;
+					}
+				}
+			}
+
+			public ControllerTreeElement SearchWS(ref System.Collections.Generic.Queue<string> pathSplit, out string serched) {
+				string action = pathSplit.Count == 0 ? "index" : pathSplit.Dequeue().ToLower();
+				if (isLoad && ActionsWS.Contains(action)) {
 					serched = action;
 					return this;
 				}

@@ -13,7 +13,7 @@ public class chatController : ControllerWorker {
 	public void Init() {
 		if (_helper.isSecureConnection) {
 			PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
-			auth._SetHelper(ref _helper);
+			auth._SetHelper(_helper);
 			if (!(bool)auth._Work("checkSession")) {
 				_helper.Redirect("/auth/login");
 			}

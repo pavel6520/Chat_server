@@ -25,7 +25,7 @@ namespace ConnectionWorker {
 			new System.Transactions.TransactionException();
 		}
 
-		public void _SetHelper(ref HelperClass helper) {
+		public void _SetHelper(HelperClass helper) {
 			_helper = helper;
 		}
 
@@ -43,6 +43,23 @@ namespace ConnectionWorker {
 			contentMySqlDataObject = new List<MySqlDataObject>(0);
 			contentMSSqlDataObject = new List<MSSqlDataObject>(0);
 			System.Reflection.MethodInfo m = GetType().GetMethod("Init");
+			if (m != null) {
+				m.Invoke(this, null);
+			}
+			if (methodName != null && _helper.Render.isEnabled) {
+				return GetType().GetMethod(methodName).Invoke(this, args);
+			}
+			else {
+				return null; 
+			}
+		}
+
+		public object _WorkWS(string methodName = null, object[] args = null) {
+			contentType = new List<byte>(0);
+			contentString = new List<string>(0);
+			contentMySqlDataObject = new List<MySqlDataObject>(0);
+			contentMSSqlDataObject = new List<MSSqlDataObject>(0);
+			System.Reflection.MethodInfo m = GetType().GetMethod("InitWS");
 			if (m != null) {
 				m.Invoke(this, null);
 			}
