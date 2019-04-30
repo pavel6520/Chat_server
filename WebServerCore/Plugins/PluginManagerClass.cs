@@ -75,6 +75,10 @@ namespace WebServerCore.Plugins {
 			Watcher_Work(e.FullPath, e.ChangeType, e.OldFullPath);
 		}
 
+		public void WatcherStop() {
+			baseDirectoryWatcher.EnableRaisingEvents = false;
+		}
+
 		private void Watcher_Work(string path, WatcherChangeTypes changeType, string nameOld = null) {
 			string name;
 			string module;

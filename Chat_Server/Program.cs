@@ -8,10 +8,9 @@ namespace Chat_server {
 
         static void Main(string[] args) {
             {
-                string path = Assembly.GetExecutingAssembly().Location;
-                Environment.CurrentDirectory = path.Substring(0, path.LastIndexOf(System.IO.Path.DirectorySeparatorChar));
-                //Config.Read("config.xml");
-                core = new Core($"{Environment.CurrentDirectory}{System.IO.Path.DirectorySeparatorChar}");
+                
+				//Config.Read("config.xml");
+				core = new Core();
                 core.Start();
             }
             while (true) {

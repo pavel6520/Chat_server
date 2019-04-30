@@ -30,7 +30,7 @@ public class chatController : ControllerWorker {
 		Echo("<div class=\"ChatBTN\" data=\"public\">Public</div>");
 		Echo("<div id=\"ChatList2\">");
 		Echo("<ul id=\"ChatList3\"></ul>");
-		Echo("</div> </div> </div>");
+		Echo("</div></div></div>");
 		Echo("<div id=\"ChatBody1\"><div><div id=\"ChatBodyList1\"></div><div id=\"ChatBodyInput\"><div><div id=\"ChatTextArea\">");
 		Echo("</div></div></div></div></div>");
 		Echo("</div>");
