@@ -111,4 +111,21 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>MOVE ConnectionWorker.dll dll\ConnectionWorker.dll
+MOVE Google.Protobuf.dll dll\Google.Protobuf.dll
+MOVE log4net.dll dll\log4net.dll
+MOVE MySql.Data.dll dll\MySql.Data.dll
+MOVE Newtonsoft.Json.dll dll\Newtonsoft.Json.dll
+MOVE WebServerCore.dll dll\WebServerCore.dll
+MOVE websocket-sharp.dll dll\websocket-sharp.dll
+DEL ConnectionWorker.dll.config
+DEL Google.Protobuf.pdb
+DEL Google.Protobuf.xml
+DEL log4net.xml
+DEL MySql.Data.xml
+DEL Newtonsoft.Json.pdb
+DEL Newtonsoft.Json.xml
+DEL WebServerCore.dll.config</PostBuildEvent>
+  </PropertyGroup>
 </Project>

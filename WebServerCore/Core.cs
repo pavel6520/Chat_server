@@ -12,38 +12,43 @@ namespace WebServerCore {
         private PluginManagerClass packageManager;
         public ILog Log;
 
-        public Core(string pathToWorkDirectory) {
-            Log = LogManager.GetLogger("SYSLOG");
+        public Core() {
+			string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
+			Environment.CurrentDirectory = path.Substring(0, path.LastIndexOf(System.IO.Path.DirectorySeparatorChar));
+			//if (Environment.CurrentDirectory[Environment.CurrentDirectory.Length - 1] != System.IO.Path.DirectorySeparatorChar) {
+			//	Environment.CurrentDirectory = Environment.CurrentDirectory + System.IO.Path.DirectorySeparatorChar;
+			//}
+
+			Log = LogManager.GetLogger("SYSLOG");
             log4net.Config.XmlConfigurator.Configure();
-            Console.WriteLine($"{DateTime.Now.ToString()} [INFO][Core] Program starting!");
             Log.Info("Program starting!");
-            packageManager = new PluginManagerClass(ref Log, 
-                $"{pathToWorkDirectory}application{System.IO.Path.DirectorySeparatorChar}");
+
+            packageManager = new PluginManagerClass(ref Log, $"{Environment.CurrentDirectory}{System.IO.Path.DirectorySeparatorChar}application{System.IO.Path.DirectorySeparatorChar}");
         }
 
         public int Start() {
             //DBClient.Create();
-            //try {
+            try {
                 //if (DBClient.Check()) {
                 listener = new Listener(ref Log, ref packageManager);
                 listener.Prefixes.Add("http://*/");
                 listener.Prefixes.Add("https://*/");
                 listener.Start();
                 
-                Console.WriteLine($"{DateTime.Now.ToString()} [INFO][Core] Program running!");
                 Log.Info("Program running!");
                 //}
-            //}
-            //catch (Exception ex) {
-            //    Console.WriteLine($"{DateTime.Now.ToString()} [FATAL][Core] Error running!");
-            //    Log.Fatal("Ошибка в главном потоке WebServerCore", ex);
-            //    return 2;
-            //}
+            }
+            catch (Exception ex) {
+                //Console.WriteLine($"{DateTime.Now.ToString()} [FATAL][Core] Error running!");
+                Log.Fatal("Ошибка в главном потоке WebServerCore", ex);
+                return 2;
+            }
             return 1;
         }
 
         public void Close() {
             listener.Stop();
+			packageManager.WatcherStop();
             Log.Info("Program closed!");
         }
     }

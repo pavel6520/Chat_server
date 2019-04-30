@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "chatController", "chatContr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "websocket-sharp", "C:\Users\pavmu\source\repos\websocket-sharp\websocket-sharp\websocket-sharp.csproj", "{B357BAC7-529E-4D81-A0D2-71041B19C8DE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatWebService", "ChatWebService\ChatWebService.csproj", "{A80CB972-A380-4F3C-8592-A9AC121DC8C0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_Ubuntu|Any CPU = Debug_Ubuntu|Any CPU
@@ -127,6 +129,14 @@ Global
 		{B357BAC7-529E-4D81-A0D2-71041B19C8DE}.Release_Ubuntu|Any CPU.Build.0 = Release_Ubuntu|Any CPU
 		{B357BAC7-529E-4D81-A0D2-71041B19C8DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B357BAC7-529E-4D81-A0D2-71041B19C8DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A80CB972-A380-4F3C-8592-A9AC121DC8C0}.Debug_Ubuntu|Any CPU.ActiveCfg = Debug|Any CPU
+		{A80CB972-A380-4F3C-8592-A9AC121DC8C0}.Debug_Ubuntu|Any CPU.Build.0 = Debug|Any CPU
+		{A80CB972-A380-4F3C-8592-A9AC121DC8C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A80CB972-A380-4F3C-8592-A9AC121DC8C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A80CB972-A380-4F3C-8592-A9AC121DC8C0}.Release_Ubuntu|Any CPU.ActiveCfg = Release|Any CPU
+		{A80CB972-A380-4F3C-8592-A9AC121DC8C0}.Release_Ubuntu|Any CPU.Build.0 = Release|Any CPU
+		{A80CB972-A380-4F3C-8592-A9AC121DC8C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A80CB972-A380-4F3C-8592-A9AC121DC8C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
