@@ -1,7 +1,6 @@
 ﻿using ConnectionWorker;
 using ConnectionWorker.Helpers;
 using log4net;
-using MySql.Data.MySqlClient;
 using System;
 using System.Collections;
 using System.Collections.Generic;

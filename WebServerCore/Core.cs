@@ -13,12 +13,6 @@ namespace WebServerCore {
         public ILog Log;
 
         public Core() {
-			string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
-			Environment.CurrentDirectory = path.Substring(0, path.LastIndexOf(System.IO.Path.DirectorySeparatorChar));
-			//if (Environment.CurrentDirectory[Environment.CurrentDirectory.Length - 1] != System.IO.Path.DirectorySeparatorChar) {
-			//	Environment.CurrentDirectory = Environment.CurrentDirectory + System.IO.Path.DirectorySeparatorChar;
-			//}
-
 			Log = LogManager.GetLogger("SYSLOG");
             log4net.Config.XmlConfigurator.Configure();
             Log.Info("Program starting!");
@@ -39,7 +33,6 @@ namespace WebServerCore {
                 //}
             }
             catch (Exception ex) {
-                //Console.WriteLine($"{DateTime.Now.ToString()} [FATAL][Core] Error running!");
                 Log.Fatal("Ошибка в главном потоке WebServerCore", ex);
                 return 2;
             }

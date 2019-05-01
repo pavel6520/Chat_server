@@ -103,7 +103,6 @@ public class authController : ControllerWorker {
 				Echo("<link href=\"/assets/css/styleform.css\" rel=\"stylesheet\">");
 				Echo("<link href=\"/assets/css/animateform.css\" rel=\"stylesheet\">");
 				Echo("<div id=\"containerauth\">");
-				Echo("<!-- спрятанный якорь, чтобы избежать прыжков http://www.css3create.com/Astuce-Empecher-le-scroll-avec-l-utilisation-de-target#wrap4  -->");
 				Echo("<a class=\"hiddenanchor\" id=\"toregister\"></a>");
 				Echo("<a class=\"hiddenanchor\" id=\"tologin\"></a>");
 				Echo("<div id=\"wrapper\">");
