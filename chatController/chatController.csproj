@@ -17,7 +17,7 @@
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Chat_Server\bin\Debug\application\controllers\chat\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -25,7 +25,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Chat_Server\bin\Release\application\controllers\chat\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -52,4 +52,10 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>MKDIR $(SolutionDir)build\$(ConfigurationName)\application
+MKDIR $(SolutionDir)build\$(ConfigurationName)\application\controllers
+MKDIR $(SolutionDir)build\$(ConfigurationName)\application\controllers\chat
+COPY *.* $(SolutionDir)build\$(ConfigurationName)\application\controllers\chat</PostBuildEvent>
+  </PropertyGroup>
 </Project>

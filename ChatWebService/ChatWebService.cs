@@ -17,13 +17,17 @@ namespace ChatWebService {
 		}
 
 		protected override void OnStart(string[] args) {
-			System.Threading.Thread.Sleep(10000);
+			string path = System.Reflection.Assembly.GetExecutingAssembly().Location;
+			Environment.CurrentDirectory = path.Substring(0, path.LastIndexOf(System.IO.Path.DirectorySeparatorChar));
+
+			//System.Threading.Thread.Sleep(10000);
 			core = new WebServerCore.Core();
 			core.Start();
 		}
 
 		protected override void OnStop() {
 			core.Close();
+			core = null;
 		}
 	}
 }

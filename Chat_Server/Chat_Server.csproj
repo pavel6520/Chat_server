@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{1C3DE63A-669D-47EB-A644-15757CA0060F}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Chat_server</RootNamespace>
-    <AssemblyName>Chat_server</AssemblyName>
+    <RootNamespace>test</RootNamespace>
+    <AssemblyName>test</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
@@ -30,10 +30,10 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>none</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\build\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -43,7 +43,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\build\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -86,7 +86,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Config.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -101,7 +100,6 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
   </ItemGroup>
   <ItemGroup>
@@ -112,20 +110,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>MOVE ConnectionWorker.dll dll\ConnectionWorker.dll
-MOVE Google.Protobuf.dll dll\Google.Protobuf.dll
-MOVE log4net.dll dll\log4net.dll
-MOVE MySql.Data.dll dll\MySql.Data.dll
-MOVE Newtonsoft.Json.dll dll\Newtonsoft.Json.dll
-MOVE WebServerCore.dll dll\WebServerCore.dll
-MOVE websocket-sharp.dll dll\websocket-sharp.dll
-DEL ConnectionWorker.dll.config
-DEL Google.Protobuf.pdb
-DEL Google.Protobuf.xml
-DEL log4net.xml
-DEL MySql.Data.xml
-DEL Newtonsoft.Json.pdb
-DEL Newtonsoft.Json.xml
-DEL WebServerCore.dll.config</PostBuildEvent>
+    <PostBuildEvent>MKDIR lib
+MOVE *.dll lib\
+IF "$(ConfigurationName)"=="Release" DEL *.pdb
+IF "$(ConfigurationName)"=="Debug" MOVE *.pdb lib\
+DEL *.xml</PostBuildEvent>
   </PropertyGroup>
 </Project>
