@@ -43,8 +43,12 @@ namespace WebServerCore {
         }
 
         public void Stop() {
-            enabled = false;
-            listener.Abort();
+			lock (listener) {
+				if (enabled) {
+					enabled = false;
+					listener.Abort();
+				}
+			}
         }
 
         private void Listen() {
@@ -72,7 +76,7 @@ namespace WebServerCore {
 									packageManager.WorkWS(
 										new HelperClass(
 											ref context, 
-											"server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", 
+											"server=127.0.0.1;port=3306;user=root;password=test;database=chat;", 
 											domain, 
 											context.AcceptWebSocket("13")));
 								}
@@ -80,7 +84,7 @@ namespace WebServerCore {
 									packageManager.Work(
 										new HelperClass(
 											ref context, 
-											"server=127.0.0.1;port=3306;user=root;password=6520;database=chat;", 
+											"server=127.0.0.1;port=3306;user=root;password=test;database=chat;", 
 											domain));
 								}
 							}
