@@ -32,7 +32,7 @@ namespace WebServerCore.Plugins {
 			if (!baseDirectory.Exists) {
 				baseDirectory.Create();
 			}
-			foreach(var item in Modules) {
+			foreach (var item in Modules) {
 				DirectoryInfo dir1 = new DirectoryInfo($"{baseDirectory.FullName}{item[1]}{Path.DirectorySeparatorChar}");
 				if (!dir1.Exists) {
 					dir1.Create();
@@ -52,7 +52,7 @@ namespace WebServerCore.Plugins {
 			baseDirectoryWatcher.Changed += Watcher_Changed;
 			baseDirectoryWatcher.Renamed += Watcher_Renamed;
 			baseDirectoryWatcher.NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.DirectoryName | NotifyFilters.FileName | NotifyFilters.Size;
-			
+
 			layoutsPlugins = LoadPlugins(ref Modules[1]);
 			staticPlugins = LoadPlugins(ref Modules[2]);
 
@@ -62,113 +62,117 @@ namespace WebServerCore.Plugins {
 		}
 
 		private void Watcher_Event(object sender, FileSystemEventArgs e) {
-			Watcher_Work(e.FullPath, e.ChangeType);
+			Watcher_Work(sender, e.FullPath, e.ChangeType);
 		}
 		private void Watcher_Deleted(object sender, FileSystemEventArgs e) {
-			Watcher_Work(e.FullPath, e.ChangeType);
+			Watcher_Work(sender, e.FullPath, e.ChangeType);
 		}
 		private void Watcher_Changed(object sender, FileSystemEventArgs e) {
-			Watcher_Work(e.FullPath, e.ChangeType);
+			Watcher_Work(sender, e.FullPath, e.ChangeType);
 		}
 		private void Watcher_Renamed(object sender, RenamedEventArgs e) {
-			Watcher_Work(e.FullPath, e.ChangeType, e.OldFullPath);
+			Watcher_Work(sender, e.FullPath, e.ChangeType, e.OldFullPath);
 		}
 
 		public void WatcherStop() {
 			baseDirectoryWatcher.EnableRaisingEvents = false;
 		}
 
-		private void Watcher_Work(string path, WatcherChangeTypes changeType, string nameOld = null) {
-			string name;
-			string module;
-			bool fileAct;
-			int intTmp = baseDirectory.FullName.Length;
-			path = path.Remove(0, intTmp);
-			//try {
-			intTmp = path.IndexOf(Path.DirectorySeparatorChar);
-			module = path.Substring(0, intTmp);
-			path = path.Remove(0, intTmp);
-			if (path.LastIndexOf('.') > path.LastIndexOf(Path.DirectorySeparatorChar)) {
-				intTmp = path.LastIndexOf(Path.DirectorySeparatorChar);
-				path = path.Remove(intTmp, path.Length - intTmp);
-				fileAct = true;
-			}
-			else {
-				fileAct = false;
-			}
-			intTmp = path.LastIndexOf(Path.DirectorySeparatorChar);
-			name = path.Substring(intTmp + 1);
-			path = path.Remove(intTmp, path.Length - intTmp);
-			if (nameOld != null) {
-				intTmp = nameOld.LastIndexOf(Path.DirectorySeparatorChar);
-				nameOld = nameOld.Remove(0, intTmp + 1);
-			}
-			int moduleNum = -1;
-			if (module == "controllers") { moduleNum = 0; }
-			if (module == "layouts") { moduleNum = 1; }
-			if (module == "static") { moduleNum = 2; }
+		private void Watcher_Work(object sender, string path, WatcherChangeTypes changeType, string nameOld = null) {
+			lock (sender) {
+				try {
+					string name;
+					string module;
+					bool fileAct;
+					int intTmp = baseDirectory.FullName.Length;
+					path = path.Remove(0, intTmp);
+					intTmp = path.IndexOf(Path.DirectorySeparatorChar);
+					module = path.Substring(0, intTmp);
+					path = path.Remove(0, intTmp);
+					if (path.LastIndexOf('.') > path.LastIndexOf(Path.DirectorySeparatorChar)) {
+						intTmp = path.LastIndexOf(Path.DirectorySeparatorChar);
+						path = path.Remove(intTmp, path.Length - intTmp);
+						fileAct = true;
+					}
+					else {
+						fileAct = false;
+					}
+					intTmp = path.LastIndexOf(Path.DirectorySeparatorChar);
+					name = path.Substring(intTmp + 1);
+					path = path.Remove(intTmp, path.Length - intTmp);
+					if (nameOld != null) {
+						intTmp = nameOld.LastIndexOf(Path.DirectorySeparatorChar);
+						nameOld = nameOld.Remove(0, intTmp + 1);
+					}
+					int moduleNum = -1;
+					if (module == "controllers") { moduleNum = 0; }
+					if (module == "layouts") { moduleNum = 1; }
+					if (module == "static") { moduleNum = 2; }
 
-			path = path.Replace('\\', '/');
-			if (moduleNum == 0) {
-				Queue<string> pathSplit = new Queue<string>((path + name).Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries));
-				//Console.WriteLine("TESTOUT " + fullPath + " " + changeType + " " + path);
-				//ControllerTreeElement tree = SearchController(ref controllerTree, ref pathSplit, true);
-				ControllerTreeElement tree = controllerTree.SearchRoot(ref pathSplit);
-				if (fileAct) {
-					tree = (ControllerTreeElement)tree.elements[name];
-					tree.Load();
-				}
-				else {
-					switch (changeType) {
-						case WatcherChangeTypes.Deleted: {
-								tree.RemoveTree(name);
-								break;
+					path = path.Replace('\\', '/');
+					if (moduleNum == 0) {
+						Queue<string> pathSplit = new Queue<string>((path + name).Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries));
+						//Console.WriteLine("TESTOUT " + fullPath + " " + changeType + " " + path);
+						//ControllerTreeElement tree = SearchController(ref controllerTree, ref pathSplit, true);
+						ControllerTreeElement tree = controllerTree.SearchRoot(ref pathSplit);
+						if (fileAct) {
+							tree = (ControllerTreeElement)tree.elements[name];
+							tree.Load();
+						}
+						else {
+							switch (changeType) {
+								case WatcherChangeTypes.Deleted: {
+										tree.RemoveTree(name);
+										break;
+									}
+								case WatcherChangeTypes.Created: {
+										tree.AddTree(/*path, */name);
+										break;
+									}
+								case WatcherChangeTypes.Renamed: {
+										tree.RemoveTree(nameOld);
+										tree.AddTree(/*$"{path}{Path.DirectorySeparatorChar}{name}", */name);
+										break;
+									}
 							}
-						case WatcherChangeTypes.Created: {
-								tree.AddTree(/*path, */name);
-								break;
+						}
+					}
+					else if (moduleNum == 1 || moduleNum == 2) {
+						if (fileAct) {
+							((moduleNum == 2 ? staticPlugins : layoutsPlugins)[name] as PluginLoader).Load();
+						}
+						else {
+							PluginLoader loaderTmp = null;
+							switch (changeType) {
+								case WatcherChangeTypes.Deleted: {
+										loaderTmp = (PluginLoader)(moduleNum == 2 ? staticPlugins : layoutsPlugins)[name];
+										loaderTmp.RemoveWorkDir();
+										(moduleNum == 2 ? staticPlugins : layoutsPlugins).Remove(name);
+										break;
+									}
+								case WatcherChangeTypes.Created: {
+										loaderTmp = new PluginLoader(ref Modules[moduleNum], path, name);
+										loaderTmp.Load();
+										(moduleNum == 2 ? staticPlugins : layoutsPlugins).Add(name, loaderTmp);
+										break;
+									}
+								case WatcherChangeTypes.Renamed: {
+										loaderTmp = (PluginLoader)(moduleNum == 2 ? staticPlugins : layoutsPlugins)[nameOld];
+										loaderTmp.RemoveWorkDir();
+										(moduleNum == 2 ? staticPlugins : layoutsPlugins).Remove(nameOld);
+										loaderTmp = new PluginLoader(ref Modules[moduleNum], path, name);
+										loaderTmp.Load();
+										(moduleNum == 2 ? staticPlugins : layoutsPlugins).Add(name, loaderTmp);
+										break;
+									}
 							}
-						case WatcherChangeTypes.Renamed: {
-								tree.RemoveTree(nameOld);
-								tree.AddTree(/*$"{path}{Path.DirectorySeparatorChar}{name}", */name);
-								break;
-							}
+						}
 					}
 				}
-			}
-			else if (moduleNum == 1 || moduleNum == 2) {
-				if (fileAct) {
-					((moduleNum == 2 ? staticPlugins : layoutsPlugins)[name] as PluginLoader).Load();
-				}
-				else {
-					PluginLoader loaderTmp = null;
-					switch (changeType) {
-						case WatcherChangeTypes.Deleted: {
-								loaderTmp = (PluginLoader)(moduleNum == 2 ? staticPlugins : layoutsPlugins)[name];
-								loaderTmp.RemoveWorkDir();
-								(moduleNum == 2 ? staticPlugins : layoutsPlugins).Remove(name);
-								break;
-							}
-						case WatcherChangeTypes.Created: {
-								loaderTmp = new PluginLoader(ref Modules[moduleNum], path, name);
-								loaderTmp.Load();
-								(moduleNum == 2 ? staticPlugins : layoutsPlugins).Add(name, loaderTmp);
-								break;
-							}
-						case WatcherChangeTypes.Renamed: {
-								loaderTmp = (PluginLoader)(moduleNum == 2 ? staticPlugins : layoutsPlugins)[nameOld];
-								loaderTmp.RemoveWorkDir();
-								(moduleNum == 2 ? staticPlugins : layoutsPlugins).Remove(nameOld);
-								loaderTmp = new PluginLoader(ref Modules[moduleNum], path, name);
-								loaderTmp.Load();
-								(moduleNum == 2 ? staticPlugins : layoutsPlugins).Add(name, loaderTmp);
-								break;
-							}
-					}
+				catch (Exception e) {
+					this.Log.Error("Ошибка обновления пакетов", e);
 				}
 			}
-			//}
-			//catch { }
 		}
 
 		private Hashtable LoadPlugins(ref string[] module) {
@@ -270,16 +274,16 @@ namespace WebServerCore.Plugins {
 				if (tree != null) {
 					ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
 					//try {
-						string[] staticInclude = controller._GetStaticInclude();
-						if (staticInclude != null) {
-							helper.staticPlugins = new Hashtable();
-							for (int i = 0; i < staticInclude.Length; i++) {
-								helper.staticPlugins.Add(staticInclude[i], ((PluginLoader)staticPlugins[staticInclude[i]]).plugin.GetPluginRefObject());
-							}
+					string[] staticInclude = controller._GetStaticInclude();
+					if (staticInclude != null) {
+						helper.staticPlugins = new Hashtable();
+						for (int i = 0; i < staticInclude.Length; i++) {
+							helper.staticPlugins.Add(staticInclude[i], ((PluginLoader)staticPlugins[staticInclude[i]]).plugin.GetPluginRefObject());
 						}
+					}
 
-						controller._SetHelper(helper);
-						controller._WorkWS(action, new object[] { (string)json["type"], (string)json["body"] });
+					controller._SetHelper(helper);
+					controller._WorkWS(action, new object[] { (string)json["type"], (string)json["body"] });
 					//}
 					//catch { }
 

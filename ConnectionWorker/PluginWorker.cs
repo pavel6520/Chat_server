@@ -47,7 +47,21 @@ namespace ConnectionWorker {
 				m.Invoke(this, null);
 			}
 			if (methodName != null && _helper.Render.isEnabled) {
-				return GetType().GetMethod(methodName).Invoke(this, args);
+				m = GetType().GetMethod(methodName);
+				List<object> param = new List<object>();
+				foreach(var item in m.GetParameters()) {
+					if(args != null && args.Length > param.Count) {
+						param.Add(args[param.Count]);
+					}
+					else if (item.HasDefaultValue) {
+						param.Add(item.RawDefaultValue);
+					}
+					else {
+						throw new ArgumentException($"Не найдено значение для параметра метода {methodName}", item.Name);
+					}
+				}
+				return m.Invoke(this, param.ToArray());
+				//return GetType().GetMethod(methodName).Invoke(this, args);
 			}
 			else {
 				return null; 

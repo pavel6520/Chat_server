@@ -14,8 +14,8 @@
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>none</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -69,6 +69,7 @@
     <PostBuildEvent>MKDIR $(SolutionDir)build\$(ConfigurationName)\application
 MKDIR $(SolutionDir)build\$(ConfigurationName)\application\controllers
 MKDIR $(SolutionDir)build\$(ConfigurationName)\application\controllers\index
-COPY *.* $(SolutionDir)build\$(ConfigurationName)\application\controllers\index</PostBuildEvent>
+IF "$(ConfigurationName)"=="Debug" COPY *.* $(SolutionDir)build\$(ConfigurationName)\application\controllers\index
+IF "$(ConfigurationName)"=="Release" COPY *.dll $(SolutionDir)build\$(ConfigurationName)\application\controllers\index</PostBuildEvent>
   </PropertyGroup>
 </Project>

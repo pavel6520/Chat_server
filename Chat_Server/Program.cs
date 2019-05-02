@@ -13,13 +13,21 @@ namespace Chat_server {
 			Environment.CurrentDirectory = path.Substring(0, path.LastIndexOf(System.IO.Path.DirectorySeparatorChar));
 
 			core = new Core();
-			core.Start();
+			try {
+				core.Start();
+			}
+			catch (Exception e){
+				Console.WriteLine($"{DateTime.Now} Ошибка запуска: {e}");
+				Console.Beep();
+				Console.ReadKey();
+				return;
+			}
 			Console.WriteLine($"{DateTime.Now} Запущено");
 			while (true) {
 				string command = Console.ReadLine();
 				if (command == "up") { }
 				else if (command == "close") {
-					Console.WriteLine($"{DateTime.Now} Program close");
+					Console.WriteLine($"{DateTime.Now} Программа остановлена");
 					core.Close();
 					break;
 				}

@@ -20,7 +20,7 @@ namespace WebServerCore {
             packageManager = new PluginManagerClass(ref Log, $"{Environment.CurrentDirectory}{System.IO.Path.DirectorySeparatorChar}application{System.IO.Path.DirectorySeparatorChar}");
         }
 
-        public int Start() {
+        public void Start() {
             //DBClient.Create();
             try {
                 //if (DBClient.Check()) {
@@ -34,9 +34,8 @@ namespace WebServerCore {
             }
             catch (Exception ex) {
                 Log.Fatal("Ошибка в главном потоке WebServerCore", ex);
-                return 2;
+				throw;
             }
-            return 1;
         }
 
         public void Close() {

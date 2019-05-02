@@ -39,7 +39,9 @@ public class authController : ControllerWorker {
 				auth._SetHelper(_helper);
 				if ((bool)auth._Work("loginUser")) {
 					_helper = auth._GetHelper();
-					_helper.Redirect("/chat");
+					//_helper.Redirect("/chat");
+					_helper.Responce.Headers.Add(System.Net.HttpResponseHeader.Location, "/chat");
+					_helper.Render.DissableRender();
 				}
 				else {
 					_helper = auth._GetHelper();
@@ -68,7 +70,7 @@ public class authController : ControllerWorker {
 				//Echo("</p>");
 				Echo("<p class=\"login button\"><input type=\"submit\" value=\"Login\"  name=\"submit\" /></p>");
 				Echo("<p class=\"change_link\">Not a member yet ?<a href=\"/auth/signin\" class=\"to_subscribe\">Join us</a></p>");
-				Echo("</div></div></div>");
+				Echo("</form></div></div></div>");
 			}
 		}
 		else {
@@ -103,11 +105,8 @@ public class authController : ControllerWorker {
 				Echo("<link href=\"/assets/css/styleform.css\" rel=\"stylesheet\">");
 				Echo("<link href=\"/assets/css/animateform.css\" rel=\"stylesheet\">");
 				Echo("<div id=\"containerauth\">");
-				Echo("<a class=\"hiddenanchor\" id=\"toregister\"></a>");
-				Echo("<a class=\"hiddenanchor\" id=\"tologin\"></a>");
 				Echo("<div id=\"wrapper\">");
-
-				Echo("<div id=\"reg\" class=\"animate form\">");
+				Echo("<div id=\"regform\" class=\"animate form\">");
 				Echo("<form  action=\"signin\" autocomplete=\"on\" method=\"POST\">");
 				Echo("<h1> Sign up </h1>");
 				Echo("<p>");
