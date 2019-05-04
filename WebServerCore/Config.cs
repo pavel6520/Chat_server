@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpConfig;
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -6,113 +7,59 @@ using System.Xml.Serialization;
 
 namespace WebServerCore {
     public static class Config {
-        private static string _file;
-        private static Body body;
-        public static MySQLstr mysql;
-        public static HTTPstr http;
-        public static HTTPSstr https;
+		private static string FileName;
+		private static bool loaded;
+		public static string Application;
+		public static bool Debug;
+		public static string Domain;
+		public static bool SSLEnable;
+		public static string SSLFileName;
+		public static string SSLPass;
+		public static string DBConnectionString;
 
-        public static bool Read(string file) {
-            bool result = false;
-            _file = file;
-            XmlSerializer formatter = new XmlSerializer(typeof(Body));
-            try {
-                FileStream fs = new FileStream(_file, FileMode.Open);
-                body = (Body)formatter.Deserialize(fs);
-                fs.Close();
-                result = true;
-                //Log.Write(LogType.DEBUG, "Config", $"Файл {file} успешно прочитан");
-            }
-            catch {
-                try {
-                    FileStream fs = new FileStream(_file, FileMode.Create);
-                    body = new Body {
-                        mysql = new MySQLstr { login = "root", pass = "pass", host = "localhost", port = 3306, db = "chat" },
-                        http = new HTTPstr { port = 80 },
-                        https = new HTTPSstr { port = 443 }
-                    };
-                    formatter.Serialize(fs, body);
-                }
-                catch (Exception ex) {
-                    //Log.Write(LogType.FATAL, "Config", $"Не удалось создать файл {file} с ошбкой: {ex.Message}");
-                    System.Diagnostics.Debug.WriteLine($"Не удалось создать файл {file} с ошбкой: {ex.Message}");
-                    Environment.Exit(2);
-                }
-                //Log.Write(LogType.WARN, "Config", $"Не удалось открыть файл {file} либо он повржден. Был создан новый файл");
-            }
+        public static void Read(string file) {
+			FileName = file;
+			if (!(loaded = File.Exists(FileName))) {
+				File.Create(FileName).Close();
+			}
+			var cfg = Configuration.LoadFromFile(FileName);
+			if (cfg["global"]["Application"].IsEmpty) {
+				cfg["global"]["Application"].StringValue = "development";
+			}
+			Application = cfg["global"]["Application"].StringValue;
 
-            mysql = body.mysql;
-            http = body.http;
-            https = body.https;
+			if (cfg[Application]["Debug"].IsEmpty) {
+				cfg[Application]["Debug"].BoolValue = false;
+			}
+			Debug = cfg[Application]["Debug"].BoolValue;
 
-            return result;
-        }
+			if (cfg[Application]["domain"].IsEmpty) {
+				cfg[Application]["domain"].StringValue = "example.com";
+			}
+			Domain = cfg[Application]["domain"].StringValue;
 
-        public class Body {
-            public MySQLstr mysql;
-            public HTTPstr http;
-            public HTTPSstr https;
-        }
+			if (cfg[Application]["SSLEnable"].IsEmpty) {
+				cfg[Application]["SSLEnable"].BoolValue = false;
+			}
+			SSLEnable = cfg[Application]["SSLEnable"].BoolValue;
 
-        public struct MySQLstr {
-            public string host;
-            public int port;
-            public string login;
-            public string pass;
-            public string db;
-        }
-        public struct HTTPstr {
-            public int port;
-        }
-        public struct HTTPSstr {
-            public int port;
-        }
+			if (cfg[Application]["SSLFileName"].IsEmpty) {
+				cfg[Application]["SSLFileName"].StringValue = "cert.pfx";
+			}
+			SSLFileName = cfg[Application]["SSLFileName"].StringValue;
 
+			if (cfg[Application]["SSLPass"].IsEmpty) {
+				cfg[Application]["SSLPass"].StringValue = "1234";
+			}
+			SSLPass = cfg[Application]["SSLPass"].StringValue;
+
+			if (cfg[Application]["DBConnectionString"].IsEmpty) {
+				cfg[Application]["DBConnectionString"].StringValue = "server=;port=;user=;password=;database=;";
+			}
+			DBConnectionString = cfg[Application]["DBConnectionString"].StringValue;
+			if (!loaded) {
+				cfg.SaveToFile(FileName, Encoding.UTF8);
+			}
+		}
     }
-
-    //class INI
-    //{
-    //    string Path; //Имя файла.
-
-    //    [DllImport("kernel32")] // Подключаем kernel32.dll и описываем его функцию WritePrivateProfilesString
-    //    static extern long WritePrivateProfileString(string Section, string Key, string Value, string FilePath);
-
-    //    [DllImport("kernel32")] // Еще раз подключаем kernel32.dll, а теперь описываем функцию GetPrivateProfileString
-    //    static extern int GetPrivateProfileString(string Section, string Key, string Default, StringBuilder RetVal, int Size, string FilePath);
-
-    //    // С помощью конструктора записываем пусть до файла и его имя.
-    //    public INI(string IniPath)
-    //    {
-    //        Path = new FileInfo(IniPath).FullName.ToString();
-    //    }
-
-    //    //Читаем ini-файл и возвращаем значение указного ключа из заданной секции.
-    //    public string ReadINI(string Section, string Key)
-    //    {
-    //        var RetVal = new StringBuilder(255);
-    //        GetPrivateProfileString(Section, Key, "", RetVal, 255, Path);
-    //        return RetVal.ToString();
-    //    }
-    //    //Записываем в ini-файл. Запись происходит в выбранную секцию в выбранный ключ.
-    //    public void WriteINI(string Section, string Key, string Value)
-    //    {
-    //        WritePrivateProfileString(Section, Key, Value, Path);
-    //    }
-
-    //    //Удаляем ключ из выбранной секции.
-    //    public void DeleteKey(string Section, string Key = null)
-    //    {
-    //        WriteINI(Section, Key, null);
-    //    }
-    //    //Удаляем выбранную секцию
-    //    public void DeleteSection(string Section = null)
-    //    {
-    //        WriteINI(Section, null, null);
-    //    }
-    //    //Проверяем, есть ли такой ключ, в этой секции
-    //    public bool KeyExists(string Section, string Key = null)
-    //    {
-    //        return ReadINI(Section, Key).Length > 0;
-    //    }
-    //}
 }

@@ -29,7 +29,9 @@ namespace WebServerCore {
 
         public int Start() {
             try {
-				listener.SslConfiguration.ServerCertificate = new System.Security.Cryptography.X509Certificates.X509Certificate2("cert.pfx", "6520");
+				if (Config.SSLEnable) {
+					listener.SslConfiguration.ServerCertificate = new System.Security.Cryptography.X509Certificates.X509Certificate2(Config.SSLFileName, Config.SSLPass);
+				}
                 listener.Start();
                 Thread thread = new Thread(new ThreadStart(Listen));
                 thread.Start();
@@ -66,26 +68,21 @@ namespace WebServerCore {
 #endif
 							try {
 								context.Response.Headers.Add(HttpResponseHeader.Server, "pavel6520/WebServerCore");
-#if DEBUG
-								string domain = "127.0.0.1";
-#else
-								string domain = "pavel6520.hopto.org";
-								//string domain = "127.0.0.1";
-#endif
+
 								if (context.Request.IsWebSocketRequest) {
 									packageManager.WorkWS(
 										new HelperClass(
 											ref context, 
-											"server=127.0.0.1;port=3306;user=root;password=test;database=chat;", 
-											domain, 
+											Config.DBConnectionString, 
+											Config.Domain, 
 											context.AcceptWebSocket("13")));
 								}
 								else {
 									packageManager.Work(
 										new HelperClass(
 											ref context, 
-											"server=127.0.0.1;port=3306;user=root;password=test;database=chat;", 
-											domain));
+											Config.DBConnectionString,
+											Config.Domain));
 								}
 							}
 							catch (PathNotFoundException e) {

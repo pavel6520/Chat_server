@@ -12,12 +12,23 @@ namespace WebServerCore {
         private PluginManagerClass packageManager;
         public ILog Log;
 
-        public Core() {
-			Log = LogManager.GetLogger("SYSLOG");
-            log4net.Config.XmlConfigurator.Configure();
-            Log.Info("Program starting!");
+		public Core() {
+			log4net.Config.XmlConfigurator.Configure();
+			Log = LogManager.GetLogger("INFOLOG");
+			Log.Info("Program starting!");
 
-            packageManager = new PluginManagerClass(ref Log, $"{Environment.CurrentDirectory}{System.IO.Path.DirectorySeparatorChar}application{System.IO.Path.DirectorySeparatorChar}");
+			try {
+				Config.Read("config.ini");
+			}
+			catch (Exception e) {
+				Log.Fatal("Ошибка чтения конфигурации", e);
+				Environment.Exit(1);
+			}
+			if (Config.Debug) {
+				Log = LogManager.GetLogger("DEBUGLOG");
+			}
+
+			packageManager = new PluginManagerClass(ref Log, $"{Environment.CurrentDirectory}{System.IO.Path.DirectorySeparatorChar}application{System.IO.Path.DirectorySeparatorChar}");
         }
 
         public void Start() {
@@ -26,7 +37,9 @@ namespace WebServerCore {
                 //if (DBClient.Check()) {
                 listener = new Listener(ref Log, ref packageManager);
                 listener.Prefixes.Add("http://*/");
-                listener.Prefixes.Add("https://*/");
+				if (Config.SSLEnable) {
+					listener.Prefixes.Add("https://*/");
+				}
                 listener.Start();
                 
                 Log.Info("Program running!");
@@ -34,8 +47,8 @@ namespace WebServerCore {
             }
             catch (Exception ex) {
                 Log.Fatal("Ошибка в главном потоке WebServerCore", ex);
-				throw;
-            }
+				Environment.Exit(1);
+			}
         }
 
         public void Close() {

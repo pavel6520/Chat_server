@@ -55,6 +55,7 @@ namespace ConnectionWorker.Helpers {
 			if (ContentLength64 > 0) {
 				Content = new byte[ContentLength64];
 				request.InputStream.Read(Content, 0, Content.Length);
+				Console.WriteLine(Encoding.UTF8.GetString(Content));
 			}
 		}
 	}

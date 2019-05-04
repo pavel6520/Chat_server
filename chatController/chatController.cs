@@ -15,11 +15,11 @@ public class chatController : ControllerWorker {
 			PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
 			auth._SetHelper(_helper);
 			if (!(bool)auth._Work("checkSession")) {
-				_helper.Redirect("/auth/login");
+				_helper.AnswerRedirect("/auth/login");
 			}
 		}
 		else {
-			_helper.Redirect($"https://{_helper.domainName}{_helper.Request.Url.PathAndQuery}");
+			_helper.AnswerRedirect($"https://{_helper.domainName}{_helper.Request.Url.PathAndQuery}");
 		}
 	}
 
