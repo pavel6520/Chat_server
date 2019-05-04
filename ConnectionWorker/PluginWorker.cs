@@ -37,6 +37,22 @@ namespace ConnectionWorker {
 			return _helper;
 		}
 
+		private object[] makeParam(ref System.Reflection.MethodInfo m, object[] args) {
+			List<object> param = new List<object>();
+			foreach (var item in m.GetParameters()) {
+				if (args != null && args.Length > param.Count) {
+					param.Add(args[param.Count]);
+				}
+				else if (item.HasDefaultValue) {
+					param.Add(item.RawDefaultValue);
+				}
+				else {
+					throw new ArgumentException($"Не найдено значение для параметра метода {m.Name}", item.Name);
+				}
+			}
+			return param.ToArray();
+		}
+
 		public object _Work(string methodName = null, object[] args = null) {
 			contentType = new List<byte>(0);
 			contentString = new List<string>(0);
@@ -46,22 +62,9 @@ namespace ConnectionWorker {
 			if (m != null) {
 				m.Invoke(this, null);
 			}
-			if (methodName != null && _helper.Render.isEnabled) {
+			if (methodName != null) {
 				m = GetType().GetMethod(methodName);
-				List<object> param = new List<object>();
-				foreach(var item in m.GetParameters()) {
-					if(args != null && args.Length > param.Count) {
-						param.Add(args[param.Count]);
-					}
-					else if (item.HasDefaultValue) {
-						param.Add(item.RawDefaultValue);
-					}
-					else {
-						throw new ArgumentException($"Не найдено значение для параметра метода {methodName}", item.Name);
-					}
-				}
-				return m.Invoke(this, param.ToArray());
-				//return GetType().GetMethod(methodName).Invoke(this, args);
+				return m.Invoke(this, makeParam(ref m, args));
 			}
 			else {
 				return null; 
@@ -78,7 +81,8 @@ namespace ConnectionWorker {
 				m.Invoke(this, null);
 			}
 			if (methodName != null && _helper.Render.isEnabled) {
-				return GetType().GetMethod(methodName).Invoke(this, args);
+				m = GetType().GetMethod(methodName);
+				return m.Invoke(this, makeParam(ref m, args));
 			}
 			else {
 				return null;

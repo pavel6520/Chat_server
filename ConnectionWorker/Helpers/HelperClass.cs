@@ -36,29 +36,31 @@ namespace ConnectionWorker.Helpers {
 			isAuth = false;
 			RedirectLocation = null;
 			staticPlugins = null;
+			Request = new RequestInfo(context.Request);
+			Responce = new ResponceInfo();
+			returnType = ReturnType.Content;
 			Context = context;
-			Request = new RequestInfo(context.Request);
-			Responce = new ResponceInfo();
-			returnType = ReturnType.Content;
 		}
 
-		public HelperClass(ref HttpListenerContext context, string db, string domain, HttpListenerWebSocketContext contextWs) {
-			Render = new RenderClass();
-			dbConnectString = db;
-			domainName = domain;
-			isAuth = false;
-			RedirectLocation = null;
-			staticPlugins = null;
+		public HelperClass(ref HttpListenerContext context, string db, string domain, HttpListenerWebSocketContext contextWs) 
+			: this(ref context, db, domain) {
 			ContextWs = contextWs;
-			Request = new RequestInfo(context.Request);
-			Responce = new ResponceInfo();
-			returnType = ReturnType.Content;
 		}
 
-		public void Redirect(string url) {
+		public void AnswerRedirect(string url) {
 			returnType = ReturnType.Info;
 			Render.DissableRender();
 			RedirectLocation = url;
+		}
+		public void Answer(int code, string description) {
+			Responce.StatusCode = code;
+			Responce.StatusDescription = description;
+		}
+
+		public void AnswerInfo(int code, string description) {
+			returnType = ReturnType.Info;
+			Responce.StatusCode = code;
+			Responce.StatusDescription = description;
 		}
 
 		public void GetData(HelperClass helper) {

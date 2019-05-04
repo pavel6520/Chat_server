@@ -195,6 +195,7 @@ namespace WebServerCore.Plugins {
 			}
 			ControllerTreeElement tree = controllerTree.Search(ref pathSplit, out string action);
 			if (tree != null) {
+				Console.WriteLine(helper.Context.Request.ContentType);
 				ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
 				try {
 					string[] staticInclude = controller._GetStaticInclude();
@@ -213,10 +214,11 @@ namespace WebServerCore.Plugins {
 				helper.GetData(controller._GetHelper());
 
 				helper.Context.Response.Headers.Add(helper.Responce.Headers);
+				helper.Context.Response.StatusCode = helper.Responce.StatusCode;
+				helper.Context.Response.StatusDescription = helper.Responce.StatusDescription;
 
 				if (helper.returnType == ReturnType.Content) {
-					helper.Context.Response.ContentType = "text/html; charset=UTF-8";
-					helper.Context.Response.StatusDescription = "OK";
+					helper.Context.Response.ContentType = helper.Responce.ContentType;
 
 					string bufS = "";
 					if (helper.Render.isEnabled) {
@@ -225,7 +227,7 @@ namespace WebServerCore.Plugins {
 					else {
 						ResentContent(ref helper, ref controller, ref bufS);
 					}
-					//byte[] buf;
+					//byte[] buf; // не работает в данной реализации HttpListenerContext
 					//while (bufS.Length > 0) {
 					//	buf = Encoding.UTF8.GetBytes(bufS.Substring(0, bufS.Length > 16000 ? 16000 : bufS.Length));
 					//	bufS = bufS.Remove(0, bufS.Length > 16000 ? 16000 : bufS.Length);
@@ -234,8 +236,6 @@ namespace WebServerCore.Plugins {
 					byte[] buf = Encoding.UTF8.GetBytes(bufS);
 					helper.Context.Response.ContentLength64 = buf.Length;
 					helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
-					buf = null;
-					bufS = null;
 				}
 				else {
 					helper.Context.Response.Redirect(helper.RedirectLocation);
