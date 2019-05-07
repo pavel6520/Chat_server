@@ -24,7 +24,6 @@ namespace ConnectionWorker.Helpers {
 
 		public bool isSecureConnection { get { return Request.IsSecureConnection; } }
 		public bool isWebSocket { get { return ContextWs != null; } }
-		public string RedirectLocation { get; private set; }
 
 		public ReturnType returnType;//{ get; private set; }
 		public Hashtable staticPlugins;
@@ -34,7 +33,6 @@ namespace ConnectionWorker.Helpers {
 			dbConnectString = db;
 			domainName = domain;
 			isAuth = false;
-			RedirectLocation = null;
 			staticPlugins = null;
 			Request = new RequestInfo(context.Request);
 			Responce = new ResponceInfo();
@@ -42,15 +40,16 @@ namespace ConnectionWorker.Helpers {
 			Context = context;
 		}
 
-		public HelperClass(ref HttpListenerContext context, string db, string domain, HttpListenerWebSocketContext contextWs) 
+		public HelperClass(ref HttpListenerContext context, string db, string domain, HttpListenerWebSocketContext contextWs)
 			: this(ref context, db, domain) {
 			ContextWs = contextWs;
 		}
 
 		public void AnswerRedirect(string url) {
 			returnType = ReturnType.Info;
-			Render.DissableRender();
-			RedirectLocation = url;
+			Responce.StatusCode = 302;
+			//Responce.StatusDescription = "Moved Temporarily";
+			Responce.RedirectLocation = url;
 		}
 		public void Answer(int code, string description) {
 			Responce.StatusCode = code;
@@ -76,7 +75,6 @@ namespace ConnectionWorker.Helpers {
 			Request = helper.Request;
 			Responce = helper.Responce;
 			isAuth = helper.isAuth;
-			RedirectLocation = helper.RedirectLocation;
 			staticPlugins = helper.staticPlugins;
 			returnType = helper.returnType;
 		}
