@@ -63,6 +63,13 @@ namespace ConnectionWorker.Helpers {
 			Responce.StatusDescription = description;
 		}
 
+		public void Answer500(Exception e) {
+			Responce.StatusCode = 500;
+			Responce.StatusDescription = "Internal Server Error";
+			//if (Auth != null) {
+			//}
+		}
+
 		public void GetData(HelperClass helper) {
 			Render = helper.Render;
 			Auth = helper.Auth;
@@ -77,7 +84,6 @@ namespace ConnectionWorker.Helpers {
 
 	public enum ReturnType {
 		Content,
-		Info,
-		Special
+		Info
 	}
 }

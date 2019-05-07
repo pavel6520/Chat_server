@@ -195,7 +195,7 @@ namespace WebServerCore.Plugins {
 			}
 			ControllerTreeElement tree = controllerTree.Search(ref pathSplit, out string action);
 			if (tree != null) {
-				Console.WriteLine(helper.Context.Request.ContentType);
+				//Console.WriteLine(helper.Context.Request.ContentType);
 				ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
 				try {
 					string[] staticInclude = controller._GetStaticInclude();
@@ -208,14 +208,16 @@ namespace WebServerCore.Plugins {
 
 					controller._SetHelper(helper);
 					controller._Work(action);
+
+					helper.GetData(controller._GetHelper());
+
+					helper.Context.Response.Headers.Add(helper.Responce.Headers);
+					helper.Context.Response.StatusCode = helper.Responce.StatusCode;
+					helper.Context.Response.StatusDescription = helper.Responce.StatusDescription;
 				}
-				catch { throw; }
-
-				helper.GetData(controller._GetHelper());
-
-				helper.Context.Response.Headers.Add(helper.Responce.Headers);
-				helper.Context.Response.StatusCode = helper.Responce.StatusCode;
-				helper.Context.Response.StatusDescription = helper.Responce.StatusDescription;
+				catch (Exception e) {
+					helper.Answer500(e);
+				}
 
 				if (helper.returnType == ReturnType.Content) {
 					helper.Context.Response.ContentType = helper.Responce.ContentType;
@@ -237,7 +239,7 @@ namespace WebServerCore.Plugins {
 					helper.Context.Response.ContentLength64 = buf.Length;
 					helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
 				}
-				else {
+				else if (helper.returnType == ReturnType.Info) {
 					helper.Context.Response.Redirect(helper.RedirectLocation);
 				}
 			}

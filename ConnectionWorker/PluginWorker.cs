@@ -94,6 +94,12 @@ namespace ConnectionWorker {
 			contentString.Add(s);
 		}
 
+		public void EchoJson(object o) {
+			_helper.Responce.ContentType = "application/json; charset=UTF-8";
+			contentType.Add(0);
+			contentString.Add(Newtonsoft.Json.JsonConvert.SerializeObject(o));
+		}
+
 		public void IncludeLayout(string name) {
 			contentType.Add(11);
 			contentString.Add(name);

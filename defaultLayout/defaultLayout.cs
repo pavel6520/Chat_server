@@ -1,17 +1,15 @@
 ﻿using ConnectionWorker;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 public class defaultLayout : LayoutWorker {
 	public void Init() {
-		Echo("<html><head>");
+		Echo("<!doctype html><html>");
 		IncludeLayout("head");
-		Echo("</head><body>");
+		Echo("<body>");
 		IncludeLayout("header");
 		IncludeContent();
+		Echo("<script src=\"/assets/js/func.js\"></script>");
+		Echo("<script src=\"/assets/js/popper.min.js\"></script>");
+		Echo("<script src=\"/assets/js/bootstrap.js\"></script>");
 		Echo("</body></html>");
 	}
 }
