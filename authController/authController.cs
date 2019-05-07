@@ -65,7 +65,7 @@ public class authController : ControllerWorker {
 				//Echo("<label for=\"loginkeeping\">Keep me logged in</label>");
 				//Echo("</p>");
 				Echo("</form>");
-				Echo("<p class=\"login button\"><button>Login</button></p>");
+				Echo("<button class=\"btn btn-primary btn-lg\">Login</button>");
 				Echo("<p class=\"change_link\">Not a member yet ?<a href=\"/auth/signin\" class=\"to_subscribe\">Join us</a></p>");
 				formJS();
 				Echo("</div></div></div>");
@@ -122,8 +122,8 @@ public class authController : ControllerWorker {
 				Echo("<input id=\"password_confirm\" name=\"password_confirm\" type=\"password\"/>");
 				Echo("</p>");
 				Echo("</form>");
-				Echo("<p class=\"login button\"><button>Sign up</button>");
-				Echo("</p><p class=\"change_link\">Already a member ?<a href=\"/auth/login\" class=\"to_subscribe\">Go and log in </a></p>");
+				Echo("<button class=\"btn btn-primary btn-lg\">Sign up</button>");
+				Echo("<p class=\"change_link\">Already a member ?<a href=\"/auth/login\" class=\"to_subscribe\">Go and log in </a></p>");
 				formJS();
 				Echo("</div></div></div>");
 			}
@@ -131,6 +131,6 @@ public class authController : ControllerWorker {
 	}
 
 	private void formJS() {
-		Echo("<script>$('p.login.button > button').on('click', function () {/*let formData = new FormData($('form')[0]);*/$.ajax({type: 'POST',url: $('form').attr('action'),processData: true,data: {login: $('#login').val(),password: $('#password').val(),password_confirm: $('#password_confirm').val()},/*data: formData,*/success: function (data) {console.log(data);if(data.state){$('form').attr('action', '/chat').submit();/*window.location.href = data.redirect;*/}else{/*отобразить ошибки*/}}});});</script>");
+		Echo("<script>$('#authform > button.btn').on('click', function () {/*let formData = new FormData($('form')[0]);*/$.ajax({type: 'POST',url: $('form').attr('action'),processData: true,data: {login: $('#login').val(),password: $('#password').val(),password_confirm: $('#password_confirm').val()},/*data: formData,*/success: function (data) {console.log(data);if(data.state){$('form').attr('action', '/chat').submit();/*window.location.href = data.redirect;*/}else{/*отобразить ошибки*/}}});});</script>");
 	}
 }
