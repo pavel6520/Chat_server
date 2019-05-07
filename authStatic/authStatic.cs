@@ -101,9 +101,6 @@ public class authStatic : PluginWorker {
 		_helper.Responce.Headers.Add(System.Net.HttpResponseHeader.SetCookie, $"auth={hash}; secure; HttpOnly; path=/; Expires={time.AddDays(1).ToString("R")}");
 		
 		connection.Close();
-
-
-		//Console.WriteLine(BitConverter.ToString(new SHA256Managed().ComputeHash(Encoding.Default.GetBytes(Console.ReadLine()))).Replace("-", ""));
 	}
 
 	public bool loginUser() {

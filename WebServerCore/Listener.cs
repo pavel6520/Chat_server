@@ -58,14 +58,8 @@ namespace WebServerCore {
 				while (enabled) {
 					var context = listener.GetContext();
 					Task.Factory.StartNew(() => {
-						//var SW = new System.Diagnostics.Stopwatch();
-						//SW.Start();
 						try {
 							Log.Info($"Подключение {context.Request.RemoteEndPoint.ToString()} запрос {context.Request.Url.PathAndQuery}");
-#if DEBUG
-							string ip = context.Request.RemoteEndPoint.ToString();
-							//Console.WriteLine($"{context.Request.HttpMethod} {context.Request.Url.OriginalString} - {ip}");
-#endif
 							try {
 								context.Response.Headers.Add(HttpResponseHeader.Server, "pavel6520/WebServerCore");
 
@@ -93,15 +87,10 @@ namespace WebServerCore {
 									context.Response.Close();
 								}
 							}
-#if DEBUG
-							//Console.WriteLine($"===========================HTTP END - {ip}");
-#endif
 						}
 						catch (Exception e) {
 							Log.Error("Ошибка обработки подключения", e);
 						}
-						//SW.Stop();
-						//Console.WriteLine($"TIME {context.Request.Url.OriginalString} = {Convert.ToString(SW.ElapsedMilliseconds)}");
 					}, TaskCreationOptions.LongRunning);
 				}
 			}

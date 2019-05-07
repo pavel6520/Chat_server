@@ -32,13 +32,5 @@ namespace ConnectionWorker {
 			}
 			return names.ToArray();
 		}
-
-		//unsafe public void Test(/*IntPtr contextRef*/void* cRef) {
-		//	//string s = System.Runtime.CLR.EntityPtr.ToInstance<string>(contextRef);
-		//	char c = *(char*)cRef;
-		//	Console.WriteLine(c);
-
-		//	//HttpListenerContext context1 = System.Runtime.CLR.EntityPtr.ToInstance<HttpListenerContext>(contextRef);
-		//}
 	}
 }

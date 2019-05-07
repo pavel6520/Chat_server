@@ -112,8 +112,6 @@ namespace WebServerCore.Plugins {
 					path = path.Replace('\\', '/');
 					if (moduleNum == 0) {
 						Queue<string> pathSplit = new Queue<string>((path + name).Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries));
-						//Console.WriteLine("TESTOUT " + fullPath + " " + changeType + " " + path);
-						//ControllerTreeElement tree = SearchController(ref controllerTree, ref pathSplit, true);
 						ControllerTreeElement tree = controllerTree.SearchRoot(ref pathSplit);
 						if (fileAct) {
 							tree = (ControllerTreeElement)tree.elements[name];
@@ -195,7 +193,6 @@ namespace WebServerCore.Plugins {
 			}
 			ControllerTreeElement tree = controllerTree.Search(ref pathSplit, out string action);
 			if (tree != null) {
-				//Console.WriteLine(helper.Context.Request.ContentType);
 				ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
 				try {
 					string[] staticInclude = controller._GetStaticInclude();
@@ -304,7 +301,6 @@ namespace WebServerCore.Plugins {
 			_helper.ContextWs.WebSocket.OnClose += (sender, args) => {
 				HelperClass helper = (HelperClass)WSclients[sender];
 				WSclients.Remove(sender);
-				//Console.WriteLine("TESTCLOSED " + args.Reason);
 			};
 
 			WSclients.Add(_helper.ContextWs.WebSocket, _helper);
