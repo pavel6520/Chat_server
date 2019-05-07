@@ -240,7 +240,9 @@ namespace WebServerCore.Plugins {
 					helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
 				}
 				else if (helper.returnType == ReturnType.Info) {
-					helper.Context.Response.Redirect(helper.RedirectLocation);
+					if (helper.Responce.StatusCode / 100 == 3) {
+						helper.Context.Response.Redirect(helper.Responce.RedirectLocation);
+					}
 				}
 			}
 			else {

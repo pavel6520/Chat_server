@@ -12,6 +12,7 @@ namespace ConnectionWorker.Helpers {
 		public int StatusCode;
 		public string StatusDescription;
 		public string ContentType;
+		public string RedirectLocation;
 
 		public ResponceInfo() {
 			Headers = new WebHeaderCollection();
