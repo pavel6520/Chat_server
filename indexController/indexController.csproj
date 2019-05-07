@@ -66,10 +66,11 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>MKDIR $(SolutionDir)build\$(ConfigurationName)\application
-MKDIR $(SolutionDir)build\$(ConfigurationName)\application\controllers
-MKDIR $(SolutionDir)build\$(ConfigurationName)\application\controllers\index
-IF "$(ConfigurationName)"=="Debug" COPY *.* $(SolutionDir)build\$(ConfigurationName)\application\controllers\index
-IF "$(ConfigurationName)"=="Release" COPY *.dll $(SolutionDir)build\$(ConfigurationName)\application\controllers\index</PostBuildEvent>
+    <PostBuildEvent>set myName=index
+set myDirName=controllers
+set myDir=$(SolutionDir)build\$(ConfigurationName)\application\%25myDirName%25\%25myName%25
+MKDIR %25myDir%25
+XCOPY *.dll %25myDir%25 /d /y
+IF "$(ConfigurationName)"=="Debug" XCOPY *.pdb %25myDir%25 /d /y</PostBuildEvent>
   </PropertyGroup>
 </Project>

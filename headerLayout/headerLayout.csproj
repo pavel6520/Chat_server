@@ -52,10 +52,11 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>MKDIR $(SolutionDir)build\$(ConfigurationName)\application
-MKDIR $(SolutionDir)build\$(ConfigurationName)\application\layouts
-MKDIR $(SolutionDir)build\$(ConfigurationName)\application\layouts\header
-IF "$(ConfigurationName)"=="Debug" COPY *.* $(SolutionDir)build\$(ConfigurationName)\application\layouts\header
-IF "$(ConfigurationName)"=="Release" COPY *.dll $(SolutionDir)build\$(ConfigurationName)\application\layouts\header</PostBuildEvent>
+    <PostBuildEvent>set myName=header
+set myDirName=layouts
+set myDir=$(SolutionDir)build\$(ConfigurationName)\application\%25myDirName%25\%25myName%25
+MKDIR %25myDir%25
+XCOPY *.dll %25myDir%25 /d /y
+IF "$(ConfigurationName)"=="Debug" XCOPY *.pdb %25myDir%25 /d /y</PostBuildEvent>
   </PropertyGroup>
 </Project>
