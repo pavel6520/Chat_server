@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 public class headerLayout : LayoutWorker {
 	public void Init() {
-		Echo("<header></header>");
+		Echo("<header  class=\"page-header\">");
+		if (_helper.Auth != null) {
+			Echo($"<h3>{_helper.Auth.Login}</h3>");
+		}
+		Echo("</header>");
 	}
 }
