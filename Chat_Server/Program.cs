@@ -2,7 +2,7 @@
 using System.Reflection;
 using WebServerCore;
 
-namespace Chat_server {
+namespace ChatTestServer {
 	class Program {
 		static Core core;
 

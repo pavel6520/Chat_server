@@ -16,7 +16,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>embedded</DebugType>
+    <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\build\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -84,9 +84,8 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>MKDIR lib
-MOVE *.dll lib\
-IF "$(ConfigurationName)"=="Release" DEL *.pdb
-IF "$(ConfigurationName)"=="Debug" MOVE *.pdb lib\
-DEL *.xml</PostBuildEvent>
+IF "$(ConfigurationName)"=="Release" MOVE *.dll lib\ &amp; DEL *.pdb /q &amp; DEL *.xml /q
+IF "$(ConfigurationName)"=="Debug" XCOPY *.dll lib\ /d /y &amp;  XCOPY *.pdb lib\ /d /y
+</PostBuildEvent>
   </PropertyGroup>
 </Project>
