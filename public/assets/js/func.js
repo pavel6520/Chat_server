@@ -9,26 +9,26 @@ $(function(){
 	$('#tabs-logsign').tabs();
 	
 	/*ws = new WebSocket('ws://192.168.0.55:30000/websocket');*/
-	ws = new WebSocket('wss://127.0.0.1/');
+	//ws = new WebSocket('wss://127.0.0.1/');
 	/*ws = new WebSocket('ws://pavel6520.hopto.org:30000/websocket');*/
-	ws.onmessage = function(evt){
-		console.log(evt.data);
-		ws.send(JSON.stringify({
-			path: 'chat/ws',
-			type: 'test',
-			body: 'test message ' + new Date().getTime()
-		}));
-	};
-	ws.onopen = function(evt){
-		console.log('opened');
-		console.log(ws);
-	};
-	ws.onclose = function() {
-		console.log('closed');
-	}
-	ws.onerror = function(evt) {
-		console.log(evt);
-	};
+	// ws.onmessage = function(evt){
+	// 	console.log(evt.data);
+	// 	ws.send(JSON.stringify({
+	// 		path: 'chat/ws',
+	// 		type: 'test',
+	// 		body: 'test message ' + new Date().getTime()
+	// 	}));
+	// };
+	// ws.onopen = function(evt){
+	// 	console.log('opened');
+	// 	console.log(ws);
+	// };
+	// ws.onclose = function() {
+	// 	console.log('closed');
+	// }
+	// ws.onerror = function(evt) {
+	// 	console.log(evt);
+	// };
 	/*ws.onopen = function() {
 		if (localStorage.getItem('autologin') == 'true'){
 			cache('inputsAuth')[0].value = localStorage.getItem('login');

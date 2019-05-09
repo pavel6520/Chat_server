@@ -1,5 +1,4 @@
-#regform,
-#loginform{
+#authform{
     position: absolute;
     top: 0px;
     width: 88%;
@@ -65,7 +64,7 @@ input {
     background: rgba(238, 236, 240, 0.2);
     box-shadow: 0px 1px 4px 0px rgba(168, 168, 168, 0.9) inset;
 }
-#wrapper p.button input{
+#wrapper p.button button{
     width: 30%;
     cursor: pointer;
     background: rgb(61, 157, 179);
@@ -83,19 +82,18 @@ input {
         0px 5px 3px 3px rgb(210, 210, 210);
     transition: all 0.2s linear;
 }
-#wrapper p.button input:hover{
+#wrapper p.button button:hover{
     background: rgb(74, 179, 198);
 }
-#wrapper p.button input:active,
-#wrapper p.button input:focus{
+#wrapper p.button button:active,
+#wrapper p.button button:focus{
     background: rgb(40, 137, 154);
     position: relative;
     top: 1px;
     border: 1px solid rgb(12, 76, 87);
     box-shadow: 0px 1px 6px 4px rgba(0, 0, 0, 0.2) inset;
 }
-p.login.button,
-p.signin.button{
+p.login.button{
     text-align: right;
     margin: 5px 0;
 }
