@@ -213,10 +213,11 @@ namespace WebServerCore.Plugins {
 					helper.Context.Response.StatusDescription = helper.Responce.StatusDescription;
 				}
 				catch (Exception e) {
+					Log.Error("Ошибка обработки подключения", e);
 					helper.Answer500(e);
 				}
 
-				if (helper.returnType == ReturnType.Content) {
+				if (helper.returnType == ReturnType.DefaultContent) {
 					helper.Context.Response.ContentType = helper.Responce.ContentType;
 
 					string bufS = "";
@@ -243,17 +244,31 @@ namespace WebServerCore.Plugins {
 				}
 			}
 			else {
+				bool resFile = false;
 				try {
 					FileInfo fi = new FileInfo($"{baseDirectory.FullName}public{Path.DirectorySeparatorChar}{path.Replace('/', Path.DirectorySeparatorChar)}");
-					using (FileStream reader = new FileStream(fi.FullName, FileMode.Open)) {
-						helper.Context.Response.ContentLength64 = reader.Length;
-						helper.Context.Response.Headers.Add(HttpResponseHeader.CacheControl, "max-age=86400");
-						reader.CopyTo(helper.Context.Response.OutputStream, 16384);
+					if (fi.Exists) {
+						using (FileStream reader = new FileStream(fi.FullName, FileMode.Open, FileAccess.Read)) {
+							resFile = true;
+							int pos = fi.Name.LastIndexOf('.') + 1;
+							if (fi.Name.Substring(pos, fi.Name.Length - pos) == "css") {
+								helper.Context.Response.ContentType = "text/css";
+							}
+							helper.Context.Response.ContentLength64 = reader.Length;
+							helper.Context.Response.Headers.Add(HttpResponseHeader.CacheControl, "max-age=86400");
+							reader.CopyTo(helper.Context.Response.OutputStream, 16384);
+						}
 					}
-					return;
+					else {
+						resFile = false;
+					}
 				}
 				catch {
+					resFile = false;
+				}
+				if (!resFile) {
 					helper.Context.Response.StatusCode = 404;
+					helper.Context.Response.StatusDescription = "Not found";
 				}
 			}
 		}
@@ -290,7 +305,7 @@ namespace WebServerCore.Plugins {
 
 					helper.GetData(controller._GetHelper());
 
-					if (helper.returnType == ReturnType.Content) {
+					if (helper.returnType == ReturnType.DefaultContent) {
 						string bufS = "";
 						ResentContent(ref helper, ref controller, ref bufS);
 						helper.ContextWs.WebSocket.Send(bufS);
