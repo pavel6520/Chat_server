@@ -53,7 +53,7 @@ namespace WebSocketSharp
 
     #region Private Constructors
 
-    private HttpRequest (string method, string uri, Version version, NameValueCollection headers)
+    private HttpRequest (string method, string uri, Version version, WebHeaderCollection headers)
       : base (version, headers)
     {
       _method = method;
@@ -65,9 +65,9 @@ namespace WebSocketSharp
     #region Internal Constructors
 
     internal HttpRequest (string method, string uri)
-      : this (method, uri, HttpVersion.Version11, new NameValueCollection ())
+      : this (method, uri, HttpVersion.Version11, new WebHeaderCollection ())
     {
-      Headers["User-Agent"] = "websocket-sharp/1.0";
+      Headers.Set("User-Agent", "websocket-sharp/1.0");
     }
 
     #endregion
@@ -77,8 +77,8 @@ namespace WebSocketSharp
     public AuthenticationResponse AuthenticationResponse {
       get {
         var res = Headers["Authorization"];
-        return res != null && res.Length > 0
-               ? AuthenticationResponse.Parse (res)
+        return res != null && res.Length > 0 && res[0] != null && res[0].Length > 0
+			   ? AuthenticationResponse.Parse (res[0])
                : null;
       }
     }
@@ -122,7 +122,7 @@ namespace WebSocketSharp
       var port = uri.Port;
       var authority = String.Format ("{0}:{1}", host, port);
       var req = new HttpRequest ("CONNECT", authority);
-      req.Headers["Host"] = port == 80 ? host : authority;
+      req.Headers.Set("Host", port == 80 ? host : authority);
 
       return req;
     }
@@ -136,12 +136,12 @@ namespace WebSocketSharp
       // See: https://tools.ietf.org/html/rfc6455#page-17
       var port = uri.Port;
       var schm = uri.Scheme;
-      headers["Host"] = (port == 80 && schm == "ws") || (port == 443 && schm == "wss")
+      headers.Set("Host", (port == 80 && schm == "ws") || (port == 443 && schm == "wss")
                         ? uri.DnsSafeHost
-                        : uri.Authority;
+                        : uri.Authority);
 
-      headers["Upgrade"] = "websocket";
-      headers["Connection"] = "Upgrade";
+      headers.Set("Upgrade", "websocket");
+      headers.Set("Connection", "Upgrade");
 
       return req;
     }
@@ -177,12 +177,12 @@ namespace WebSocketSharp
 
     #region Public Methods
 
-    public void SetCookies (CookieCollection cookies)
+    public void SetCookies (CookieCollection cookies) //TODO
     {
       if (cookies == null || cookies.Count == 0)
         return;
 
-      var buff = new StringBuilder (64);
+      var buff = new StringBuilder ();
       foreach (var cookie in cookies.Sorted)
         if (!cookie.Expired)
           buff.AppendFormat ("{0}; ", cookie.ToString ());
@@ -190,7 +190,7 @@ namespace WebSocketSharp
       var len = buff.Length;
       if (len > 2) {
         buff.Length = len - 2;
-        Headers["Cookie"] = buff.ToString ();
+        Headers.Set("Cookie", buff.ToString ());
       }
     }
 

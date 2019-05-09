@@ -95,13 +95,13 @@ namespace WebSocketSharp.Net.WebSockets
       }
     }
 
-    /// <summary>
-    /// Gets the HTTP headers included in the handshake request.
-    /// </summary>
-    /// <value>
-    /// A <see cref="NameValueCollection"/> that contains the headers.
-    /// </value>
-    public override NameValueCollection Headers {
+		/// <summary>
+		/// Gets the HTTP headers included in the handshake request.
+		/// </summary>
+		/// <value>
+		/// A <see cref="WebHeaderCollection"/> that contains the headers.
+		/// </value>
+		public override WebHeaderCollection Headers {
       get {
         return _context.Request.Headers;
       }
@@ -191,7 +191,7 @@ namespace WebSocketSharp.Net.WebSockets
     /// </value>
     public override string Origin {
       get {
-        return _context.Request.Headers["Origin"];
+        return _context.Request.Headers.GetOne("Origin");
       }
     }
 
@@ -249,7 +249,7 @@ namespace WebSocketSharp.Net.WebSockets
     /// </value>
     public override string SecWebSocketKey {
       get {
-        return _context.Request.Headers["Sec-WebSocket-Key"];
+        return _context.Request.Headers.GetOne("Sec-WebSocket-Key");
       }
     }
 
@@ -269,7 +269,7 @@ namespace WebSocketSharp.Net.WebSockets
     /// </value>
     public override IEnumerable<string> SecWebSocketProtocols {
       get {
-        var val = _context.Request.Headers["Sec-WebSocket-Protocol"];
+        var val = _context.Request.Headers.GetOne("Sec-WebSocket-Protocol");
         if (val == null || val.Length == 0)
           yield break;
 
@@ -298,7 +298,7 @@ namespace WebSocketSharp.Net.WebSockets
     /// </value>
     public override string SecWebSocketVersion {
       get {
-        return _context.Request.Headers["Sec-WebSocket-Version"];
+        return _context.Request.Headers.GetOne("Sec-WebSocket-Version");
       }
     }
 

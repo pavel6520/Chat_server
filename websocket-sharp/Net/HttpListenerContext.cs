@@ -179,7 +179,7 @@ namespace WebSocketSharp.Net
       var realm = _listener.GetRealm ();
       var user =
         HttpUtility.CreateUser (
-          _request.Headers["Authorization"],
+          _request.Headers.GetOne("Authorization"),
           schm,
           realm,
           _request.HttpMethod,

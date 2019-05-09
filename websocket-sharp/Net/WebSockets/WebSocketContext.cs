@@ -69,7 +69,7 @@ namespace WebSocketSharp.Net.WebSockets
     /// <value>
     /// A <see cref="NameValueCollection"/> that contains the headers.
     /// </value>
-    public abstract NameValueCollection Headers { get; }
+    public abstract WebHeaderCollection Headers { get; }
 
     /// <summary>
     /// Gets the value of the Host header included in the handshake request.

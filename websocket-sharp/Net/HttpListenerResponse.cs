@@ -514,11 +514,11 @@ namespace WebSocketSharp.Net
         headers.InternalSet ("Content-Type", type, true);
       }
 
-      if (headers["Server"] == null)
+      if (headers.GetOne("Server") == null)
         headers.InternalSet ("Server", "websocket-sharp/1.0", true);
 
       var prov = CultureInfo.InvariantCulture;
-      if (headers["Date"] == null)
+      if (headers.GetOne("Date") == null)
         headers.InternalSet ("Date", DateTime.UtcNow.ToString ("r", prov), true);
 
       if (!_sendChunked)

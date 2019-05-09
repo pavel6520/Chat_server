@@ -119,7 +119,7 @@ namespace WebSocketSharp.Net
     /// </value>
     public string[] AcceptTypes {
       get {
-        var val = _headers["Accept"];
+        var val = _headers.GetOne("Accept");
         if (val == null)
           return null;
 
@@ -205,7 +205,7 @@ namespace WebSocketSharp.Net
     /// </value>
     public string ContentType {
       get {
-        return _headers["Content-Type"];
+		return _headers.GetOne("Content-Type");
       }
     }
 
@@ -248,7 +248,7 @@ namespace WebSocketSharp.Net
     /// <value>
     /// A <see cref="NameValueCollection"/> that contains the headers.
     /// </value>
-    public NameValueCollection Headers {
+    public WebHeaderCollection Headers {
       get {
         return _headers;
       }
@@ -487,7 +487,7 @@ namespace WebSocketSharp.Net
     /// </value>
     public Uri UrlReferrer {
       get {
-        var val = _headers["Referer"];
+        var val = _headers.GetOne("Referer");
         if (val == null)
           return null;
 
@@ -512,7 +512,7 @@ namespace WebSocketSharp.Net
     /// </value>
     public string UserAgent {
       get {
-        return _headers["User-Agent"];
+				return _headers.GetOne("User-Agent");
       }
     }
 
@@ -564,7 +564,7 @@ namespace WebSocketSharp.Net
     /// </value>
     public string[] UserLanguages {
       get {
-        var val = _headers["Accept-Language"];
+        var val = _headers.GetOne("Accept-Language");
         if (val == null)
           return null;
 
@@ -581,7 +581,7 @@ namespace WebSocketSharp.Net
 
     private void finishInitialization10 ()
     {
-      var transferEnc = _headers["Transfer-Encoding"];
+      var transferEnc = _headers.GetOne("Transfer-Encoding");
       if (transferEnc != null) {
         _context.ErrorMessage = "Invalid Transfer-Encoding header";
         return;
@@ -602,7 +602,7 @@ namespace WebSocketSharp.Net
 
     private Encoding getContentEncoding ()
     {
-      var val = _headers["Content-Type"];
+      var val = _headers.GetOne("Content-Type");
       if (val == null)
         return null;
 
@@ -699,7 +699,7 @@ namespace WebSocketSharp.Net
         return;
       }
 
-      var transferEnc = _headers["Transfer-Encoding"];
+      var transferEnc = _headers.GetOne("Transfer-Encoding");
       if (transferEnc != null) {
         var comparison = StringComparison.OrdinalIgnoreCase;
         if (!transferEnc.Equals ("chunked", comparison)) {
@@ -721,7 +721,7 @@ namespace WebSocketSharp.Net
         }
       }
 
-      var expect = _headers["Expect"];
+      var expect = _headers.GetOne("Expect");
       if (expect != null) {
         var comparison = StringComparison.OrdinalIgnoreCase;
         if (!expect.Equals ("100-continue", comparison)) {

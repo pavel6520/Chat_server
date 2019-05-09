@@ -84,7 +84,7 @@ namespace WebSocketSharp.Server
     ///   <see langword="null"/> if the session has not started yet.
     ///   </para>
     /// </value>
-    protected NameValueCollection Headers {
+    protected WebHeaderCollection Headers {
       get {
         return _context != null ? _context.Headers : null;
       }

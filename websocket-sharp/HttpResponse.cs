@@ -45,7 +45,7 @@ namespace WebSocketSharp
 
     #region Private Constructors
 
-    private HttpResponse (string code, string reason, Version version, NameValueCollection headers)
+    private HttpResponse (string code, string reason, Version version, WebHeaderCollection headers)
       : base (version, headers)
     {
       _code = code;
@@ -62,9 +62,9 @@ namespace WebSocketSharp
     }
 
     internal HttpResponse (HttpStatusCode code, string reason)
-      : this (((int) code).ToString (), reason, HttpVersion.Version11, new NameValueCollection ())
+      : this (((int) code).ToString (), reason, HttpVersion.Version11, new WebHeaderCollection())
     {
-      Headers["Server"] = "websocket-sharp/1.0";
+      Headers.Set("Server", "websocket-sharp/1.0");
     }
 
     #endregion
@@ -129,7 +129,7 @@ namespace WebSocketSharp
     internal static HttpResponse CreateCloseResponse (HttpStatusCode code)
     {
       var res = new HttpResponse (code);
-      res.Headers["Connection"] = "close";
+			res.Headers.Set("Connection", "close");
 
       return res;
     }
@@ -137,7 +137,7 @@ namespace WebSocketSharp
     internal static HttpResponse CreateUnauthorizedResponse (string challenge)
     {
       var res = new HttpResponse (HttpStatusCode.Unauthorized);
-      res.Headers["WWW-Authenticate"] = challenge;
+      res.Headers.Set("WWW-Authenticate", challenge);
 
       return res;
     }
@@ -147,8 +147,8 @@ namespace WebSocketSharp
       var res = new HttpResponse (HttpStatusCode.SwitchingProtocols);
 
       var headers = res.Headers;
-      headers["Upgrade"] = "websocket";
-      headers["Connection"] = "Upgrade";
+      headers.Set("Upgrade", "websocket");
+      headers.Set("Connection", "Upgrade");
 
       return res;
     }

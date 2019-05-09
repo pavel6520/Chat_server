@@ -153,7 +153,7 @@ namespace WebSocketSharp.Net.WebSockets
     /// <value>
     /// A <see cref="NameValueCollection"/> that contains the headers.
     /// </value>
-    public override NameValueCollection Headers {
+    public override WebHeaderCollection Headers {
       get {
         return _request.Headers;
       }
@@ -173,7 +173,7 @@ namespace WebSocketSharp.Net.WebSockets
     /// </value>
     public override string Host {
       get {
-        return _request.Headers["Host"];
+        return _request.Headers.GetOne("Host");
       }
     }
 
@@ -243,7 +243,7 @@ namespace WebSocketSharp.Net.WebSockets
     /// </value>
     public override string Origin {
       get {
-        return _request.Headers["Origin"];
+        return _request.Headers.GetOne("Origin");
       }
     }
 
@@ -289,7 +289,7 @@ namespace WebSocketSharp.Net.WebSockets
         if (_requestUri == null) {
           _requestUri = HttpUtility.CreateRequestUrl (
                           _request.RequestUri,
-                          _request.Headers["Host"],
+                          _request.Headers.GetOne("Host"),
                           _request.IsWebSocketRequest,
                           _secure
                         );
@@ -318,7 +318,7 @@ namespace WebSocketSharp.Net.WebSockets
     /// </value>
     public override string SecWebSocketKey {
       get {
-        return _request.Headers["Sec-WebSocket-Key"];
+        return _request.Headers.GetOne("Sec-WebSocket-Key");
       }
     }
 
@@ -338,7 +338,7 @@ namespace WebSocketSharp.Net.WebSockets
     /// </value>
     public override IEnumerable<string> SecWebSocketProtocols {
       get {
-        var val = _request.Headers["Sec-WebSocket-Protocol"];
+        var val = _request.Headers.GetOne("Sec-WebSocket-Protocol");
         if (val == null || val.Length == 0)
           yield break;
 
@@ -367,7 +367,7 @@ namespace WebSocketSharp.Net.WebSockets
     /// </value>
     public override string SecWebSocketVersion {
       get {
-        return _request.Headers["Sec-WebSocket-Version"];
+        return _request.Headers.GetOne("Sec-WebSocket-Version");
       }
     }
 
@@ -462,7 +462,7 @@ namespace WebSocketSharp.Net.WebSockets
             return false;
 
           var user = HttpUtility.CreateUser (
-                       _request.Headers["Authorization"],
+                       _request.Headers.GetOne("Authorization"),
                        scheme,
                        realm,
                        _request.HttpMethod,

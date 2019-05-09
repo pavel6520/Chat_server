@@ -309,12 +309,12 @@ namespace WebSocketSharp.Net
       return cookies;
     }
 
-    private static CookieCollection parseResponse (string value)
+    private static CookieCollection parseResponse (string[] pairs)
     {
       var cookies = new CookieCollection ();
 
       Cookie cookie = null;
-      var pairs = splitCookieHeaderValue (value);
+      //var pairs = splitCookieHeaderValue (value);
       for (var i = 0; i < pairs.Length; i++) {
         var pair = pairs[i].Trim ();
         if (pair.Length == 0)
@@ -450,11 +450,17 @@ namespace WebSocketSharp.Net
     internal static CookieCollection Parse (string value, bool response)
     {
       return response
-             ? parseResponse (value)
+             ? null//parseResponse (value)
              : parseRequest (value);
-    }
+		}
+		internal static CookieCollection ParseRequest(string value) {
+			return parseRequest(value);
+		}
+		internal static CookieCollection ParseResponse(string[] values) {
+			return parseResponse(values);
+		}
 
-    internal void SetOrRemove (Cookie cookie)
+		internal void SetOrRemove (Cookie cookie)
     {
       var idx = search (cookie);
       if (idx == -1) {

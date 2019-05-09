@@ -891,7 +891,7 @@ namespace WebSocketSharp
         return false;
       }
 
-      _base64Key = _context.Headers["Sec-WebSocket-Key"];
+      _base64Key = _context.Headers.GetOne("Sec-WebSocket-Key");
 
       if (_protocol != null) {
         var vals = _context.SecWebSocketProtocols;
@@ -899,7 +899,7 @@ namespace WebSocketSharp
       }
 
       if (!_ignoreExtensions) {
-        var val = _context.Headers["Sec-WebSocket-Extensions"];
+        var val = _context.Headers.GetOne("Sec-WebSocket-Extensions");
         processSecWebSocketExtensionsClientHeader (val);
       }
 
@@ -953,7 +953,7 @@ namespace WebSocketSharp
         return false;
       }
 
-      var version = headers["Sec-WebSocket-Version"];
+      var version = headers.GetOne("Sec-WebSocket-Version");
       if (version == null) {
         message = "It includes no Sec-WebSocket-Version header.";
         return false;
@@ -1002,22 +1002,22 @@ namespace WebSocketSharp
       }
 
       var headers = response.Headers;
-      if (!validateSecWebSocketAcceptHeader (headers["Sec-WebSocket-Accept"])) {
+      if (!validateSecWebSocketAcceptHeader (headers.GetOne("Sec-WebSocket-Accept"))) {
         message = "Includes no Sec-WebSocket-Accept header, or it has an invalid value.";
         return false;
       }
 
-      if (!validateSecWebSocketProtocolServerHeader (headers["Sec-WebSocket-Protocol"])) {
+      if (!validateSecWebSocketProtocolServerHeader (headers.GetOne("Sec-WebSocket-Protocol"))) {
         message = "Includes no Sec-WebSocket-Protocol header, or it has an invalid value.";
         return false;
       }
 
-      if (!validateSecWebSocketExtensionsServerHeader (headers["Sec-WebSocket-Extensions"])) {
+      if (!validateSecWebSocketExtensionsServerHeader (headers.GetOne("Sec-WebSocket-Extensions"))) {
         message = "Includes an invalid Sec-WebSocket-Extensions header.";
         return false;
       }
 
-      if (!validateSecWebSocketVersionServerHeader (headers["Sec-WebSocket-Version"])) {
+      if (!validateSecWebSocketVersionServerHeader (headers.GetOne("Sec-WebSocket-Version"))) {
         message = "Includes an invalid Sec-WebSocket-Version header.";
         return false;
       }
@@ -1311,7 +1311,7 @@ namespace WebSocketSharp
     private HttpResponse createHandshakeFailureResponse (HttpStatusCode code)
     {
       var ret = HttpResponse.CreateCloseResponse (code);
-      ret.Headers["Sec-WebSocket-Version"] = _version;
+      ret.Headers.Set("Sec-WebSocket-Version", _version);
 
       return ret;
     }
@@ -1323,19 +1323,19 @@ namespace WebSocketSharp
 
       var headers = ret.Headers;
       if (!_origin.IsNullOrEmpty ())
-        headers["Origin"] = _origin;
+        headers.Set("Origin", _origin);
 
-      headers["Sec-WebSocket-Key"] = _base64Key;
+      headers.Set("Sec-WebSocket-Key", _base64Key);
 
       _protocolsRequested = _protocols != null;
       if (_protocolsRequested)
-        headers["Sec-WebSocket-Protocol"] = _protocols.ToString (", ");
+        headers.Set("Sec-WebSocket-Protocol", _protocols.ToString (", "));
 
       _extensionsRequested = _compression != CompressionMethod.None;
       if (_extensionsRequested)
-        headers["Sec-WebSocket-Extensions"] = createExtensions ();
+        headers.Set("Sec-WebSocket-Extensions", createExtensions ());
 
-      headers["Sec-WebSocket-Version"] = _version;
+      headers.Set("Sec-WebSocket-Version", _version);
 
       AuthenticationResponse authRes = null;
       if (_authChallenge != null && _credentials != null) {
@@ -1347,7 +1347,7 @@ namespace WebSocketSharp
       }
 
       if (authRes != null)
-        headers["Authorization"] = authRes.ToString ();
+        headers.Set("Authorization", authRes.ToString ());
 
       if (_cookies.Count > 0)
         ret.SetCookies (_cookies);
@@ -1361,13 +1361,13 @@ namespace WebSocketSharp
       var ret = HttpResponse.CreateWebSocketResponse ();
 
       var headers = ret.Headers;
-      headers["Sec-WebSocket-Accept"] = CreateResponseKey (_base64Key);
+      headers.Set("Sec-WebSocket-Accept", CreateResponseKey (_base64Key));
 
       if (_protocol != null)
-        headers["Sec-WebSocket-Protocol"] = _protocol;
+        headers.Set("Sec-WebSocket-Protocol", _protocol);
 
       if (_extensions != null)
-        headers["Sec-WebSocket-Extensions"] = _extensions;
+        headers.Set("Sec-WebSocket-Extensions", _extensions);
 
       if (_cookies.Count > 0)
         ret.SetCookies (_cookies);
@@ -1406,10 +1406,10 @@ namespace WebSocketSharp
         throw new WebSocketException (CloseStatusCode.ProtocolError, msg);
 
       if (_protocolsRequested)
-        _protocol = res.Headers["Sec-WebSocket-Protocol"];
+        _protocol = res.Headers.GetOne("Sec-WebSocket-Protocol");
 
       if (_extensionsRequested)
-        processSecWebSocketExtensionsServerHeader (res.Headers["Sec-WebSocket-Extensions"]);
+        processSecWebSocketExtensionsServerHeader (res.Headers.GetOne("Sec-WebSocket-Extensions"));
 
       processCookies (res.Cookies);
     }
@@ -1995,7 +1995,7 @@ namespace WebSocketSharp
       var req = createHandshakeRequest ();
       var res = sendHttpRequest (req, 90000);
       if (res.IsUnauthorized) {
-        var chal = res.Headers["WWW-Authenticate"];
+        var chal = res.Headers.GetOne("WWW-Authenticate");
         _logger.Warn (String.Format ("Received an authentication requirement for '{0}'.", chal));
         if (chal.IsNullOrEmpty ()) {
           _logger.Error ("No authentication challenge is specified.");
@@ -2017,13 +2017,13 @@ namespace WebSocketSharp
 
           var authRes = new AuthenticationResponse (_authChallenge, _credentials, _nonceCount);
           _nonceCount = authRes.NonceCount;
-          req.Headers["Authorization"] = authRes.ToString ();
+          req.Headers.Set("Authorization", authRes.ToString ());
           res = sendHttpRequest (req, 15000);
         }
       }
 
       if (res.IsRedirect) {
-        var url = res.Headers["Location"];
+        var url = res.Headers.GetOne("Location");
         _logger.Warn (String.Format ("Received a redirection to '{0}'.", url));
         if (_enableRedirection) {
           if (url.IsNullOrEmpty ()) {
@@ -2079,7 +2079,7 @@ namespace WebSocketSharp
       var req = HttpRequest.CreateConnectRequest (_uri);
       var res = sendHttpRequest (req, 90000);
       if (res.IsProxyAuthenticationRequired) {
-        var chal = res.Headers["Proxy-Authenticate"];
+        var chal = res.Headers.GetOne("Proxy-Authenticate");
         _logger.Warn (
           String.Format ("Received a proxy authentication requirement for '{0}'.", chal));
 
@@ -2098,7 +2098,7 @@ namespace WebSocketSharp
           }
 
           var authRes = new AuthenticationResponse (authChal, _proxyCredentials, 0);
-          req.Headers["Proxy-Authorization"] = authRes.ToString ();
+          req.Headers.Set("Proxy-Authorization", authRes.ToString ());
           res = sendHttpRequest (req, 15000);
         }
 

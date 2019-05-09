@@ -177,7 +177,7 @@ namespace WebSocketSharp.Net
           return false;
 
         _write (buff.GetBuffer (), (int) start, (int) len);
-        _response.CloseConnection = headers["Connection"] == "close";
+        _response.CloseConnection = headers.GetOne("Connection") == "close";
         _response.HeadersSent = true;
       }
 
