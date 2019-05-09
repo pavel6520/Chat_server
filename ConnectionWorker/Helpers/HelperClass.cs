@@ -36,7 +36,7 @@ namespace ConnectionWorker.Helpers {
 			staticPlugins = null;
 			Request = new RequestInfo(context.Request);
 			Responce = new ResponceInfo();
-			returnType = ReturnType.Content;
+			returnType = ReturnType.DefaultContent;
 			Context = context;
 		}
 
@@ -81,7 +81,7 @@ namespace ConnectionWorker.Helpers {
 	}
 
 	public enum ReturnType {
-		Content,
+		DefaultContent,
 		Info
 	}
 }

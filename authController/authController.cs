@@ -7,16 +7,18 @@ using System.Text;
 using System.Threading.Tasks;
 
 public class authController : ControllerWorker {
+	PluginWorker auth;
 	public authController() {
 		staticInclude = new string[] { "auth" };
 	}
 
 	public void Init() {
 		if (_helper.isSecureConnection) {
-			PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
+			auth = (PluginWorker)_helper.staticPlugins["auth"];
 			auth._SetHelper(_helper);
-			if (_helper.Request.HttpMethod == "GET" && _helper.Request.Url.AbsolutePath != "/auth/logout" && (bool)auth._Work("checkSession")) {
-				_helper = auth._GetHelper();
+			bool res = (bool)auth._Work("checkSession");
+			_helper = auth._GetHelper();
+			if (_helper.Request.HttpMethod == "GET" && _helper.Request.Url.AbsolutePath != "/auth/logout" && res) {
 				_helper.AnswerRedirect("/chat");
 			}
 		}
@@ -31,10 +33,9 @@ public class authController : ControllerWorker {
 	//}
 
 	public void loginAction() {
-		if (_helper.returnType == ReturnType.Content) {
+		if (_helper.returnType == ReturnType.DefaultContent) {
 			if (_helper.Request.HttpMethod == "POST") {
 				_helper.Render.DissableRender();
-				PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
 				auth._SetHelper(_helper);
 				var res = (bool)auth._Work("loginUser");
 				_helper = auth._GetHelper();
@@ -75,7 +76,6 @@ public class authController : ControllerWorker {
 
 	public void logoutAction() {
 		if (_helper.isSecureConnection) {
-			PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
 			auth._SetHelper(_helper);
 			auth._Work("delSession");
 			_helper = auth._GetHelper();
@@ -84,10 +84,9 @@ public class authController : ControllerWorker {
 	}
 
 	public void signinAction() {
-		if (_helper.returnType == ReturnType.Content) {
+		if (_helper.returnType == ReturnType.DefaultContent) {
 			if (_helper.Request.HttpMethod == "POST") {
 				_helper.Render.DissableRender();
-				PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
 				auth._SetHelper(_helper);
 				var res = (bool)auth._Work("addUser");
 				_helper = auth._GetHelper();
