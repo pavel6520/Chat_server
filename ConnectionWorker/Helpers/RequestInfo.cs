@@ -17,7 +17,7 @@ namespace ConnectionWorker.Helpers {
         public string ContentType;
         public CookieCollection Cookies;
         public bool HasEntityBody;
-        public NameValueCollection Headers;
+        public WebHeaderCollection Headers;
         public string HttpMethod;
         public bool isLocal;
         public bool IsSecureConnection;
