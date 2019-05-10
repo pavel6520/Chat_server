@@ -6,7 +6,7 @@ $(function(){
 	cache('blockChat', $('#blockChat'));
 	cache('ListDialog', $('#ChatBodyList1'));
 	cache('Contacts', $('#ChatList3'));
-	$('#tabs-logsign').tabs();
+	//$('#tabs-logsign').tabs();
 	
 	/*ws = new WebSocket('ws://192.168.0.55:30000/websocket');*/
 	//ws = new WebSocket('wss://127.0.0.1/');
