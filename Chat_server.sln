@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chat_Server", "Chat_Server\Chat_Server.csproj", "{1C3DE63A-669D-47EB-A644-15757CA0060F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatTest", "Chat_Server\ChatTest.csproj", "{1C3DE63A-669D-47EB-A644-15757CA0060F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebServerCore", "WebServerCore\WebServerCore.csproj", "{CB209023-5EA0-4B56-9F9B-33DAB09F2625}"
 EndProject
