@@ -12,10 +12,12 @@ public class chatController : ControllerWorker {
 
 	public void Init() {
 		if (_helper.isSecureConnection) {
-			PluginWorker auth = (PluginWorker)_helper.staticPlugins["auth"];
-			bool res = (bool)auth._Work(_helper, "checkSession");
-			_helper = auth._GetHelper();
-			if (!res) {
+			if (!_helper.isAuth) {
+				PluginWorker auth = _helper.GetPlugin("auth");
+				auth._Work(_helper, "checkSession");
+				_helper = auth._GetHelper();
+			}
+			if (!_helper.isAuth || !_helper.Auth.Status) {
 				_helper.AnswerRedirect("/auth/login");
 			}
 		}
@@ -25,15 +27,25 @@ public class chatController : ControllerWorker {
 	}
 
 	public void indexAction() {
-		Echo("<div id=\"blockChat\">");
-		Echo("<div id=\"ChatBlockContacts\"><div>");
-		Echo("<div class=\"ChatBTN\"><a href=\"/auth/logout\" class=\"refbutton\">EXIT</a></div>");
-		Echo("<div class=\"ChatBTN\" data=\"public\">Public</div>");
-		Echo("<div id=\"ChatList2\">");
-		Echo("<ul id=\"ChatList3\"></ul>");
-		Echo("</div></div></div>");
-		Echo("<div id=\"ChatBody1\"><div><div id=\"ChatBodyList1\"></div><div id=\"ChatBodyInput\"><div><div id=\"ChatTextArea\">");
-		Echo("</div></div></div></div></div>");
-		Echo("</div>");
+		Echo("<div class=\"navmenu navmenu-default navmenu-fixed-left offcanvas-sm\" style=\"\">" +
+			"<ul class=\"nav navmenu-nav flex-column\">" +
+   "<li class=\"nav-item active\"><a class=\"nav-link\" href=\"../navmenu/\">Slide in</a></li>" +
+   "<li class=\"nav-item\"><a class=\"nav-link\" href=\"../navmenu-push/\">Push</a></li>" +
+   "</ul>" +
+   "<ul class=\"nav navmenu-nav flex-column\">" +
+   "<li class=\"nav-item\"><a class=\"nav-link\" href=\"#\">Link</a></li>" +
+   "<li class=\"nav-item dropdown\"><a href=\"#\" class=\"nav-link dropdown-toggle\" data-toggle=\"dropdown\">Dropdown <b class=\"caret\"></b></a>" +
+   "<ul class=\"dropdown-menu navmenu-nav\"><li class=\"nav-item\">" +
+   "<a class=\"nav-link\" href=\"#\">Action</a></li><li class=\"nav-item\">" +
+   "<a class=\"nav-link\" href=\"#\">Another action</a></li><li class=\"nav-item\">" +
+   "<a class=\"nav-link\" href=\"#\">Something else here</a></li>" +
+   "<li class=\"dropdown-divider\"></li>" +
+   "<li class=\"dropdown-header\">Nav header</li>" +
+   "<li class=\"nav-item\"><a class=\"nav-link\" href=\"#\">Separated link</a></li>" +
+   "<li class=\"nav-item\"><a class=\"nav-link\" href=\"#\">One more separated link</a></li>" +
+   "</ul>" +
+   "</li>" +
+   "</ul>" +
+   "</div>");
 	}
 }
