@@ -29,8 +29,14 @@ public class chatController : ControllerWorker {
 	public void indexAction() {
 		Echo("<div class=\"navmenu navmenu-default navmenu-fixed-left offcanvas-sm\" style=\"\">" +
 			"<ul class=\"nav navmenu-nav flex-column\">" +
-   "<li class=\"nav-item active\"><a class=\"nav-link\" href=\"../navmenu/\">Slide in</a></li>" +
-   "<li class=\"nav-item\"><a class=\"nav-link\" href=\"../navmenu-push/\">Push</a></li>" +
+   "<li class=\"nav-item\">" +
+   "<div class=\"container-fluid\" style=\"padding: 0;\">" +
+   "<div class=\"row btn-group col-12\" role=\"group\" aria-label=\"Chat channels\" style=\"padding:0;margin: 0;\">" +
+   "<div class=\"col-4\" style=\"padding: 0;\"><button type=\"button\" class=\"btn btn-primary col-sm\">Left</button></div>" +
+   "<div class=\"col-4\" style=\"padding: 0;\"><button type=\"button\" class=\"btn btn-primary col-sm\">Middle</button></div>" +
+   "<div class=\"col-4\" style=\"padding: 0;\"><button type=\"button\" class=\"btn btn-primary col-sm\">Right</button></div></div></div></li>" +
+   "<li class=\"nav-item\"><a class=\"nav-link\" href=\"../navmenu-push/\">Push</a>" +
+   "</li>" +
    "</ul>" +
    "<ul class=\"nav navmenu-nav flex-column\">" +
    "<li class=\"nav-item\"><a class=\"nav-link\" href=\"#\">Link</a></li>" +
