@@ -20,7 +20,7 @@ public class headerLayout : LayoutWorker {
 		Echo("<header class=\"navbar navbar-light bg-light navbar-fixed-top\">");
 		var url = _helper.Request.Url.LocalPath.Split(new char[] { '/' }, System.StringSplitOptions.RemoveEmptyEntries);
 		if (url.Length > 0 && url[0] == "chat") {
-			Echo("<style>@media(min-width: 992px){body {padding: 0 0 0 300px;}}</style>");
+			Echo("<style>@media(min-width: 992px){body {padding: 0 0 0 300px;}header.navbar>button{display:none;}}</style>");
 			Echo("<button class=\"navbar-toggler\" type=\"button\" data-toggle=\"offcanvas\" data-target=\".navmenu\"><span class=\"navbar-toggler-icon\"></span></button>");
 		}
 		Echo("<a class=\"navbar-brand mr-auto\" href=\"/\">Pavel6520 Chat</a>" +
