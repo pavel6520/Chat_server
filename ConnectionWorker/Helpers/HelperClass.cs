@@ -68,6 +68,15 @@ namespace ConnectionWorker.Helpers {
 			//}
 		}
 
+		public PluginWorker GetPlugin(string name) {
+			if (staticPlugins.ContainsKey(name)) {
+				return (PluginWorker)staticPlugins["auth"];
+			}
+			else {
+				return null;
+			}
+		}
+
 		public void GetData(HelperClass helper) {
 			Render = helper.Render;
 			Auth = helper.Auth;

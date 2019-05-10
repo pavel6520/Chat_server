@@ -14,7 +14,7 @@ public class authController : ControllerWorker {
 
 	public void Init() {
 		if (_helper.isSecureConnection) {
-			auth = (PluginWorker)_helper.staticPlugins["auth"];
+			auth = _helper.GetPlugin("auth");
 			bool res = (bool)auth._Work(_helper, "checkSession");
 			_helper = auth._GetHelper();
 			if (_helper.Request.HttpMethod == "GET" && _helper.Request.Url.AbsolutePath != "/auth/logout" && res) {
