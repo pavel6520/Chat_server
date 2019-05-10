@@ -15,8 +15,7 @@ public class authController : ControllerWorker {
 	public void Init() {
 		if (_helper.isSecureConnection) {
 			auth = (PluginWorker)_helper.staticPlugins["auth"];
-			auth._SetHelper(_helper);
-			bool res = (bool)auth._Work("checkSession");
+			bool res = (bool)auth._Work(_helper, "checkSession");
 			_helper = auth._GetHelper();
 			if (_helper.Request.HttpMethod == "GET" && _helper.Request.Url.AbsolutePath != "/auth/logout" && res) {
 				_helper.AnswerRedirect("/chat");
@@ -36,8 +35,7 @@ public class authController : ControllerWorker {
 		if (_helper.returnType == ReturnType.DefaultContent) {
 			if (_helper.Request.HttpMethod == "POST") {
 				_helper.Render.DissableRender();
-				auth._SetHelper(_helper);
-				var res = (bool)auth._Work("loginUser");
+				var res = (bool)auth._Work(_helper, "loginUser");
 				_helper = auth._GetHelper();
 				if (res) {
 					EchoJson(new { state = res, redirect = $"https://{_helper.domainName}/chat" });
@@ -76,8 +74,7 @@ public class authController : ControllerWorker {
 
 	public void logoutAction() {
 		if (_helper.isSecureConnection) {
-			auth._SetHelper(_helper);
-			auth._Work("delSession");
+			auth._Work(_helper, "delSession");
 			_helper = auth._GetHelper();
 			_helper.AnswerRedirect("/");
 		}
@@ -87,8 +84,7 @@ public class authController : ControllerWorker {
 		if (_helper.returnType == ReturnType.DefaultContent) {
 			if (_helper.Request.HttpMethod == "POST") {
 				_helper.Render.DissableRender();
-				auth._SetHelper(_helper);
-				var res = (bool)auth._Work("addUser");
+				var res = (bool)auth._Work(_helper, "addUser");
 				_helper = auth._GetHelper();
 				if (res) {
 					EchoJson(new { state = res, redirect = $"https://{_helper.domainName}/chat" });

@@ -195,17 +195,9 @@ namespace WebServerCore.Plugins {
 			if (tree != null) {
 				ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
 				try {
-					string[] staticInclude = controller._GetStaticInclude();
-					if (staticInclude != null) {
-						helper.staticPlugins = new Hashtable();
-						for (int i = 0; i < staticInclude.Length; i++) {
-							helper.staticPlugins.Add(staticInclude[i], ((PluginLoader)staticPlugins[staticInclude[i]]).plugin.GetPluginRefObject());
-						}
-					}
+					GetStaticPlugins((PluginWorker)controller, ref helper);
 
-					controller._SetHelper(helper);
-					controller._Work(action);
-
+					controller._Work(helper, action);
 					helper.GetData(controller._GetHelper());
 
 					helper.Context.Response.Headers.Add(helper.Responce.Headers);
@@ -290,16 +282,9 @@ namespace WebServerCore.Plugins {
 				if (tree != null) {
 					ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
 					//try {
-					string[] staticInclude = controller._GetStaticInclude();
-					if (staticInclude != null) {
-						helper.staticPlugins = new Hashtable();
-						for (int i = 0; i < staticInclude.Length; i++) {
-							helper.staticPlugins.Add(staticInclude[i], ((PluginLoader)staticPlugins[staticInclude[i]]).plugin.GetPluginRefObject());
-						}
-					}
+					GetStaticPlugins((PluginWorker)controller, ref helper);
 
-					controller._SetHelper(helper);
-					controller._WorkWS(action, new object[] { (string)json["type"], (string)json["body"] });
+					controller._WorkWS(helper, action, new object[] { (string)json["type"], (string)json["body"] });
 					//}
 					//catch { }
 
@@ -322,10 +307,24 @@ namespace WebServerCore.Plugins {
 			_helper.ContextWs.WebSocket.Accept();
 		}
 
+		public void GetStaticPlugins(PluginWorker controller, ref HelperClass helper) {
+			string[] staticInclude = controller._GetStaticInclude();
+			if (staticInclude != null) {
+				if (helper.staticPlugins == null) {
+					helper.staticPlugins = new Hashtable();
+				}
+				for (int i = 0; i < staticInclude.Length; i++) {
+					if (!helper.staticPlugins.ContainsKey(staticInclude[i])) {
+						helper.staticPlugins.Add(staticInclude[i], ((PluginLoader)staticPlugins[staticInclude[i]]).plugin.GetPluginRefObject());
+					}
+				}
+			}
+		}
+
 		void ResentLayout(ref HelperClass helper, ref ControllerWorker controller, ref string bufS, string layoutName, bool content) {
 			LayoutWorker layout = (LayoutWorker)((PluginLoader)layoutsPlugins[layoutName]).plugin.GetPluginRefObject();
-			layout._SetHelper(helper);
-			layout._Work();
+			GetStaticPlugins((PluginWorker)layout, ref helper);
+			layout._Work(helper);
 			helper.GetData(layout._GetHelper());
 			EchoClass ec = layout._GetNextContent();
 			while (ec.type != EchoClass.EchoType.End) {

@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace ConnectionWorker {
 	public class ControllerWorker : PluginWorker {
-		new public void _Work(string action, object[] args = null) {
-			base._Work($"{action}Action", args);
+		new public void _Work(Helpers.HelperClass helper, string action, object[] args = null) {
+			base._Work(helper, $"{action}Action", args);
 		}
 
-		new public void _WorkWS(string action, object[] args = null) {
-			base._WorkWS($"{action}ActionWS", args);
+		new public void _WorkWS(Helpers.HelperClass helper, string action, object[] args = null) {
+			base._WorkWS(helper, $"{action}ActionWS", args);
 		}
 
 		public string[] _GetActions() {

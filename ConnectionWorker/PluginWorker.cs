@@ -25,10 +25,6 @@ namespace ConnectionWorker {
 			new System.Transactions.TransactionException();
 		}
 
-		public void _SetHelper(HelperClass helper) {
-			_helper = helper;
-		}
-
 		public string[] _GetStaticInclude() {
 			return staticInclude;
 		}
@@ -53,40 +49,40 @@ namespace ConnectionWorker {
 			return param.ToArray();
 		}
 
-		public object _Work(string methodName = null, object[] args = null) {
+		public object _Work(HelperClass helper, string methodName = null, object[] args = null) {
+			_helper = helper;
 			contentType = new List<byte>(0);
 			contentString = new List<string>(0);
 			contentMySqlDataObject = new List<MySqlDataObject>(0);
 			contentMSSqlDataObject = new List<MSSqlDataObject>(0);
 			System.Reflection.MethodInfo m = GetType().GetMethod("Init");
+			object res = null;
 			if (m != null) {
 				m.Invoke(this, null);
 			}
 			if (methodName != null) {
 				m = GetType().GetMethod(methodName);
-				return m.Invoke(this, makeParam(ref m, args));
+				res = m.Invoke(this, makeParam(ref m, args));
 			}
-			else {
-				return null; 
-			}
+			return res;
 		}
 
-		public object _WorkWS(string methodName = null, object[] args = null) {
+		public object _WorkWS(HelperClass helper, string methodName = null, object[] args = null) {
+			_helper = helper;
 			contentType = new List<byte>(0);
 			contentString = new List<string>(0);
 			contentMySqlDataObject = new List<MySqlDataObject>(0);
 			contentMSSqlDataObject = new List<MSSqlDataObject>(0);
 			System.Reflection.MethodInfo m = GetType().GetMethod("InitWS");
+			object res = null;
 			if (m != null) {
 				m.Invoke(this, null);
 			}
 			if (methodName != null && _helper.Render.isEnabled) {
 				m = GetType().GetMethod(methodName);
-				return m.Invoke(this, makeParam(ref m, args));
+				res = m.Invoke(this, makeParam(ref m, args));
 			}
-			else {
-				return null;
-			}
+			return res;
 		}
 
 		public void Echo(string s) {
