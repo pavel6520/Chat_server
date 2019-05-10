@@ -16,38 +16,31 @@ public class headerLayout : LayoutWorker {
 			auth._Work(_helper, "checkSession");
 			_helper = auth._GetHelper();
 		}
-		Echo("<header class=\"navbar navbar-fixed-top navbar-expand-md navbar-light bg-light\" style=\"z-index: 100;\">" +
-			"<a class=\"navbar-brand\" href=\"/\">Chat by pavel6520</a>" +
-   "<button class=\"navbar-toggler\" type=\"button\" data-toggle=\"collapse\" data-target=\"#navbarContent\" aria-controls=\"navbarSupportedContent\" aria-expanded=\"false\" aria-label=\"Toggle navigation\">" +
-   "<span class=\"navbar-toggler-icon\"></span>" +
-   "</button>" +
-   "<div class=\"collapse navbar-collapse\" id=\"navbarContent\">" +
-   "<ul class=\"navbar-nav mr-auto\">" +
-   "<li class=\"nav-item dropdown\">" +
-   "<a class=\"nav-link dropdown-toggle\" href=\"#\" id=\"navbarDropdown\" role=\"button\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\"" +
-   $">{(_helper.isAuth && _helper.Auth.Status ? _helper.Auth.Login : "Account")}</a>" +
+
+		Echo("<header class=\"navbar navbar-light bg-light navbar-fixed-top\">");
+		var url = _helper.Request.Url.LocalPath.Split(new char[] { '/' }, System.StringSplitOptions.RemoveEmptyEntries);
+		if (url.Length > 0 && url[0] == "chat") {
+			Echo("<style>@media(min-width: 992px){body {padding: 0 0 0 300px;}}</style>");
+			Echo("<button class=\"navbar-toggler\" type=\"button\" data-toggle=\"offcanvas\" data-target=\".navmenu\"><span class=\"navbar-toggler-icon\"></span></button>");
+		}
+		Echo("<a class=\"navbar-brand mr-auto\" href=\"/\">Pavel6520 Chat</a>" +
+   "<div class=\"nav-item\">" +
+   "<a class=\"nav-link disabled\" href=\"#\">Disabled</a>" +
+   "</div>" +
+   "<div class=\"nav-item dropleft\">" +
+   "<a class=\"nav-link dropdown-toggle\" href=\"#\" id=\"navbarDropdown\" role=\"button\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">" + (_helper.isAuth && _helper.Auth.Status ? _helper.Auth.Login : "Account") +
+   "</a>" +
    "<div class=\"dropdown-menu\" aria-labelledby=\"navbarDropdown\">");
 		if (_helper.isAuth && _helper.Auth.Status) {
-			Echo("<a class=\"dropdown-item\" href=\"#\">Action</a>" +
-			"<a class=\"dropdown-item\" href=\"#\">Another action</a>" +
-			"<div class=\"dropdown-divider\"></div>" +
-			"<a class=\"dropdown-item\" href=\"#\">Something else here</a>");
+			Echo("<a class=\"dropdown-item\" href=\"#\">Test1</a>" +
+   "<a class=\"dropdown-item\" href=\"#\">Test2</a>" +
+   "<div class=\"dropdown-divider\"></div>" +
+   "<a class=\"dropdown-item\" href=\"/auth/logout\">Log-Out</a>");
 		}
 		else {
 			Echo("<a class=\"dropdown-item\" href=\"/auth/login\">Log-in</a>" +
 			"<a class=\"dropdown-item\" href=\"/auth/signin\">Sign-in</a>");
 		}
-   Echo("</div>" +
-   "</li>" +
-   "<li class=\"nav-item\">" +
-   "<a class=\"nav-link disabled\" href=\"#\">Disabled</a>" +
-   "</li>" +
-   "</ul>" +
-   "<form class=\"form-inline my-lg-0\">" +
-   "<input class=\"form-control mr-sm-2\" type=\"search\" placeholder=\"Search\" aria-label=\"Search\">" +
-   "<button class=\"btn btn-outline-success my-2 my-sm-0\" type=\"submit\">Search</button>" +
-   "</form>" +
-   "</div>" +
-   "</header>");
+		Echo("</div></div></header>");
 	}
 }
