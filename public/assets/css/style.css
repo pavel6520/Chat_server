@@ -3,11 +3,6 @@ html, body {
 	width: 100%;
 	height: 100%;
 }
-header{
- width: 100%;
- background: #D8E3AB;
- height: 50px;
-}
 .refbutton {
 border:1px solid #ccc;
 background:#eaeaea;
