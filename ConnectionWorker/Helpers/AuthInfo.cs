@@ -9,13 +9,15 @@ namespace ConnectionWorker.Helpers {
 	public class AuthInfo {
 		public string Login;
 		public DateTime TimeCreate;
-		public bool isSessionActive { get { return TimeCreate > DateTime.UtcNow.AddDays(-1); } }
+		public bool Status { get; }
 
-		public AuthInfo() { }
+		public AuthInfo() {
+			Status = false;
+		}
 
-		public AuthInfo(string login, DateTime timeCreate) {
+		public AuthInfo(string login) {
 			Login = login;
-			TimeCreate = timeCreate;
+			Status = true;
 		}
 	}
 }

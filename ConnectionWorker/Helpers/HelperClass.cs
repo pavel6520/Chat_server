@@ -20,8 +20,8 @@ namespace ConnectionWorker.Helpers {
 		public ResponceInfo Responce;
 		public string dbConnectString;
 		public string domainName;
-		public bool isAuth;
 
+		public bool isAuth { get { return Auth != null; } }
 		public bool isSecureConnection { get { return Request.IsSecureConnection; } }
 		public bool isWebSocket { get { return ContextWs != null; } }
 
@@ -32,7 +32,6 @@ namespace ConnectionWorker.Helpers {
 			Render = new RenderClass();
 			dbConnectString = db;
 			domainName = domain;
-			isAuth = false;
 			staticPlugins = null;
 			Request = new RequestInfo(context.Request);
 			Responce = new ResponceInfo();
@@ -74,7 +73,6 @@ namespace ConnectionWorker.Helpers {
 			Auth = helper.Auth;
 			Request = helper.Request;
 			Responce = helper.Responce;
-			isAuth = helper.isAuth;
 			staticPlugins = helper.staticPlugins;
 			returnType = helper.returnType;
 		}

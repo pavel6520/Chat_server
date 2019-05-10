@@ -22,8 +22,13 @@ public class authStatic : PluginWorker {
 			command.Parameters.AddWithValue("@key", authCookie.Value);
 			MySqlDataReader reader = command.ExecuteReader();
 			if (reader.Read()) {
-				_helper.Auth = new ConnectionWorker.Helpers.AuthInfo(Convert.ToString(reader["login"]), DateTime.Parse(reader["datecreate"].ToString()));
+				_helper.Auth = new ConnectionWorker.Helpers.AuthInfo(Convert.ToString(reader["login"])) {
+					TimeCreate = DateTime.Parse(reader["datecreate"].ToString())
+				};
 				res = true;
+			}
+			else {
+				_helper.Auth = new ConnectionWorker.Helpers.AuthInfo();
 			}
 			reader.Close();
 			if (res) {
