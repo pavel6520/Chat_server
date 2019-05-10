@@ -9,7 +9,7 @@ public class defaultLayout : LayoutWorker {
 		IncludeContent();
 		Echo("<script src=\"/assets/js/func.js\"></script>");
 		Echo("<script src=\"/assets/js/popper.min.js\"></script>");
-		Echo("<script src=\"/assets/js/bootstrap.js\"></script>");
+		Echo("<script src=\"/assets/js/bootstrap.min.js\"></script>");
 		Echo("</body></html>");
 	}
 }
