@@ -4,7 +4,7 @@ public class defaultLayout : LayoutWorker {
 	public void Init() {
 		Echo("<!doctype html><html>");
 		IncludeLayout("head");
-		Echo("<body>");
+		Echo("<body class=\"flex\">");
 		IncludeLayout("header");
 		Echo("<div id=\"content\" class=\"container-fluid\">");
 		IncludeContent();
