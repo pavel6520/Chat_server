@@ -1,7 +1,19 @@
 html, body {
 	margin: 0;
-	width: 100%;
-	height: 100%;
+	padding: 0;
+	/*width: 100%;
+	height: 100%;*/
+}
+.flex {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.paddingoff{
+	padding: 0;
+}
+.fillfree{
+	height: 100vh;
 }
 .refbutton {
 border:1px solid #ccc;
@@ -10,16 +22,6 @@ padding: .2em .75em;
 text-decoration: none;
 }
 #blockReg{
-	margin: 0;
-	min-width: 600px;
-	min-height: 300px;
-	max-width: 100%;
-	height: 100%;
-	position: relative;
-	z-index: 1;
-}
-
-#blockChat{
 	margin: 0;
 	min-width: 600px;
 	min-height: 300px;
