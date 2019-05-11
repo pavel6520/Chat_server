@@ -6,9 +6,9 @@ public class headLayout : LayoutWorker {
 		Echo("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\">");
 		Echo("<meta name=\"google-site-verification\" content=\"d8v35oUjgaOXuv6jhU1vz_lGMDm76ceHiBzvt6cCXbY\" />");
 		Echo("<meta name=\"yandex-verification\" content=\"96a3ade8f953fa04\" />");
-		Echo("<link href=\"/assets/css/style.css\" rel=\"stylesheet\">");
 		Echo("<link href=\"/assets/css/bootstrap.min.css\" rel=\"stylesheet\">");
 		Echo("<link href=\"/assets/css/jasny-bootstrap.min.css\" rel=\"stylesheet\">");
+		Echo("<link href=\"/assets/css/style.css\" rel=\"stylesheet\">");
 		//Echo("<link href=\"/assets/css/jquery-ui.css\" rel=\"stylesheet\">");
 		//Echo("<link href=\"/assets/css/jquery-ui.structure.css\" rel=\"stylesheet\">");
 		//Echo("<link href=\"/assets/css/jquery-ui.theme.css\" rel=\"stylesheet\">");
