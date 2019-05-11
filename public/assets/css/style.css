@@ -12,9 +12,6 @@ html, body {
 .paddingoff{
 	padding: 0;
 }
-.fillfree{
-	height: 100vh;
-}
 .refbutton {
 border:1px solid #ccc;
 background:#eaeaea;
