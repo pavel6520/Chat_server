@@ -20,6 +20,7 @@ namespace ConnectionWorker.Helpers {
 		public ResponceInfo Responce;
 		public string dbConnectString;
 		public string domainName;
+		public bool isDebug;
 
 		public bool isAuth { get { return Auth != null; } }
 		public bool isSecureConnection { get { return Request.IsSecureConnection; } }
@@ -28,7 +29,7 @@ namespace ConnectionWorker.Helpers {
 		public ReturnType returnType;//{ get; private set; }
 		public Hashtable staticPlugins;
 
-		public HelperClass(ref HttpListenerContext context, string db, string domain) {
+		public HelperClass(ref HttpListenerContext context, string db, string domain, bool isDebug) {
 			Render = new RenderClass();
 			dbConnectString = db;
 			domainName = domain;
@@ -37,10 +38,11 @@ namespace ConnectionWorker.Helpers {
 			Responce = new ResponceInfo();
 			returnType = ReturnType.DefaultContent;
 			Context = context;
+			this.isDebug = isDebug;
 		}
 
-		public HelperClass(ref HttpListenerContext context, string db, string domain, HttpListenerWebSocketContext contextWs)
-			: this(ref context, db, domain) {
+		public HelperClass(ref HttpListenerContext context, string db, string domain, bool isDebug, HttpListenerWebSocketContext contextWs)
+			: this(ref context, db, domain, isDebug) {
 			ContextWs = contextWs;
 		}
 

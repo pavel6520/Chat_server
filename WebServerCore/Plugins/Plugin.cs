@@ -39,7 +39,7 @@ namespace WebServerCore.Plugins {
 					isLoad = true;
 				}
 				else {
-					throw new FileNotFoundException("Ошибка загрузки плагина: файл не найден", workF.FullName);
+					throw new FileNotFoundException("Ошибка загрузки плагина: файл не найден", workF.Name);
 				}
 			}
 			catch {
@@ -48,6 +48,7 @@ namespace WebServerCore.Plugins {
 					domain = null;
 				}
 				isLoad = false;
+				throw;
 			}
 		}
 

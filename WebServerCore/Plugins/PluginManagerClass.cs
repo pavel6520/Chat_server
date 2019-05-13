@@ -15,13 +15,13 @@ using WebSocketSharp.Net.WebSockets;
 namespace WebServerCore.Plugins {
 	public partial class PluginManagerClass {
 		public static string[][] Modules = new string[][] { new string[] { "Controller", "controllers" }, new string[] { "Layout", "layouts" }, new string[] { "Static", "static" } };
+		public static ILog Log { get; private set; }
 
 		private DirectoryInfo baseDirectory;
 		private FileSystemWatcher baseDirectoryWatcher;
 		private ControllerTreeElement controllerTree;
 		private Hashtable layoutsPlugins;
 		private Hashtable staticPlugins;
-		private readonly ILog Log;
 
 		private Hashtable WSclients = new Hashtable();
 
@@ -168,7 +168,7 @@ namespace WebServerCore.Plugins {
 					}
 				}
 				catch (Exception e) {
-					this.Log.Error("Ошибка обновления пакетов", e);
+					Log.Error("Ошибка обновления пакетов", e);
 				}
 			}
 		}
@@ -243,8 +243,12 @@ namespace WebServerCore.Plugins {
 						using (FileStream reader = new FileStream(fi.FullName, FileMode.Open, FileAccess.Read)) {
 							resFile = true;
 							int pos = fi.Name.LastIndexOf('.') + 1;
-							if (fi.Name.Substring(pos, fi.Name.Length - pos) == "css") {
+							string format = fi.Name.Substring(pos, fi.Name.Length - pos);
+							if (format == "css") {
 								helper.Context.Response.ContentType = "text/css";
+							}
+							else if (format == "js") {
+								helper.Context.Response.ContentType = "text/javascript";
 							}
 							helper.Context.Response.ContentLength64 = reader.Length;
 							helper.Context.Response.Headers.Add(HttpResponseHeader.CacheControl, "max-age=86400");

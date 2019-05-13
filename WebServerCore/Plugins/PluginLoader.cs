@@ -67,7 +67,16 @@ namespace WebServerCore.Plugins {
 			Unload();
 			Compare();
 			var workD = new DirectoryInfo($"{baseDirectory.FullName}{Module[1]}Work{AbsPath}{Path.DirectorySeparatorChar}");
-			plugin.LoadPlugin(ref workD);
+			try {
+				plugin.LoadPlugin(ref workD);
+				PluginManagerClass.Log.Info($"Загружен плагин {plugin.Name} из директории {workD.FullName}");
+			}
+			catch (FileNotFoundException e) {
+				PluginManagerClass.Log.Error($"Не удалось загрузить плагин {plugin.Name} из директории {workD.FullName}: не найден файл {e.FileName}");
+			}
+			catch (Exception e) {
+				PluginManagerClass.Log.Error($"Не удалось загрузить плагин {plugin.Name} из директории {workD.FullName}", e);
+			}
 		}
 
 		public void Unload() {

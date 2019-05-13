@@ -18,7 +18,7 @@ public class authStatic : PluginWorker {
 				connection = new MySqlConnection(_helper.dbConnectString);
 				connection.Open();
 			}
-			MySqlCommand command = new MySqlCommand("select login, datecreate from usersauthkey where `key` = @key", connection);
+			MySqlCommand command = new MySqlCommand("select login, datecreate from userauthkey where `key` = @key", connection);
 			command.Parameters.AddWithValue("@key", authCookie.Value);
 			MySqlDataReader reader = command.ExecuteReader();
 			if (reader.Read()) {
@@ -52,7 +52,7 @@ public class authStatic : PluginWorker {
 			connection.Open();
 		}
 
-		MySqlCommand command = new MySqlCommand("update usersauthkey set datecreate = @datetime where `key` = @key", connection);
+		MySqlCommand command = new MySqlCommand("update userauthkey set datecreate = @datetime where `key` = @key", connection);
 		command.Parameters.AddWithValue("@key", key);
 		command.Parameters.AddWithValue("@datetime", DateTime.UtcNow);
 		command.ExecuteNonQuery();
@@ -71,7 +71,7 @@ public class authStatic : PluginWorker {
 
 		var authCookie = _helper.Request.Cookies["auth"];
 		if (authCookie != null) {
-			MySqlCommand command = new MySqlCommand("delete from usersauthkey where `key` = @key", connection);
+			MySqlCommand command = new MySqlCommand("delete from userauthkey where `key` = @key", connection);
 			command.Parameters.AddWithValue("@key", authCookie.Value);
 			command.Parameters.AddWithValue("@datecreate", DateTime.UtcNow.AddDays(-1));
 			command.ExecuteNonQuery();
@@ -98,7 +98,7 @@ public class authStatic : PluginWorker {
 			connection.Open();
 		}
 		MySqlCommand command;
-		command = new MySqlCommand("insert into usersauthkey (`key`, login, datecreate) value(@key, @login, @datecreate)", connection);
+		command = new MySqlCommand("insert into userauthkey (`key`, login, datecreate) value(@key, @login, @datecreate)", connection);
 		command.Parameters.AddWithValue("@key", hash);
 		command.Parameters.AddWithValue("@login", _helper.Auth.Login);
 		command.Parameters.AddWithValue("@datecreate", time);
@@ -128,7 +128,7 @@ public class authStatic : PluginWorker {
 		if (login != null && pass != null) {
 			MySqlConnection connection = new MySqlConnection(_helper.dbConnectString);
 			connection.Open();
-			MySqlCommand command = new MySqlCommand("select login from users where login = @login and hash = @pass", connection);
+			MySqlCommand command = new MySqlCommand("select login from user where login = @login and hash = @pass", connection);
 			command.Parameters.AddWithValue("@login", login);
 			command.Parameters.AddWithValue("@pass", pass);
 			//try {
@@ -168,7 +168,7 @@ public class authStatic : PluginWorker {
 		if (login != null && pass != null && passconf != null && pass == passconf) {
 			MySqlConnection connection = new MySqlConnection(_helper.dbConnectString);
 			connection.Open();
-			MySqlCommand command = new MySqlCommand("insert into users (login, hash, datereg) values(@login, @pass, @datereg)", connection);
+			MySqlCommand command = new MySqlCommand("insert into user (login, hash, datereg) values(@login, @pass, @datereg)", connection);
 			command.Parameters.AddWithValue("@login", login);
 			command.Parameters.AddWithValue("@pass", pass);
 			command.Parameters.AddWithValue("@datereg", DateTime.Now);
