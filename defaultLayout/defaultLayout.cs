@@ -6,9 +6,7 @@ public class defaultLayout : LayoutWorker {
 		IncludeLayout("head");
 		Echo("<body class=\"flex\">");
 		IncludeLayout("header");
-		Echo("<div id=\"content\" class=\"container-fluid\">");
 		IncludeContent();
-		Echo("</div>");
 		Echo("<script src=\"/assets/js/func.js\"></script>");
 		Echo("<script src=\"/assets/js/popper.min.js\"></script>");
 		Echo("<script src=\"/assets/js/bootstrap.min.js\"></script>");
