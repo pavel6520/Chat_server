@@ -68,7 +68,8 @@ namespace WebServerCore {
 										new HelperClass(
 											ref context, 
 											Config.DBConnectionString, 
-											Config.Domain, 
+											Config.Domain,
+											Config.Debug,
 											context.AcceptWebSocket("13")));
 								}
 								else {
@@ -76,7 +77,8 @@ namespace WebServerCore {
 										new HelperClass(
 											ref context, 
 											Config.DBConnectionString,
-											Config.Domain));
+											Config.Domain,
+											Config.Debug));
 								}
 							}
 							catch (PathNotFoundException e) {
