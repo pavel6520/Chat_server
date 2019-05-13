@@ -1,7 +1,16 @@
 ﻿using ConnectionWorker;
 
 public class defaultLayout : LayoutWorker {
+	public defaultLayout() {
+		staticInclude = new string[] { "auth" };
+	}
+
 	public void Init() {
+		if (!_helper.isAuth) {
+			PluginWorker auth = _helper.GetPlugin("auth");
+			auth._Work(_helper, "checkSession");
+			_helper = auth._GetHelper();
+		}
 		Echo("<!doctype html><html>");
 		IncludeLayout("head");
 		Echo("<body class=\"flex\">");

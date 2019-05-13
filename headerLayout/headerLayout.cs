@@ -6,17 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 public class headerLayout : LayoutWorker {
-	public headerLayout() {
-		staticInclude = new string[] { "auth" };
-	}
 
 	public void Init() {
-		if (!_helper.isAuth) {
-			PluginWorker auth = _helper.GetPlugin("auth");
-			auth._Work(_helper, "checkSession");
-			_helper = auth._GetHelper();
-		}
-
 		Echo("<header class=\"navbar navbar-light bg-light navbar-fixed-top\">");
 		var url = _helper.Request.Url.LocalPath.Split(new char[] { '/' }, System.StringSplitOptions.RemoveEmptyEntries);
 		if (url.Length > 0 && url[0] == "chat") {
