@@ -15,13 +15,13 @@ using WebSocketSharp.Net.WebSockets;
 namespace WebServerCore.Plugins {
 	public partial class PluginManagerClass {
 		public static string[][] Modules = new string[][] { new string[] { "Controller", "controllers" }, new string[] { "Layout", "layouts" }, new string[] { "Static", "static" } };
+		public static ILog Log { get; private set; }
 
 		private DirectoryInfo baseDirectory;
 		private FileSystemWatcher baseDirectoryWatcher;
 		private ControllerTreeElement controllerTree;
 		private Hashtable layoutsPlugins;
 		private Hashtable staticPlugins;
-		private readonly ILog Log;
 
 		private Hashtable WSclients = new Hashtable();
 
@@ -168,7 +168,7 @@ namespace WebServerCore.Plugins {
 					}
 				}
 				catch (Exception e) {
-					this.Log.Error("Ошибка обновления пакетов", e);
+					Log.Error("Ошибка обновления пакетов", e);
 				}
 			}
 		}
