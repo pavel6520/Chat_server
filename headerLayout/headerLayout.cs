@@ -16,17 +16,17 @@ public class headerLayout : LayoutWorker {
 			auth._Work(_helper, "checkSession");
 			_helper = auth._GetHelper();
 		}
-
-		Echo("<header class=\"navbar navbar-light bg-light navbar-fixed-top\">");
+		Echo("<script>" +
+			(_helper.isAuth && _helper.Auth.Status ? $"isAuth=true;login='{_helper.Auth.Login}';" : "isAuth=false;") +
+   $"address='{_helper.domainName}';" +
+   "</script>");
+		Echo("<header class=\"navbar navbar-light bg-light navbar-fixed-top bordersc\">");
 		var url = _helper.Request.Url.LocalPath.Split(new char[] { '/' }, System.StringSplitOptions.RemoveEmptyEntries);
 		if (url.Length > 0 && url[0] == "chat") {
-			Echo("<style>@media(min-width: 992px){body {padding: 0 0 0 300px;}header.navbar>button{display:none;}}</style>");
-			Echo("<button class=\"navbar-toggler\" type=\"button\" data-toggle=\"offcanvas\" data-target=\".navmenu\"><span class=\"navbar-toggler-icon\"></span></button>");
+			//Echo("<style>@media(min-width: 992px){body {padding: 0 0 0 300px;}header.navbar>button{display:none;}}</style>");
+			Echo("<button class=\"nav-item navbar-toggler\" type=\"button\" data-toggle=\"offcanvas\" data-target=\".navmenu\"><span class=\"navbar-toggler-icon\"></span></button>");
 		}
-		Echo("<a class=\"navbar-brand mr-auto\" href=\"/\">Pavel6520 Chat</a>" +
-   "<div class=\"nav-item\">" +
-   "<a class=\"nav-link disabled\" href=\"#\">Disabled</a>" +
-   "</div>" +
+		Echo("<a class=\"navbar-brand mr-auto d-none d-sm-block\" href=\"/\">Pavel6520 Chat</a>" +
    "<div class=\"nav-item dropleft\">" +
    "<a class=\"nav-link dropdown-toggle\" href=\"#\" id=\"navbarDropdown\" role=\"button\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">" + (_helper.isAuth && _helper.Auth.Status ? _helper.Auth.Login : "Account") +
    "</a>" +
