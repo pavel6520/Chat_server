@@ -4,14 +4,48 @@ html, body {
 	/*width: 100%;
 	height: 100%;*/
 }
+.bordersc{
+	border-style: solid;
+	border-color: navy;
+}
 .flex {
   display: flex;
   flex-direction: column;
   height: 100vh;
 }
-.paddingoff{
-	padding: 0;
+.pc-0 > *{
+	padding: 0 !important;
 }
+.mc-0 > *{
+	margin: 0 !important;
+}
+header{
+	border-width: 0 0 1px 0;
+}
+#chatcontent>.row{
+	max-width:700px;
+}
+#chatinputarea{
+	border-width: 1px 0 0 0;
+}
+#chatinputarea>div{
+	min-height: 36px;
+	max-height: 200px;
+	width: 100%;
+	padding: 9px 106px 10px 13px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	line-height: 17px;
+	word-break: break-all;
+	box-sizing: border-box;
+	color: #000;
+	background: #fff;
+	font-size: 13px;
+	font-family: -apple-system,BlinkMacSystemFont,
+		Roboto,Helvetica Neue,sans-serif;
+	-webkit-user-modify: read-write;
+}
+/*
 .refbutton {
 border:1px solid #ccc;
 background:#eaeaea;
@@ -125,4 +159,4 @@ text-decoration: none;
 	font-family: -apple-system,BlinkMacSystemFont,
 		Roboto,Helvetica Neue,sans-serif;
 	-webkit-user-modify: read-write;
-}
+}*/
