@@ -46,7 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ConnectionWorker\ConnectionWorker.csproj">
-      <Project>{862BED63-0901-4542-935B-F2976905CDE0}</Project>
+      <Project>{862bed63-0901-4542-935b-f2976905cde0}</Project>
       <Name>ConnectionWorker</Name>
     </ProjectReference>
   </ItemGroup>
