@@ -204,6 +204,7 @@ namespace WebServerCore.Plugins {
 				try {
 					if (HTTPinit) {
 						PluginWorker httpInitPlugin = GetPlugin(HTTPinitName);
+						GetStaticPlugins(httpInitPlugin, ref helper);
 						httpInitPlugin._Work(helper);
 						helper.GetData(httpInitPlugin._GetHelper());
 					}
@@ -342,7 +343,7 @@ namespace WebServerCore.Plugins {
 		}
 
 		LayoutWorker GetLayout(string name) {
-			return (LayoutWorker)((PluginLoader)staticPlugins[name]).plugin.GetPluginRefObject();
+			return (LayoutWorker)((PluginLoader)layoutsPlugins[name]).plugin.GetPluginRefObject();
 		}
 
 		void ResentLayout(ref HelperClass helper, ref ControllerWorker controller, ref string bufS, string layoutName, bool content) {
