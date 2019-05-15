@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{78D085C2-5169-4BF4-B62A-14D69D4C74F3}</ProjectGuid>
+    <ProjectGuid>{C11881DA-9BA3-4ABB-94D6-D4C08C21A93D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>defaultLayout</RootNamespace>
-    <AssemblyName>defaultLayout</AssemblyName>
+    <RootNamespace>headLayout</RootNamespace>
+    <AssemblyName>headLayout</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -29,7 +29,6 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -42,18 +41,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="defaultLayout.cs" />
+    <Compile Include="headLayout.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ConnectionWorker\ConnectionWorker.csproj">
+    <ProjectReference Include="..\..\ConnectionWorker\ConnectionWorker.csproj">
       <Project>{862BED63-0901-4542-935B-F2976905CDE0}</Project>
       <Name>ConnectionWorker</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>set myName=default
+    <PostBuildEvent>set myName=head
 set myDirName=layouts
 set myDir=$(SolutionDir)build\$(ConfigurationName)\application\%25myDirName%25\%25myName%25
 MKDIR %25myDir%25
