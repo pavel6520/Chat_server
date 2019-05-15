@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatWebService", "ChatWebSe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "websocket-sharp", "websocket-sharp\websocket-sharp.csproj", "{B357BAC7-529E-4D81-A0D2-71041B19C8DE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "httpinitStatic", "httpinitStatic\httpinitStatic.csproj", "{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +87,10 @@ Global
 		{A80CB972-A380-4F3C-8592-A9AC121DC8C0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B357BAC7-529E-4D81-A0D2-71041B19C8DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B357BAC7-529E-4D81-A0D2-71041B19C8DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,6 +103,7 @@ Global
 		{83B1BA3E-8C7B-49C3-87FD-5A8EB690036F} = {E18FE268-70D0-496A-86AC-A6BCCD5606F1}
 		{68AC5540-30D2-47D1-8792-6FEED3F07915} = {72C0CAC7-193D-466B-B222-1380C05D8869}
 		{54AC1DBD-744A-44BD-B8C3-D95419C7301B} = {9ABCB3AC-9683-4498-80F4-9E6F05EB8902}
+		{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0} = {72C0CAC7-193D-466B-B222-1380C05D8869}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {032FC2A7-F4CB-4FFC-A26B-D4301464D058}

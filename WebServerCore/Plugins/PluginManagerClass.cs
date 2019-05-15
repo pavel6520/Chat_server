@@ -17,11 +17,16 @@ namespace WebServerCore.Plugins {
 		public static string[][] Modules = new string[][] { new string[] { "Controller", "controllers" }, new string[] { "Layout", "layouts" }, new string[] { "Static", "static" } };
 		public static ILog Log { get; private set; }
 
+		private const string HTTPinitName = "httpinit";
+		private const string WebSocketinitName = "websocketinit";
+
 		private DirectoryInfo baseDirectory;
 		private FileSystemWatcher baseDirectoryWatcher;
 		private ControllerTreeElement controllerTree;
 		private Hashtable layoutsPlugins;
 		private Hashtable staticPlugins;
+		private bool HTTPinit;
+		private bool WebSocketInit;
 
 		private Hashtable WSclients = new Hashtable();
 
@@ -55,6 +60,8 @@ namespace WebServerCore.Plugins {
 
 			layoutsPlugins = LoadPlugins(ref Modules[1]);
 			staticPlugins = LoadPlugins(ref Modules[2]);
+			HTTPinit = staticPlugins.ContainsKey(HTTPinitName);
+			WebSocketInit = staticPlugins.ContainsKey(WebSocketinitName);
 
 			controllerTree = new ControllerTreeElement();
 
@@ -195,7 +202,12 @@ namespace WebServerCore.Plugins {
 			if (tree != null) {
 				ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
 				try {
-					GetStaticPlugins((PluginWorker)controller, ref helper);
+					if (HTTPinit) {
+						PluginWorker httpInitPlugin = GetPlugin(HTTPinitName);
+						httpInitPlugin._Work(helper);
+						helper.GetData(httpInitPlugin._GetHelper());
+					}
+					GetStaticPlugins(controller, ref helper);
 
 					controller._Work(helper, action);
 					helper.GetData(controller._GetHelper());
@@ -325,9 +337,17 @@ namespace WebServerCore.Plugins {
 			}
 		}
 
+		PluginWorker GetPlugin(string name) {
+			return (PluginWorker)((PluginLoader)staticPlugins[name]).plugin.GetPluginRefObject();
+		}
+
+		LayoutWorker GetLayout(string name) {
+			return (LayoutWorker)((PluginLoader)staticPlugins[name]).plugin.GetPluginRefObject();
+		}
+
 		void ResentLayout(ref HelperClass helper, ref ControllerWorker controller, ref string bufS, string layoutName, bool content) {
-			LayoutWorker layout = (LayoutWorker)((PluginLoader)layoutsPlugins[layoutName]).plugin.GetPluginRefObject();
-			GetStaticPlugins((PluginWorker)layout, ref helper);
+			LayoutWorker layout = GetLayout(layoutName);
+			GetStaticPlugins(layout, ref helper);
 			layout._Work(helper);
 			helper.GetData(layout._GetHelper());
 			EchoClass ec = layout._GetNextContent();
