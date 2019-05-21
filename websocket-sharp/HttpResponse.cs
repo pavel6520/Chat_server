@@ -192,8 +192,8 @@ namespace WebSocketSharp
       output.AppendFormat ("HTTP/{0} {1} {2}{3}", ProtocolVersion, _code, _reason, CrLf);
 
       var headers = Headers;
-      foreach (var key in headers.AllKeys)
-        output.AppendFormat ("{0}: {1}{2}", key, headers[key], CrLf);
+			foreach (var key in headers.AllKeys)
+				output.AppendFormat("{0}: {1}{2}", key, headers[key][0], CrLf);
 
       output.Append (CrLf);
 

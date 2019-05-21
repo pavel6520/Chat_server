@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /chat/
+Disallow: /auth/logout
+Disallow: /assets/
+Disallow: /client/
+Disallow: /.well-known/

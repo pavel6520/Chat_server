@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{54AC1DBD-744A-44BD-B8C3-D95419C7301B}</ProjectGuid>
+    <ProjectGuid>{78D085C2-5169-4BF4-B62A-14D69D4C74F3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>chatController</RootNamespace>
-    <AssemblyName>chatController</AssemblyName>
+    <RootNamespace>defaultLayout</RootNamespace>
+    <AssemblyName>defaultLayout</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -42,19 +42,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="chatController.cs" />
+    <Compile Include="defaultLayout.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ConnectionWorker\ConnectionWorker.csproj">
+    <ProjectReference Include="..\..\ConnectionWorker\ConnectionWorker.csproj">
       <Project>{862BED63-0901-4542-935B-F2976905CDE0}</Project>
       <Name>ConnectionWorker</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>set myName=chat
-set myDirName=controllers
+    <PostBuildEvent>set myName=default
+set myDirName=layouts
 set myDir=$(SolutionDir)build\$(ConfigurationName)\application\%25myDirName%25\%25myName%25
 MKDIR %25myDir%25
 XCOPY *.dll %25myDir%25 /d /y

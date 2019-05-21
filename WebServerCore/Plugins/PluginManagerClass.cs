@@ -17,11 +17,16 @@ namespace WebServerCore.Plugins {
 		public static string[][] Modules = new string[][] { new string[] { "Controller", "controllers" }, new string[] { "Layout", "layouts" }, new string[] { "Static", "static" } };
 		public static ILog Log { get; private set; }
 
+		private const string HTTPinitName = "httpinit";
+		private const string WebSocketinitName = "websocketinit";
+
 		private DirectoryInfo baseDirectory;
 		private FileSystemWatcher baseDirectoryWatcher;
 		private ControllerTreeElement controllerTree;
 		private Hashtable layoutsPlugins;
 		private Hashtable staticPlugins;
+		private bool HTTPinit;
+		private bool WebSocketInit;
 
 		private Hashtable WSclients = new Hashtable();
 
@@ -55,6 +60,8 @@ namespace WebServerCore.Plugins {
 
 			layoutsPlugins = LoadPlugins(ref Modules[1]);
 			staticPlugins = LoadPlugins(ref Modules[2]);
+			HTTPinit = staticPlugins.ContainsKey(HTTPinitName);
+			WebSocketInit = staticPlugins.ContainsKey(WebSocketinitName);
 
 			controllerTree = new ControllerTreeElement();
 
@@ -185,8 +192,8 @@ namespace WebServerCore.Plugins {
 			return hashtable;
 		}
 
-		public void Work(HelperClass helper) {
-			string path = $"{helper.Context.Request.Url.GetComponents(UriComponents.Path, UriFormat.SafeUnescaped)}";
+		public void Work(HelperClass _helper) {
+			string path = $"{_helper.Context.Request.Url.GetComponents(UriComponents.Path, UriFormat.SafeUnescaped)}";
 			Queue<string> pathSplit = new Queue<string>(path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries));
 			if (pathSplit.Count == 0) {
 				pathSplit.Enqueue("index");
@@ -195,29 +202,35 @@ namespace WebServerCore.Plugins {
 			if (tree != null) {
 				ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
 				try {
-					GetStaticPlugins((PluginWorker)controller, ref helper);
+					if (HTTPinit) {
+						PluginWorker httpInitPlugin = GetPlugin(HTTPinitName);
+						GetStaticPlugins(httpInitPlugin, ref _helper);
+						httpInitPlugin._Work(_helper);
+						_helper.GetData(httpInitPlugin._GetHelper());
+					}
+					GetStaticPlugins(controller, ref _helper);
 
-					controller._Work(helper, action);
-					helper.GetData(controller._GetHelper());
+					controller._Work(_helper, action);
+					_helper.GetData(controller._GetHelper());
 
-					helper.Context.Response.Headers.Add(helper.Responce.Headers);
-					helper.Context.Response.StatusCode = helper.Responce.StatusCode;
-					helper.Context.Response.StatusDescription = helper.Responce.StatusDescription;
+					_helper.Context.Response.Headers.Add(_helper.Responce.Headers);
+					_helper.Context.Response.StatusCode = _helper.Responce.StatusCode;
+					_helper.Context.Response.StatusDescription = _helper.Responce.StatusDescription;
 				}
 				catch (Exception e) {
-					Log.Error("Ошибка обработки подключения", e);
-					helper.Answer500(e);
+					Log.Error("Внутренняя ошибка подключения", e);
+					_helper.Answer500(e);
 				}
 
-				if (helper.returnType == ReturnType.DefaultContent) {
-					helper.Context.Response.ContentType = helper.Responce.ContentType;
+				if (_helper.returnType == ReturnType.DefaultContent) {
+					_helper.Context.Response.ContentType = _helper.Responce.ContentType;
 
 					string bufS = "";
-					if (helper.Render.isEnabled) {
-						ResentLayout(ref helper, ref controller, ref bufS, helper.Render.layout, true);
+					if (_helper.Render.isEnabled) {
+						ResentLayout(ref _helper, ref controller, ref bufS, _helper.Render.layout, true);
 					}
 					else {
-						ResentContent(ref helper, ref controller, ref bufS);
+						ResentContent(ref _helper, ref controller, ref bufS);
 					}
 					//byte[] buf; // не работает в данной реализации HttpListenerContext
 					//while (bufS.Length > 0) {
@@ -226,12 +239,30 @@ namespace WebServerCore.Plugins {
 					//	helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
 					//}
 					byte[] buf = Encoding.UTF8.GetBytes(bufS);
-					helper.Context.Response.ContentLength64 = buf.Length;
-					helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
+					_helper.Context.Response.ContentLength64 = buf.Length;
+					_helper.Context.Response.OutputStream.Write(buf, 0, buf.Length);
 				}
-				else if (helper.returnType == ReturnType.Info) {
-					if (helper.Responce.StatusCode / 100 == 3) {
-						helper.Context.Response.Redirect(helper.Responce.RedirectLocation);
+				else if (_helper.returnType == ReturnType.Info) {
+					if (_helper.Responce.StatusCode / 100 == 3) {
+						_helper.Context.Response.Redirect(_helper.Responce.RedirectLocation);
+					}
+				}
+				if (_helper.WShelper.Acts.Count > 0) {
+					if (_helper.WShelper.ActsForAll) {
+						foreach (HelperClass WSclient in WSclients.Values) {
+							foreach (WebSocketAct act in _helper.WShelper.Acts) {
+								WSclient.ContextWs.WebSocket.Send(act.Body);
+							}
+						}
+					}
+					else {
+						foreach (HelperClass WSclient in WSclients.Values) {
+							foreach (WebSocketAct act in _helper.WShelper.Acts) {
+								if (act.Recepients.Contains(WSclient.Auth.Login)) {
+									WSclient.ContextWs.WebSocket.Send(act.Body);
+								}
+							}
+						}
 					}
 				}
 			}
@@ -245,14 +276,14 @@ namespace WebServerCore.Plugins {
 							int pos = fi.Name.LastIndexOf('.') + 1;
 							string format = fi.Name.Substring(pos, fi.Name.Length - pos);
 							if (format == "css") {
-								helper.Context.Response.ContentType = "text/css";
+								_helper.Context.Response.ContentType = "text/css";
 							}
 							else if (format == "js") {
-								helper.Context.Response.ContentType = "text/javascript";
+								_helper.Context.Response.ContentType = "text/javascript";
 							}
-							helper.Context.Response.ContentLength64 = reader.Length;
-							helper.Context.Response.Headers.Add(HttpResponseHeader.CacheControl, "max-age=86400");
-							reader.CopyTo(helper.Context.Response.OutputStream, 16384);
+							_helper.Context.Response.ContentLength64 = reader.Length;
+							_helper.Context.Response.Headers.Add(HttpResponseHeader.CacheControl, "max-age=86400");
+							reader.CopyTo(_helper.Context.Response.OutputStream, 16384);
 						}
 					}
 					else {
@@ -263,8 +294,8 @@ namespace WebServerCore.Plugins {
 					resFile = false;
 				}
 				if (!resFile) {
-					helper.Context.Response.StatusCode = 404;
-					helper.Context.Response.StatusDescription = "Not found";
+					_helper.Context.Response.StatusCode = 404;
+					_helper.Context.Response.StatusDescription = "Not found";
 				}
 			}
 		}
@@ -285,20 +316,22 @@ namespace WebServerCore.Plugins {
 				ControllerTreeElement tree = controllerTree.SearchWS(ref pathSplit, out string action);
 				if (tree != null) {
 					ControllerWorker controller = (ControllerWorker)tree.plugin.GetPluginRefObject();
-					//try {
-					GetStaticPlugins((PluginWorker)controller, ref helper);
+					try {
+						GetStaticPlugins(controller, ref helper);
+						controller._WorkWS(helper, action, new object[] { (string)json["type"], (string)json["body"] });
+						helper.GetData(controller._GetHelper());
 
-					controller._WorkWS(helper, action, new object[] { (string)json["type"], (string)json["body"] });
-					//}
-					//catch { }
-
-					helper.GetData(controller._GetHelper());
-
-					if (helper.returnType == ReturnType.DefaultContent) {
-						string bufS = "";
-						ResentContent(ref helper, ref controller, ref bufS);
-						helper.ContextWs.WebSocket.Send(bufS);
-						bufS = null;
+						if (helper.returnType == ReturnType.DefaultContent) {
+							string bufS = "";
+							ResentContent(ref helper, ref controller, ref bufS);
+							helper.ContextWs.WebSocket.Send(bufS);
+							bufS = null;
+						}
+					}
+					catch (Exception e) {
+						if (helper.ContextWs.WebSocket.IsAlive) {
+							Log.Error("Ошибка обработки сообщения WebSocket", e);
+						}
 					}
 				}
 			};
@@ -307,8 +340,18 @@ namespace WebServerCore.Plugins {
 				WSclients.Remove(sender);
 			};
 
-			WSclients.Add(_helper.ContextWs.WebSocket, _helper);
-			_helper.ContextWs.WebSocket.Accept();
+			if (WebSocketInit) {
+				PluginWorker httpInitPlugin = GetPlugin(WebSocketinitName);
+				GetStaticPlugins(httpInitPlugin, ref _helper);
+				httpInitPlugin._Work(_helper);
+				_helper.GetData(httpInitPlugin._GetHelper());
+				if (_helper.Auth.Status) {
+					WSclients.Add(_helper.ContextWs.WebSocket, _helper);
+					_helper.ContextWs.WebSocket.Accept();
+					return;
+				}
+			}
+			_helper.ContextWs.WebSocket.Close(WebSocketSharp.CloseStatusCode.Normal, "Unathorized");
 		}
 
 		public void GetStaticPlugins(PluginWorker controller, ref HelperClass helper) {
@@ -325,9 +368,17 @@ namespace WebServerCore.Plugins {
 			}
 		}
 
+		PluginWorker GetPlugin(string name) {
+			return (PluginWorker)((PluginLoader)staticPlugins[name]).plugin.GetPluginRefObject();
+		}
+
+		LayoutWorker GetLayout(string name) {
+			return (LayoutWorker)((PluginLoader)layoutsPlugins[name]).plugin.GetPluginRefObject();
+		}
+
 		void ResentLayout(ref HelperClass helper, ref ControllerWorker controller, ref string bufS, string layoutName, bool content) {
-			LayoutWorker layout = (LayoutWorker)((PluginLoader)layoutsPlugins[layoutName]).plugin.GetPluginRefObject();
-			GetStaticPlugins((PluginWorker)layout, ref helper);
+			LayoutWorker layout = GetLayout(layoutName);
+			GetStaticPlugins(layout, ref helper);
 			layout._Work(helper);
 			helper.GetData(layout._GetHelper());
 			EchoClass ec = layout._GetNextContent();

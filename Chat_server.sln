@@ -9,29 +9,33 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebServerCore", "WebServerC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectionWorker", "ConnectionWorker\ConnectionWorker.csproj", "{862BED63-0901-4542-935B-F2976905CDE0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "indexController", "indexController\indexController.csproj", "{DD15D22D-8E25-452B-8C2B-CEA670690AB3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "indexController", "Controllers\indexController\indexController.csproj", "{DD15D22D-8E25-452B-8C2B-CEA670690AB3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "authController", "authController\authController.csproj", "{B55F3FF2-B37A-41F3-9B44-D9A1419D5D07}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "authController", "Controllers\authController\authController.csproj", "{B55F3FF2-B37A-41F3-9B44-D9A1419D5D07}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "defaultLayout", "defaultLayout\defaultLayout.csproj", "{78D085C2-5169-4BF4-B62A-14D69D4C74F3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "defaultLayout", "Layouts\defaultLayout\defaultLayout.csproj", "{78D085C2-5169-4BF4-B62A-14D69D4C74F3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Layouts", "Layouts", "{E18FE268-70D0-496A-86AC-A6BCCD5606F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "headLayout", "headLayout\headLayout.csproj", "{C11881DA-9BA3-4ABB-94D6-D4C08C21A93D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "headLayout", "Layouts\headLayout\headLayout.csproj", "{C11881DA-9BA3-4ABB-94D6-D4C08C21A93D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "headerLayout", "headerLayout\headerLayout.csproj", "{83B1BA3E-8C7B-49C3-87FD-5A8EB690036F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "headerLayout", "Layouts\headerLayout\headerLayout.csproj", "{83B1BA3E-8C7B-49C3-87FD-5A8EB690036F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controllers", "Controllers", "{9ABCB3AC-9683-4498-80F4-9E6F05EB8902}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Static", "Static", "{72C0CAC7-193D-466B-B222-1380C05D8869}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "authStatic", "authStatic\authStatic.csproj", "{68AC5540-30D2-47D1-8792-6FEED3F07915}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "authStatic", "Static\authStatic\authStatic.csproj", "{68AC5540-30D2-47D1-8792-6FEED3F07915}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "chatController", "chatController\chatController.csproj", "{54AC1DBD-744A-44BD-B8C3-D95419C7301B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "chatController", "Controllers\chatController\chatController.csproj", "{54AC1DBD-744A-44BD-B8C3-D95419C7301B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatWebService", "ChatWebService\ChatWebService.csproj", "{A80CB972-A380-4F3C-8592-A9AC121DC8C0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "websocket-sharp", "websocket-sharp\websocket-sharp.csproj", "{B357BAC7-529E-4D81-A0D2-71041B19C8DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "httpinitStatic", "Static\httpinitStatic\httpinitStatic.csproj", "{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "websocketinitStatic", "Static\websocketinitStatic\websocketinitStatic.csproj", "{E9989289-738F-443F-95CB-FFF46E9477E5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,6 +89,14 @@ Global
 		{A80CB972-A380-4F3C-8592-A9AC121DC8C0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B357BAC7-529E-4D81-A0D2-71041B19C8DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B357BAC7-529E-4D81-A0D2-71041B19C8DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9989289-738F-443F-95CB-FFF46E9477E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9989289-738F-443F-95CB-FFF46E9477E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9989289-738F-443F-95CB-FFF46E9477E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9989289-738F-443F-95CB-FFF46E9477E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,6 +109,8 @@ Global
 		{83B1BA3E-8C7B-49C3-87FD-5A8EB690036F} = {E18FE268-70D0-496A-86AC-A6BCCD5606F1}
 		{68AC5540-30D2-47D1-8792-6FEED3F07915} = {72C0CAC7-193D-466B-B222-1380C05D8869}
 		{54AC1DBD-744A-44BD-B8C3-D95419C7301B} = {9ABCB3AC-9683-4498-80F4-9E6F05EB8902}
+		{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0} = {72C0CAC7-193D-466B-B222-1380C05D8869}
+		{E9989289-738F-443F-95CB-FFF46E9477E5} = {72C0CAC7-193D-466B-B222-1380C05D8869}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {032FC2A7-F4CB-4FFC-A26B-D4301464D058}

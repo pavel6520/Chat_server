@@ -1,4 +1,4 @@
-$(function(){
+/*$(function(){
 	cache('textArea', $('#ChatTextArea'));
 	cache('inputsAuth', $('#blockAuth input'));
 	cache('blockAuth', $('#blockAuth'));
@@ -51,8 +51,8 @@ $(function(){
 		cache('blockChat').attr('style', 'display: none;');
 		cache('blockErr').removeAttr('style');
 		cache('blockErr').text('SERVER CLOSED CONNECTION');
-	}*/
-});
+	}
+});*/
 
 function cache(key, value) {if (typeof value == 'undefined') { return cache[key]; }cache[key] = value;}
 
@@ -125,8 +125,16 @@ function enterChat(){
 			if (!this.lock) cache('textArea').html('');
 		}
 	};
-	cache('textArea').keydown( function(ev){ inputControl.keyD(ev.which); if(ev.which == '13'){ inputControl.send(ev);} } )
-		.keyup( function(ev){ inputControl.keyU(ev.which); if(ev.which == '13'){  inputControl.clear();} } );
+	cache('textArea').keydown( function(ev){
+		inputControl.keyD(ev.which);
+		if(ev.which == '13'){
+			inputControl.send(ev);}
+	} ).keyup( function(ev){
+		inputControl.keyU(ev.which);
+		if(ev.which == '13'){
+			inputControl.clear();
+		}
+	} );
 	
 	cache('ListDialog').append('<ul class="ChatBodyList2" data="public"></ul>');
 	cacheD = [];

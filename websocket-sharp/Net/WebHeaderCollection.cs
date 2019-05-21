@@ -733,7 +733,7 @@ namespace WebSocketSharp.Net {
 		}
 
 		private void doWithoutCheckingName(Action<string, string> action, string name, string value) {
-			checkRestricted(name);
+			//checkRestricted(name);
 			action(name, checkValue(value));
 		}
 
