@@ -8,16 +8,11 @@ using System.Threading.Tasks;
 
 public class authController : ControllerWorker {
 	PluginWorker auth;
-	public authController() {
-		staticInclude = new string[] { "auth" };
-	}
 
 	public void Init() {
 		if (_helper.isSecureConnection) {
 			auth = _helper.GetPlugin("auth");
-			bool res = (bool)auth._Work(_helper, "checkSession");
-			_helper = auth._GetHelper();
-			if (_helper.Request.HttpMethod == "GET" && _helper.Request.Url.AbsolutePath != "/auth/logout" && res) {
+			if (_helper.Request.HttpMethod == "GET" && _helper.Request.Url.AbsolutePath != "/auth/logout" && _helper.Auth.Status) {
 				_helper.AnswerRedirect("/chat");
 			}
 		}
@@ -35,13 +30,13 @@ public class authController : ControllerWorker {
 		if (_helper.returnType == ReturnType.DefaultContent) {
 			if (_helper.Request.HttpMethod == "POST") {
 				_helper.Render.DissableRender();
-				var res = (bool)auth._Work(_helper, "loginUser");
+				var res = (int)auth._Work(_helper, "loginUser");
 				_helper = auth._GetHelper();
-				if (res) {
-					EchoJson(new { state = res, redirect = $"https://{_helper.domainName}/chat" });
+				if (res == 0) {
+					EchoJson(new { state = true, redirect = $"https://{_helper.domainName}/chat" });
 				}
 				else {
-					EchoJson(new { state = res });
+					EchoJson(new { state = false, code = res });
 				}
 			}
 			else {
@@ -52,8 +47,8 @@ public class authController : ControllerWorker {
 				Echo($"<form name=\"login\" action=\"https://{_helper.domainName}/auth/login\" method=\"POST\">");
 				Echo("<h1>Log in</h1>");
 				//Echo("<p>");
-				Echo("<label for=\"email\" class=\"uname\" data-icon=\"u\"> Your username </label>");
-				Echo("<input type=\"text\" id=\"login\" name=\"email\" />");
+				Echo("<label for=\"login\" class=\"uname\" data-icon=\"u\"> Your username </label>");
+				Echo("<input type=\"text\" id=\"login\" name=\"login\" />");
 				//Echo("</p>");
 				//Echo("<p>");
 				Echo("<label for=\"pass\" class=\"youpasswd\" data-icon=\"p\"> Your password </label>");
@@ -84,13 +79,13 @@ public class authController : ControllerWorker {
 		if (_helper.returnType == ReturnType.DefaultContent) {
 			if (_helper.Request.HttpMethod == "POST") {
 				_helper.Render.DissableRender();
-				var res = (bool)auth._Work(_helper, "addUser");
+				var res = (int)auth._Work(_helper, "addUser");
 				_helper = auth._GetHelper();
-				if (res) {
-					EchoJson(new { state = res, redirect = $"https://{_helper.domainName}/chat" });
+				if (res == 0) {
+					EchoJson(new { state = true, redirect = $"https://{_helper.domainName}/chat" });
 				}
 				else {
-					EchoJson(new { state = res });
+					EchoJson(new { state = false, code = res });
 				}
 			}
 			else {
@@ -126,6 +121,6 @@ public class authController : ControllerWorker {
 	}
 
 	private void formJS() {
-		Echo("<script>$('#authform > button.btn').on('click', function () {/*let formData = new FormData($('form')[0]);*/$.ajax({type: 'POST',url: $('form').attr('action'),processData: true,data: {login: $('#login').val(),password: $('#password').val(),password_confirm: $('#password_confirm').val()},/*data: formData,*/success: function (data) {console.log(data);if(data.state){$('form').attr('action', '/chat').submit();/*window.location.href = data.redirect;*/}else{/*отобразить ошибки*/}}});});</script>");
+		Echo("<script>$('#authform > button.btn').on('click', function () {/*let formData = new FormData($('form')[0]);*/$.ajax({type: 'POST',url: $('form').attr('action'),processData: true,data: {login: $('#login').val(),password: $('#password').val(),password_confirm: $('#password_confirm').val()},/*data: formData,*/success: function (data) {console.log(data);if(data.state){$('form').html('').attr('method', 'get').attr('action', '/auth/login').submit();/*window.location.href = data.redirect;*/}else{/*отобразить ошибки*/}}});});</script>");
 	}
 }
