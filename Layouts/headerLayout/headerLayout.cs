@@ -6,16 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 public class headerLayout : LayoutWorker {
-	public headerLayout() {
-		staticInclude = new string[] { "auth" };
-	}
-
 	public void Init() {
-		if (!_helper.isAuth) {
-			PluginWorker auth = _helper.GetPlugin("auth");
-			auth._Work(_helper, "checkSession");
-			_helper = auth._GetHelper();
-		}
 		Echo("<script>" +
 			(_helper.isAuth && _helper.Auth.Status ? $"isAuth=true;login='{_helper.Auth.Login}';" : "isAuth=false;") +
    $"address='{_helper.domainName}';" +
