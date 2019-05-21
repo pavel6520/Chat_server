@@ -13,8 +13,8 @@ public class headLayout : LayoutWorker {
 		//Echo("<link href=\"/assets/css/jquery-ui.css\" rel=\"stylesheet\">");
 		//Echo("<link href=\"/assets/css/jquery-ui.structure.css\" rel=\"stylesheet\">");
 		//Echo("<link href=\"/assets/css/jquery-ui.theme.css\" rel=\"stylesheet\">");
-		Echo("<script src=\"https://code.jquery.com/jquery-3.4.1.min.js\" integrity=\"sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=\" crossorigin=\"anonymous\"></script>");
-		//Echo("<script src=\"/assets/js/jquery-3.4.1.min.js\"></script>");
+		//Echo("<script src=\"https://code.jquery.com/jquery-3.4.1.min.js\" integrity=\"sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=\" crossorigin=\"anonymous\"></script>");
+		Echo("<script src=\"/assets/js/jquery-3.4.1.min.js\"></script>");
 		//Echo("<script src=\"/assets/js/jquery-ui.js\"></script>");
 		//Echo("<script src=\"/assets/js/func.js\"></script>");
 		//Echo("<script src=\"/assets/js/struct.js\"></script>");
