@@ -22,17 +22,26 @@ html, body {
 header{
 	border-width: 0 0 1px 0;
 }
-#chatcontent>.row{
-	max-width:700px;
+.message{
+	max-width:900px;
+}
+.messagebody{
+	padding-top: .25rem;
+	padding-bottom: .25rem;
+	background-color: rgba(86,61,124,.15);
+	border: 1px solid rgba(86,61,124,.2);
+	margin-top: 5px;
 }
 #chatinputarea{
 	border-width: 1px 0 0 0;
+    margin: 0;
 }
-#chatinputarea>div{
+#chatinputarea>.inputarea{
 	min-height: 36px;
 	max-height: 200px;
 	width: 100%;
-	padding: 9px 106px 10px 13px;
+	max-width: 900px;
+	padding: 9px 13px 10px 13px;
 	overflow-y: auto;
 	overflow-x: hidden;
 	line-height: 17px;
