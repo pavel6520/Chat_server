@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "websocket-sharp", "websocke
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "httpinitStatic", "Static\httpinitStatic\httpinitStatic.csproj", "{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "websocketinitStatic", "Static\websocketinitStatic\websocketinitStatic.csproj", "{E9989289-738F-443F-95CB-FFF46E9477E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9989289-738F-443F-95CB-FFF46E9477E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9989289-738F-443F-95CB-FFF46E9477E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9989289-738F-443F-95CB-FFF46E9477E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9989289-738F-443F-95CB-FFF46E9477E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,6 +110,7 @@ Global
 		{68AC5540-30D2-47D1-8792-6FEED3F07915} = {72C0CAC7-193D-466B-B222-1380C05D8869}
 		{54AC1DBD-744A-44BD-B8C3-D95419C7301B} = {9ABCB3AC-9683-4498-80F4-9E6F05EB8902}
 		{B7FFABC2-F571-4DF0-BB9C-A202C60BC6E0} = {72C0CAC7-193D-466B-B222-1380C05D8869}
+		{E9989289-738F-443F-95CB-FFF46E9477E5} = {72C0CAC7-193D-466B-B222-1380C05D8869}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {032FC2A7-F4CB-4FFC-A26B-D4301464D058}
