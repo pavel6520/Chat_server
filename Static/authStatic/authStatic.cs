@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using WebSocketSharp.Net;
 
 public class authStatic : PluginWorker {
-	public bool checkSession(MySqlConnection connection = null) {
+	public int checkSession(MySqlConnection connection = null) {
 		bool createConnection = connection == null;
-		bool res = false;
+		int res = 1;
 		var authCookie = _helper.Request.Cookies["auth"];
 		if (authCookie != null) {
 			if (createConnection) {
@@ -25,13 +25,10 @@ public class authStatic : PluginWorker {
 				_helper.Auth = new ConnectionWorker.Helpers.AuthInfo(Convert.ToString(reader["login"])) {
 					TimeCreate = DateTime.Parse(reader["datecreate"].ToString())
 				};
-				res = true;
-			}
-			else {
-				_helper.Auth = new ConnectionWorker.Helpers.AuthInfo();
+				res = 0;
 			}
 			reader.Close();
-			if (res) {
+			if (res == 0) {
 				updateSession(authCookie.Value, connection);
 			}
 			else {
@@ -41,6 +38,9 @@ public class authStatic : PluginWorker {
 			if (createConnection) {
 				connection.Close();
 			}
+		}
+		if (res != 0) {
+			_helper.Auth = new ConnectionWorker.Helpers.AuthInfo();
 		}
 		return res;
 	}
@@ -111,7 +111,7 @@ public class authStatic : PluginWorker {
 		}
 	}
 
-	public bool loginUser() {
+	public int loginUser() {
 		Uri uri;
 		if (_helper.Request.Content != null) {
 			UriBuilder uriB = new UriBuilder(_helper.Request.Url);
@@ -122,7 +122,7 @@ public class authStatic : PluginWorker {
 			uri = _helper.Request.Url;
 		}
 		Dictionary<string, string> keyValues = ConnectionWorker.Helpers.UriHelper.DecodeQueryParameters(uri);
-		bool res = false;
+		int res = 1;
 		string login = keyValues["login"];
 		string pass = keyValues["password"];
 		if (login != null && pass != null) {
@@ -135,7 +135,7 @@ public class authStatic : PluginWorker {
 			MySqlDataReader reader = command.ExecuteReader();
 			if (reader.Read()) {
 				_helper.Auth = new ConnectionWorker.Helpers.AuthInfo() { Login = Convert.ToString(reader["login"]) };
-				res = true;
+				res = 0;
 				reader.Close();
 				addSession(connection);
 			}
@@ -150,8 +150,8 @@ public class authStatic : PluginWorker {
 		return res;
 	}
 
-	public bool addUser() {
-		bool res = false;
+	public int addUser() {
+		int res = 1;
 		Uri uri;
 		if (_helper.Request.Content != null) {
 			UriBuilder uriB = new UriBuilder(_helper.Request.Url);
@@ -174,11 +174,11 @@ public class authStatic : PluginWorker {
 			command.Parameters.AddWithValue("@datereg", DateTime.Now);
 			try {
 				command.ExecuteNonQuery();
-				res = true;
+				res = 0;
 				_helper.Auth = new ConnectionWorker.Helpers.AuthInfo() { Login = login };
 				addSession();
 			}
-			catch { }
+			catch (Exception e) { }
 			connection.Close();
 		}
 		return res;
