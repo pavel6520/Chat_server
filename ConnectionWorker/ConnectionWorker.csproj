@@ -71,6 +71,7 @@
     <Compile Include="Helpers\Render.cs" />
     <Compile Include="Helpers\ResponceInfo.cs" />
     <Compile Include="Helpers\UriHelper.cs" />
+    <Compile Include="Helpers\WebSocketAct.cs" />
     <Compile Include="LayoutWorker.cs" />
     <Compile Include="PluginWorker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

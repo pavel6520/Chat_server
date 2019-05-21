@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,7 @@ namespace ConnectionWorker.Helpers {
 		public string dbConnectString;
 		public string domainName;
 		public bool isDebug;
+		public WebSocketHelper WShelper;
 
 		public bool isAuth { get { return Auth != null; } }
 		public bool isSecureConnection { get { return Request.IsSecureConnection; } }
@@ -39,6 +41,7 @@ namespace ConnectionWorker.Helpers {
 			returnType = ReturnType.DefaultContent;
 			Context = context;
 			this.isDebug = isDebug;
+			WShelper = new WebSocketHelper();
 		}
 
 		public HelperClass(ref HttpListenerContext context, string db, string domain, bool isDebug, HttpListenerWebSocketContext contextWs)
@@ -46,10 +49,15 @@ namespace ConnectionWorker.Helpers {
 			ContextWs = contextWs;
 		}
 
+		public JObject GetJsonContent() {
+			string tmp = Encoding.UTF8.GetString(Request.Content);
+			return JObject.Parse(Encoding.UTF8.GetString(Request.Content));
+		}
+
 		public void AnswerRedirect(string url) {
 			returnType = ReturnType.Info;
 			Responce.StatusCode = 302;
-			//Responce.StatusDescription = "Moved Temporarily";
+			Responce.StatusDescription = "Moved Temporarily";
 			Responce.RedirectLocation = url;
 		}
 		public void Answer(int code, string description) {
@@ -86,6 +94,7 @@ namespace ConnectionWorker.Helpers {
 			Responce = helper.Responce;
 			staticPlugins = helper.staticPlugins;
 			returnType = helper.returnType;
+			WShelper = helper.WShelper;
 		}
 	}
 
