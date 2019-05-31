@@ -50,7 +50,7 @@ namespace ConnectionWorker.Helpers {
 		}
 
 		public JObject GetJsonContent() {
-			string tmp = Encoding.UTF8.GetString(Request.Content);
+			//string tmp = Encoding.UTF8.GetString(Request.Content);
 			return JObject.Parse(Encoding.UTF8.GetString(Request.Content));
 		}
 
