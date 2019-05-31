@@ -54,6 +54,13 @@
 	}
 });*/
 
+function longToDate(input) {
+	return new Date(input*1000);
+}
+function dateToLong(input) {
+	return input.getTime()/1000;
+}
+
 function cache(key, value) {if (typeof value == 'undefined') { return cache[key]; }cache[key] = value;}
 
 function authFunc(){

@@ -196,7 +196,7 @@
 .navmenu-fixed-right,
 .navbar-offcanvas {
   position: fixed;
-  z-index: 1051;
+  z-index: 1049;
   top: 0;
   bottom: 0;
   overflow-y: auto;
