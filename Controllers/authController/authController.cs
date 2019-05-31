@@ -40,27 +40,27 @@ public class authController : ControllerWorker {
 				}
 			}
 			else {
-				Echo("<link href=\"/assets/css/styleform.css\" rel=\"stylesheet\">");
-				Echo("<div id=\"containerauth\">");
-				Echo("<div id=\"wrapper\">");
-				Echo("<div id=\"authform\">");
-				Echo($"<form name=\"login\" action=\"https://{_helper.domainName}/auth/login\" method=\"POST\">");
+				Echo("<link href='/assets/css/styleform.css' rel='stylesheet'>");
+				Echo("<div id='containerauth'>");
+				Echo("<div id='wrapper'>");
+				Echo("<div id='authform'>");
+				Echo($"<form name='login' action='https://{_helper.domainName}/auth/login' method='POST'>");
 				Echo("<h1>Log in</h1>");
 				//Echo("<p>");
-				Echo("<label for=\"login\" class=\"uname\" data-icon=\"u\"> Your username </label>");
-				Echo("<input type=\"text\" id=\"login\" name=\"login\" />");
+				Echo("<label for='login' class='uname' data-icon='u'> Your username </label>");
+				Echo("<input type='text' id='login' name='login' />");
 				//Echo("</p>");
 				//Echo("<p>");
-				Echo("<label for=\"pass\" class=\"youpasswd\" data-icon=\"p\"> Your password </label>");
-				Echo("<input type=\"password\" id=\"password\" name=\"pass\" />");
+				Echo("<label for='pass' class='youpasswd' data-icon='p'> Your password </label>");
+				Echo("<input type='password' id='password' name='pass' />");
 				//Echo("</p>");
-				//Echo("<p class=\"keeplogin\"> ");
-				//Echo("<input type=\"checkbox\" name=\"loginkeeping\" id=\"loginkeeping\" value=\"loginkeeping\" />");
-				//Echo("<label for=\"loginkeeping\">Keep me logged in</label>");
+				//Echo("<p class='keeplogin'> ");
+				//Echo("<input type='checkbox' name='loginkeeping' id='loginkeeping' value='loginkeeping' />");
+				//Echo("<label for='loginkeeping'>Keep me logged in</label>");
 				//Echo("</p>");
 				Echo("</form>");
-				Echo("<button class=\"btn btn-primary btn-lg\">Login</button>");
-				Echo("<p class=\"change_link\">Not a member yet ?<a href=\"/auth/signin\" class=\"to_subscribe\">Join us</a></p>");
+				Echo("<button class='btn btn-primary btn-lg'>Login</button>");
+				Echo("<p class='change_link'>Not a member yet ?<a href='/auth/signin' class='to_subscribe'>Join us</a></p>");
 				formJS();
 				Echo("</div></div></div>");
 			}
@@ -89,31 +89,31 @@ public class authController : ControllerWorker {
 				}
 			}
 			else {
-				Echo("<link href=\"/assets/css/styleform.css\" rel=\"stylesheet\">");
-				Echo("<div id=\"containerauth\">");
-				Echo("<div id=\"wrapper\">");
-				Echo("<div id=\"authform\">");
-				Echo($"<form  action=\"https://{_helper.domainName}/auth/signin\" method=\"post\">");
+				Echo("<link href='/assets/css/styleform.css' rel='stylesheet'>");
+				Echo("<div id='containerauth'>");
+				Echo("<div id='wrapper'>");
+				Echo("<div id='authform'>");
+				Echo($"<form  action='https://{_helper.domainName}/auth/signin' method='post'>");
 				Echo("<h1> Sign up </h1>");
 				Echo("<p>");
-				Echo("<label for=\"login\" class=\"uname\" data-icon=\"u\">Your login </label>");
-				Echo("<input id=\"login\" name=\"login\" type=\"text\"/>");
+				Echo("<label for='login' class='uname' data-icon='u'>Your login </label>");
+				Echo("<input id='login' name='login' type='text'/>");
 				Echo("</p>");
 				//Echo("<p>");
-				//Echo("<label for=\"emailsignup\" class=\"youmail\" data-icon=\"e\" > Your email</label>");
-				//Echo("<input id=\"emailsignup\" name=\"emailsignup\" required=\"required\" type=\"text\" placeholder=\"mysupermail@mail.com\"/>");
+				//Echo("<label for='emailsignup' class='youmail' data-icon='e' > Your email</label>");
+				//Echo("<input id='emailsignup' name='emailsignup' required='required' type='text' placeholder='mysupermail@mail.com'/>");
 				//Echo("</p>");
 				Echo("<p>");
-				Echo("<label for=\"password\" class=\"youpasswd\" data-icon=\"p\">Your password </label>");
-				Echo("<input id=\"password\" name=\"password\" type=\"password\" />");
+				Echo("<label for='password' class='youpasswd' data-icon='p'>Your password </label>");
+				Echo("<input id='password' name='password' type='password' />");
 				Echo("</p>");
 				Echo("<p>");
-				Echo("<label for=\"password_confirm\" class=\"youpasswd\" data-icon=\"p\">Please confirm your password </label>");
-				Echo("<input id=\"password_confirm\" name=\"password_confirm\" type=\"password\"/>");
+				Echo("<label for='password_confirm' class='youpasswd' data-icon='p'>Please confirm your password </label>");
+				Echo("<input id='password_confirm' name='password_confirm' type='password'/>");
 				Echo("</p>");
 				Echo("</form>");
-				Echo("<button class=\"btn btn-primary btn-lg\">Sign up</button>");
-				Echo("<p class=\"change_link\">Already a member ?<a href=\"/auth/login\" class=\"to_subscribe\">Go and log in </a></p>");
+				Echo("<button class='btn btn-primary btn-lg'>Sign up</button>");
+				Echo("<p class='change_link'>Already a member ?<a href='/auth/login' class='to_subscribe'>Go and log in </a></p>");
 				formJS();
 				Echo("</div></div></div>");
 			}
@@ -121,6 +121,6 @@ public class authController : ControllerWorker {
 	}
 
 	private void formJS() {
-		Echo("<script>$('#authform > button.btn').on('click', function () {/*let formData = new FormData($('form')[0]);*/$.ajax({type: 'POST',url: $('form').attr('action'),processData: true,data: {login: $('#login').val(),password: $('#password').val(),password_confirm: $('#password_confirm').val()},/*data: formData,*/success: function (data) {console.log(data);if(data.state){$('form').html('').attr('method', 'get').attr('action', '/auth/login').submit();/*window.location.href = data.redirect;*/}else{/*отобразить ошибки*/}}});});</script>");
+		Echo("<script>$('#authform > button.btn').on('click', function () {/*let formData = new FormData($('form')[0]);*/$.ajax({type: 'POST',url: $('form').attr('action'),processData: true,data: {login: $('#login').val(),password: $('#password').val(),password_confirm: $('#password_confirm').val()},/*data: formData,*/success: function (data) {console.log(data);if(data.state){$('form').attr('method', 'get').attr('action', '/auth/login').submit();/*window.location.href = data.redirect;*/}else{/*отобразить ошибки*/}}});});</script>");
 	}
 }
