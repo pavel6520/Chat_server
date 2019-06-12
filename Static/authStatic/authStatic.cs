@@ -18,12 +18,12 @@ public class authStatic : PluginWorker {
 				connection = new MySqlConnection(_helper.dbConnectString);
 				connection.Open();
 			}
-			MySqlCommand command = new MySqlCommand("select login, datecreate from userauthkey where `key` = @key", connection);
+			MySqlCommand command = new MySqlCommand("select login, dc from userauthkey where `key` = @key", connection);
 			command.Parameters.AddWithValue("@key", authCookie.Value);
 			MySqlDataReader reader = command.ExecuteReader();
 			if (reader.Read()) {
 				_helper.Auth = new ConnectionWorker.Helpers.AuthInfo(Convert.ToString(reader["login"])) {
-					TimeCreate = DateTime.Parse(reader["datecreate"].ToString())
+					TimeCreate = DateTime.Parse(reader["dc"].ToString())
 				};
 				res = 0;
 			}
@@ -52,9 +52,9 @@ public class authStatic : PluginWorker {
 			connection.Open();
 		}
 
-		MySqlCommand command = new MySqlCommand("update userauthkey set datecreate = @datetime where `key` = @key", connection);
+		MySqlCommand command = new MySqlCommand("update userauthkey set dc = @dc where `key` = @key", connection);
 		command.Parameters.AddWithValue("@key", key);
-		command.Parameters.AddWithValue("@datetime", DateTime.UtcNow);
+		command.Parameters.AddWithValue("@dc", DateTime.UtcNow);
 		command.ExecuteNonQuery();
 
 		if (createConnection) {
@@ -73,7 +73,7 @@ public class authStatic : PluginWorker {
 		if (authCookie != null) {
 			MySqlCommand command = new MySqlCommand("delete from userauthkey where `key` = @key", connection);
 			command.Parameters.AddWithValue("@key", authCookie.Value);
-			command.Parameters.AddWithValue("@datecreate", DateTime.UtcNow.AddDays(-1));
+			command.Parameters.AddWithValue("@dc", DateTime.UtcNow.AddDays(-1));
 			command.ExecuteNonQuery();
 			connection.Close();
 			_helper.Responce.Headers.Add(HttpResponseHeader.SetCookie, $"{authCookie.Name}={authCookie.Value}; Max-Age=-1; path=/;");
@@ -98,12 +98,11 @@ public class authStatic : PluginWorker {
 			connection.Open();
 		}
 		MySqlCommand command;
-		command = new MySqlCommand("insert into userauthkey (`key`, login, datecreate) value(@key, @login, @datecreate)", connection);
+		command = new MySqlCommand("insert into userauthkey (`key`, login, dc) value(@key, @login, @dc)", connection);
 		command.Parameters.AddWithValue("@key", hash);
 		command.Parameters.AddWithValue("@login", _helper.Auth.Login);
-		command.Parameters.AddWithValue("@datecreate", time);
+		command.Parameters.AddWithValue("@dc", time);
 		command.ExecuteNonQuery();
-		//_helper.Responce.Headers.Add(System.Net.HttpResponseHeader.SetCookie, $"auth={hash}; secure; HttpOnly; domain={_helper.domainName}; path=/; Expires={time.AddDays(1).ToString("R")}");
 		_helper.Responce.Headers.Add(HttpResponseHeader.SetCookie, $"auth={hash}; secure; HttpOnly; path=/; Expires={time.AddDays(1).ToString("R")}");
 
 		if (createConnection) {
